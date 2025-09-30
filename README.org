@@ -10,6 +10,8 @@ This project looks to Vim as a northstar: minimal, powerful, fast.
 Syntax highlighting is currently experimental. This project is an "early adopter" of the Tree-sitter
 parser-generator. It is the client's onus to vendor TreeSitter and supply the parser to WarrenBuffer.
 
+Demo: https://varrockbank.github.io/warrenbuffer/ (treesitter disabled)
+
 ** <textarea>-based libraries as an engine
 
 Other "text editor" libraries in the same weight class achieve a small footprint by
