@@ -27,148 +27,72 @@ Syntax highlighting is experimentally supported provided clients bring their on 
 
 ** <textarea>-based libraries as an engine
 
-Other "text editor" libraries in the same weight class achieve a small footprint by
-being clever codegolf hacks of =<textarea>=. This means not defining delete, insert, new line or any
-other text operation. It's a double edged sword with the benefit of requiring little sourcecode.
-The major drawback is that they are glorified CSS for =<textarea>= and lacking in functionality.
-=<textarea>= is single-cursor, idiosyncratic w/ browser dependency and low-capacity.
-These solutions are lipstick on a pig and is a non-starter for anything beyond a toy.
+Other "text editor" libraries in the same weight class achieve a small footprint by being clever codegolf hacks of =<textarea>=. This means not defining delete, insert, new line or any other text operation. It's a double edged sword with the benefit of requiring little sourcecode. The major drawback is that they are glorified CSS for =<textarea>= and lacking in functionality. =<textarea>= is single-cursor, idiosyncratic w/ browser dependency and low-capacity. These solutions are lipstick on a pig and is a non-starter for anything beyond a toy.
 
 see: "Other pitfalls with <textarea>"
 
 ** Monaco as an engine
 
-Monaco, the web counterpart of VSCode, is a powerhouse but with a 10000x larger footprint. It
-doesn't fit in a floppy disk much less the initial 14KB TCP window.
+Monaco, the web counterpart of VSCode, is a powerhouse but with a 10000x larger footprint. It doesn't fit in a floppy disk much less the initial 14KB TCP window.
 
-It is overkill in the vast majority of cases that involve a custom editor experience.
-see: "Rant on Monaco-based apps"
+It is overkill in the vast majority of cases that involve a custom editor experience. see: "Rant on Monaco-based apps"
 
 ** The web platform
 
-The DOM is slow. Other text editor libraries mount the entire source text to the DOM.
-10^5 elements can be enough to make the browser tab unresponsive.
-WarrenBuffer loans the technique of "clipping" from graphics programming to render only
-the segment of the world that are in view. aside: occlusion culling extends this idea.
+The DOM is slow. Other text editor libraries mount the entire source text to the DOM. 10^5 elements can be enough to make the browser tab unresponsive. WarrenBuffer loans the technique of "clipping" from graphics programming to render only the segment of the world that are in view. aside: occlusion culling extends this idea.
 
-V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some
-combination in between to achieve performance. These data structures are hard to get right and
-their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches
-the problem domain of indexed lines of text. Arrays are infeasible because text editor operations
-including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays.
-V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers.
-For once the web platform is a development luxury where we can have cake and eat it too.
-WarrenBuffer reaps the simplicity of arrays without sacrificing performance.
+V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some combination in between to achieve performance. These data structures are hard to get right and their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches the problem domain of indexed lines of text. Arrays are infeasible because text editor operations including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays. V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers. For once the web platform is a development luxury where we can have cake and eat it too. WarrenBuffer reaps the simplicity of arrays without sacrificing performance.
 
 ** C++ buffer management via WebAssembly
 
-Early experiments involved a delegating buffer management to a WASM module written in C++.
-It's the anthropic principle that WarrenBuffer uses VanillaJS V8+ Arrays today.
+Early experiments involved a delegating buffer management to a WASM module written in C++. It's the anthropic principle that WarrenBuffer uses VanillaJS V8+ Arrays today.
 
-There is overhead to the JS<->WASM boundary crossing. It was significant but just
-below the level of human perception. The threshold was quickly surpassed with time spent in
-WASM-land. Rolling handwritten datastructures in C++ or other native code that
-outperforms V8 optimizations is difficult. A lot of engineering/witchcraft went into V8 and it shows.
-I gladly await someone else implement an efficient text buffer management and editor engine
-exposed as a WASM module.
+There is overhead to the JS<->WASM boundary crossing. It was significant but just below the level of human perception. The threshold was quickly surpassed with time spent in WASM-land. Rolling handwritten datastructures in C++ or other native code that outperforms V8 optimizations is difficult. A lot of engineering/witchcraft went into V8 and it shows. I gladly await someone else implement an efficient text buffer management and editor engine exposed as a WASM module.
 
-The WASM toolchain still felt like "death by a thousand cuts".
-All things considered, it is more pleasant to work with VanillaJS.
+The WASM toolchain still felt like "death by a thousand cuts". All things considered, it is more pleasant to work with VanillaJS.
 
 ** Surgical DOM rendering
 
-WarrenBuffer couples buffer state with surgical DOM updates. The endstate of the project is towards
-updating only the DIFFed DOM segments. This is idealistic because redundancy in cheap DOM updates
-may be preferable to the overhead of corner-case management having too many branching pathways.
+WarrenBuffer couples buffer state with surgical DOM updates. The endstate of the project is towards updating only the DIFFed DOM segments. This is idealistic because redundancy in cheap DOM updates may be preferable to the overhead of corner-case management having too many branching pathways.
 
-It's virtuous that WarrenBuffer remain a microlibrary. The webdev Zeitgest is a declarative library
-that reactively alter DIFFs/changed subtrees. This does not come free. A trustworthy barebones React-like
-library is larger than WarrenBuffer in its entirety. UI libraries are useful for managing a complex
-UI with a large component tree where it is impossible to manage otherwise.
-WarrenBuffer's minimalism culminates in a handful of visual elements and a dozen operations.
-In this scenario, a few precision DOM mutations is superior to the overhead of a presumably smart and
-efficient DOM rendering library, especially as the DIFFs do not involve "complete"/full trees.
-WarrenBuffer's adhoc rendering avoids introducing a dependency, managing a state
-tree, run a change-tracking loop, defining a declarative DSL, merging in a virtual DOM tree,
-smoothing-out browser compatibility, needing a build process or other complexities,
-The surface space is small enough to reasonably expect WarrenBuffer's implementer carefully consider
-the effects of every operation. Plus, it's fun being close to the "DOM metal"
+It's virtuous that WarrenBuffer remain a microlibrary. The webdev Zeitgest is a declarative library that reactively alter DIFFs/changed subtrees. This does not come free. A trustworthy barebones React-like library is larger than WarrenBuffer in its entirety. UI libraries are useful for managing a complex UI with a large component tree where it is impossible to manage otherwise. WarrenBuffer's minimalism culminates in a handful of visual elements and a dozen operations. In this scenario, a few precision DOM mutations is superior to the overhead of a presumably smart and efficient DOM rendering library, especially as the DIFFs do not involve "complete"/full trees. WarrenBuffer's adhoc rendering avoids introducing a dependency, managing a state tree, run a change-tracking loop, defining a declarative DSL, merging in a virtual DOM tree, smoothing-out browser compatibility, needing a build process or other complexities, The surface space is small enough to reasonably expect WarrenBuffer's implementer carefully consider the effects of every operation. Plus, it's fun being close to the "DOM metal"
 
-Correctness is prioritized over performance micro-optimizations. Currently, there may be cases where
-the entire viewport is unnecessarily refreshed. For all intensive purposes this will not be detectable
-by the user. O(c) where c=30 surgical line updates is trivial compared to maintaining even the
-smallest of virtual DOM trees.
+Correctness is prioritized over performance micro-optimizations. Currently, there may be cases where the entire viewport is unnecessarily refreshed. For all intensive purposes this will not be detectable by the user. O(c) where c=30 surgical line updates is trivial compared to maintaining even the smallest of virtual DOM trees.
 
-One optimization pattern currently deployed is (re)using document fragments for batch inserts.
-This minimizes DOM mutations/operations.
+One optimization pattern currently deployed is (re)using document fragments for batch inserts. This minimizes DOM mutations/operations.
 
 ** VSCode Buffer Management
 
-In problem domain investigations circa 2022, local VSCode would choke on 10^7 ~LOC 50MB files. It
-would be unresponsive for up to a minute, or even exceed the timeout, until the file was loaded into
-memory.
+In problem domain investigations circa 2022, local VSCode would choke on 10^7 ~LOC 50MB files. It would be unresponsive for up to a minute, or even exceed the timeout, until the file was loaded into memory.
 
-VSCode had already adopted a Piece Table (combined with a balanced tree).
-see: https://code.visualstudio.com/blogs/2018/03/23/text-buffer-reimplementation.
+VSCode had already adopted a Piece Table (combined with a balanced tree). see: https://code.visualstudio.com/blogs/2018/03/23/text-buffer-reimplementation.
 
-Now in September 2025, VSCode seemed to have fixed the bottleneck by being contextually aware of
-large files, short-circuiting attempts at preprocessing, and default to plaintext editing.
-The issue may be in VSCode's syntax highlighting rather than buffer management.
-=vim= proves that it's feasible to have syntax highlighting on much larger files.
+Now in September 2025, VSCode seemed to have fixed the bottleneck by being contextually aware of large files, short-circuiting attempts at preprocessing, and default to plaintext editing. The issue may be in VSCode's syntax highlighting rather than buffer management. =vim= proves that it's feasible to have syntax highlighting on much larger files.
 
-VSCode's text buffer implementation is available here:
-https://github.com/microsoft/vscode-textbuffer/tree/main. ~50KB is acceptable although this
-is 50x WarrenBuffer's footprint.
+VSCode's text buffer implementation is available here: https://github.com/microsoft/vscode-textbuffer/tree/main. ~50KB is acceptable although this is 50x WarrenBuffer's footprint.
 
-Monaco, the web version of VSCode, follows the same implementation and therefore have similar
-performance characteristics.
+Monaco, the web version of VSCode, follows the same implementation and therefore have similar performance characteristics.
 
 *** Rant on Monaco-based apps
 
-VSCode provides an impressive professional-enterprise-looking product out-of-the-box without any
-custom code required. VSCode-based apps don't even bother to hide by reskinning themselves.
-It's a disservice to the likes of Dota, a mod of Warcraft III, to deem these as VSCode mods.
-These apps aren't modifying anything and simply brought their own basic editor config/dotfile file.
-In effect, they ARE VSCode paired to a custom backend datasource. Perhaps there is a business
-opportunity to provide VSCode-as-a-service where tenants bring their own config and data. This
-would cache the non-trivial VSCode bundle once across tenant apps instead of a heavy download for
-each app. Perhaps this central hub doesn't exist because it would reveal that tenants have very
-little value add on the application front. Most VSCode-base apps appear lazy and lack love, if not
-contempt, towards crafting software. It's disrespectful to the end users who are punished each time
-they load a bloated VSCode without irrelevant "features" tree-shaked away.
+VSCode provides an impressive professional-enterprise-looking product out-of-the-box without any custom code required. VSCode-based apps don't even bother to hide by reskinning themselves. It's a disservice to the likes of Dota, a mod of Warcraft III, to deem these as VSCode mods. These apps aren't modifying anything and simply brought their own basic editor config/dotfile file. In effect, they ARE VSCode paired to a custom backend datasource. Perhaps there is a business opportunity to provide VSCode-as-a-service where tenants bring their own config and data. This would cache the non-trivial VSCode bundle once across tenant apps instead of a heavy download for each app. Perhaps this central hub doesn't exist because it would reveal that tenants have very little value add on the application front. Most VSCode-base apps appear lazy and lack love, if not contempt, towards crafting software. It's disrespectful to the end users who are punished each time they load a bloated VSCode without irrelevant "features" tree-shaked away.
 
 *** Ace Editor
 
-The Ace Editor was a standout among editor libraries. Per their README (as of September 2025):
-"Handles huge documents (at last check, 4,000,000 lines is the upper limit)". In my prior tests on
-a ~32GB ram M1 Mac, Ace could handle 8 million LoC. This is orders of magnitude better than peers in
-this space.
+The Ace Editor was a standout among editor libraries. Per their README (as of September 2025): "Handles huge documents (at last check, 4,000,000 lines is the upper limit)". In my prior tests on a ~32GB ram M1 Mac, Ace could handle 8 million LoC. This is orders of magnitude better than peers in this space.
 
 It's a respectable library to develop an editor experience on top of. I'd recommend it.
 
-The codebase is equally praiseworthy. Ace unavoidably has legacy bits and debt for compatibility
-reasons. Ace has other bells and whistles that, unless they can be tree-shaked, is bloated
-compared to WarrenBuffer. WarrenBuffer has the privilege of starting from a clean slate in 2025.
+The codebase is equally praiseworthy. Ace unavoidably has legacy bits and debt for compatibility reasons. Ace has other bells and whistles that, unless they can be tree-shaked, is bloated compared to WarrenBuffer. WarrenBuffer has the privilege of starting from a clean slate in 2025.
 
-Ace instantiates a hidden =<textarea>= around the user's cursor that binds to the keyboard input.
-Note that this is not the same as having a textarea for the entire source text. Otherwise
-Ace would be subject to the same bottlenecks as other editor libraries. Performance issues with
-=<textarea>= are less pronounced with Ace.
+Ace instantiates a hidden =<textarea>= around the user's cursor that binds to the keyboard input. Note that this is not the same as having a textarea for the entire source text. Otherwise Ace would be subject to the same bottlenecks as other editor libraries. Performance issues with =<textarea>= are less pronounced with Ace.
 
-An argument in favor of =<textarea>= is that it's semantically meaningful. However, the hand-off to
-the text editor library is a blackbox with respect to HTML, especially if the textarea is an
-arbitrary region as is the case with Ace.
+An argument in favor of =<textarea>= is that it's semantically meaningful. However, the hand-off to the text editor library is a blackbox with respect to HTML, especially if the textarea is an arbitrary region as is the case with Ace.
 
 *** More pitfalls of <textarea>
 
-=<textarea>= is archaic. It has browser and other idiosyncrasies. Defensive programming, i.e.
-exhaustive regression testing, is more effortful than building an independent text editor from
-scratch, free to parity behavior among canonical editors including Vim, VSCode, Intellij, Emacs, etc.
+=<textarea>= is archaic. It has browser and other idiosyncrasies. Defensive programming, i.e. exhaustive regression testing, is more effortful than building an independent text editor from scratch, free to parity behavior among canonical editors including Vim, VSCode, Intellij, Emacs, etc.
 
-One caveat with Ace's "culled" textarea is that a large selection requires an even larger textarea.
-The DOM bottleneck is back in play. WarrenBuffer avoids this problem by having virtual cursors.
+One caveat with Ace's "culled" textarea is that a large selection requires an even larger textarea. The DOM bottleneck is back in play. WarrenBuffer avoids this problem by having virtual cursors.
 
-Overriding =<textarea>='s default event handler is possible but defeats the point of implementing
-complexity by relying on =<textarea>=. The second-system effect means there are now n+1 competing standards.
-In fact, Ace retrofitted multi-cursor support alongside its =<textarea>='s cursor.
-WarrenBuffer has a single cursor implementation and avoids this complexity.
+Overriding =<textarea>='s default event handler is possible but defeats the point of implementing complexity by relying on =<textarea>=. The second-system effect means there are now n+1 competing standards. In fact, Ace retrofitted multi-cursor support alongside its =<textarea>='s cursor. WarrenBuffer has a single cursor implementation and avoids this complexity.
