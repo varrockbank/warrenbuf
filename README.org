@@ -1,4 +1,4 @@
-An overpowered plaintext buffer for the web, managing billions^{[1]} of lines without slowdown. At its core is a rendering engine that sidesteps the DOM bottleneck.  
+WarrenBuf is an overpowered plaintext buffer for the web, managing billions^{[1]} of lines without slowdown. At its core is a rendering engine that sidesteps the DOM bottleneck.  
 It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with text editor features including:
 
 - Multicursor
@@ -7,7 +7,7 @@ It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with tex
 - Outliner mode
 - Block Selection
 
-*Try It* 👉 [[https://varrockbank.github.io/warrenbuffer/][Live Demo]] (Tree-sitter disabled in demo) 
+*Try It* 👉 [[https://varrockbank.github.io/warrenbuf/][Live Demo]] (Tree-sitter disabled in demo) 
 
 [1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and interations don't slow down thanks to V8. Compare with editors based on binding the entire sourcetext to DOM, typically as facades over <textarea>, that becomes unresponsive by ~O(100,000) lines./
 
@@ -21,7 +21,7 @@ It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with tex
 
 ** Extensibility 
 
-WarrenBuffer is extensible in that its model-view-controller are all exposed as part of its API. Writing an extension is 
+WarrenBuf is extensible in that its model-view-controller are all exposed as part of its API. Writing an extension is 
 simply a matter of composing API calls or even overriding them, which is easy enough in JavaScript. 
 
 The following capabilities are provided as extensions:
@@ -33,7 +33,7 @@ For tree-sitter, clients must vendor Tree-sitter and provide their own parser.
 
 ** Model-View-Controller 
 
-At its core, WarrenBuffer is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
+At its core, WarrenBuf is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
 aka the View. Finally, there is a notion of a text Selection *ON* which text editor operations are overlaid, aka the Controller.  
 
 ** <textarea>-based libraries as an engine
@@ -50,13 +50,13 @@ It is overkill in the vast majority of cases that involve a custom editor experi
 
 ** The web platform
 
-The DOM is slow. Other text editor libraries mount the entire source text to the DOM. 10^5 elements can be enough to make the browser tab unresponsive. WarrenBuffer loans the technique of "clipping" from graphics programming to render only the segment of the world that are in view. aside: occlusion culling extends this idea.
+The DOM is slow. Other text editor libraries mount the entire source text to the DOM. 10^5 elements can be enough to make the browser tab unresponsive. WarrenBuf loans the technique of "clipping" from graphics programming to render only the segment of the world that are in view. aside: occlusion culling extends this idea.
 
-V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some combination in between to achieve performance. These data structures are hard to get right and their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches the problem domain of indexed lines of text. Arrays are infeasible because text editor operations including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays. V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers. For once the web platform is a development luxury where we can have cake and eat it too. WarrenBuffer reaps the simplicity of arrays without sacrificing performance.
+V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some combination in between to achieve performance. These data structures are hard to get right and their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches the problem domain of indexed lines of text. Arrays are infeasible because text editor operations including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays. V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers. For once the web platform is a development luxury where we can have cake and eat it too. WarrenBuf reaps the simplicity of arrays without sacrificing performance.
 
 ** C++ buffer management via WebAssembly
 
-Early experiments involved a delegating buffer management to a WASM module written in C++. It's the anthropic principle that WarrenBuffer uses VanillaJS V8+ Arrays today.
+Early experiments involved a delegating buffer management to a WASM module written in C++. It's the anthropic principle that WarrenBuf uses VanillaJS V8+ Arrays today.
 
 There is overhead to the JS<->WASM boundary crossing. It was significant but just below the level of human perception. The threshold was quickly surpassed with time spent in WASM-land. Rolling handwritten datastructures in C++ or other native code that outperforms V8 optimizations is difficult. A lot of engineering/witchcraft went into V8 and it shows. I gladly await someone else implement an efficient text buffer management and editor engine exposed as a WASM module.
 
@@ -64,9 +64,9 @@ The WASM toolchain still felt like "death by a thousand cuts". All things consid
 
 ** Surgical DOM rendering
 
-WarrenBuffer couples buffer state with surgical DOM updates. The endstate of the project is towards updating only the DIFFed DOM segments. This is idealistic because redundancy in cheap DOM updates may be preferable to the overhead of corner-case management having too many branching pathways.
+WarrenBuf couples buffer state with surgical DOM updates. The endstate of the project is towards updating only the DIFFed DOM segments. This is idealistic because redundancy in cheap DOM updates may be preferable to the overhead of corner-case management having too many branching pathways.
 
-It's virtuous that WarrenBuffer remain a microlibrary. The webdev Zeitgest is a declarative library that reactively alter DIFFs/changed subtrees. This does not come free. A trustworthy barebones React-like library is larger than WarrenBuffer in its entirety. UI libraries are useful for managing a complex UI with a large component tree where it is impossible to manage otherwise. WarrenBuffer's minimalism culminates in a handful of visual elements and a dozen operations. In this scenario, a few precision DOM mutations is superior to the overhead of a presumably smart and efficient DOM rendering library, especially as the DIFFs do not involve "complete"/full trees. WarrenBuffer's adhoc rendering avoids introducing a dependency, managing a state tree, run a change-tracking loop, defining a declarative DSL, merging in a virtual DOM tree, smoothing-out browser compatibility, needing a build process or other complexities, The surface space is small enough to reasonably expect WarrenBuffer's implementer carefully consider the effects of every operation. Plus, it's fun being close to the "DOM metal"
+It's virtuous that WarrenBuf remain a microlibrary. The webdev Zeitgest is a declarative library that reactively alter DIFFs/changed subtrees. This does not come free. A trustworthy barebones React-like library is larger than WarrenBuf in its entirety. UI libraries are useful for managing a complex UI with a large component tree where it is impossible to manage otherwise. WarrenBuffer's minimalism culminates in a handful of visual elements and a dozen operations. In this scenario, a few precision DOM mutations is superior to the overhead of a presumably smart and efficient DOM rendering library, especially as the DIFFs do not involve "complete"/full trees. WarrenBuffer's adhoc rendering avoids introducing a dependency, managing a state tree, run a change-tracking loop, defining a declarative DSL, merging in a virtual DOM tree, smoothing-out browser compatibility, needing a build process or other complexities, The surface space is small enough to reasonably expect WarrenBuffer's implementer carefully consider the effects of every operation. Plus, it's fun being close to the "DOM metal"
 
 Correctness is prioritized over performance micro-optimizations. Currently, there may be cases where the entire viewport is unnecessarily refreshed. For all intensive purposes this will not be detectable by the user. O(c) where c=30 surgical line updates is trivial compared to maintaining even the smallest of virtual DOM trees.
 
@@ -80,7 +80,7 @@ VSCode had already adopted a Piece Table (combined with a balanced tree). see: h
 
 Now in September 2025, VSCode seemed to have fixed the bottleneck by being contextually aware of large files, short-circuiting attempts at preprocessing, and default to plaintext editing. The issue may be in VSCode's syntax highlighting rather than buffer management. =vim= proves that it's feasible to have syntax highlighting on much larger files.
 
-VSCode's text buffer implementation is available here: https://github.com/microsoft/vscode-textbuffer/tree/main. ~50KB is acceptable although this is 50x WarrenBuffer's footprint.
+VSCode's text buffer implementation is available here: https://github.com/microsoft/vscode-textbuffer/tree/main. ~50KB is acceptable although this is 50x WarrenBuf's footprint.
 
 Monaco, the web version of VSCode, follows the same implementation and therefore have similar performance characteristics.
 
@@ -94,7 +94,7 @@ The Ace Editor was a standout among editor libraries. Per their README (as of Se
 
 It's a respectable library to develop an editor experience on top of. I'd recommend it.
 
-The codebase is equally praiseworthy. Ace unavoidably has legacy bits and debt for compatibility reasons. Ace has other bells and whistles that, unless they can be tree-shaked, is bloated compared to WarrenBuffer. WarrenBuffer has the privilege of starting from a clean slate in 2025.
+The codebase is equally praiseworthy. Ace unavoidably has legacy bits and debt for compatibility reasons. Ace has other bells and whistles that, unless they can be tree-shaked, is bloated compared to WarrenBuf. WarrenBuf has the privilege of starting from a clean slate in 2025.
 
 Ace instantiates a hidden =<textarea>= around the user's cursor that binds to the keyboard input. Note that this is not the same as having a textarea for the entire source text. Otherwise Ace would be subject to the same bottlenecks as other editor libraries. Performance issues with =<textarea>= are less pronounced with Ace.
 
@@ -104,6 +104,6 @@ An argument in favor of =<textarea>= is that it's semantically meaningful. Howev
 
 =<textarea>= is archaic. It has browser and other idiosyncrasies. Defensive programming, i.e. exhaustive regression testing, is more effortful than building an independent text editor from scratch, free to parity behavior among canonical editors including Vim, VSCode, Intellij, Emacs, etc.
 
-One caveat with Ace's "culled" textarea is that a large selection requires an even larger textarea. The DOM bottleneck is back in play. WarrenBuffer avoids this problem by having virtual cursors.
+One caveat with Ace's "culled" textarea is that a large selection requires an even larger textarea. The DOM bottleneck is back in play. WarrenBuf avoids this problem by having virtual cursors.
 
-Overriding =<textarea>='s default event handler is possible but defeats the point of implementing complexity by relying on =<textarea>=. The second-system effect means there are now n+1 competing standards. In fact, Ace retrofitted multi-cursor support alongside its =<textarea>='s cursor. WarrenBuffer has a single cursor implementation and avoids this complexity.
+Overriding =<textarea>='s default event handler is possible but defeats the point of implementing complexity by relying on =<textarea>=. The second-system effect means there are now n+1 competing standards. In fact, Ace retrofitted multi-cursor support alongside its =<textarea>='s cursor. WarrenBuf has a single cursor implementation and avoids this complexity.
