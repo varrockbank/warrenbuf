@@ -1,29 +1,40 @@
-* WarrenBuffer
-
-is an overpowered text buffer for the web-capable of handling billions of lines. It's ~3KB (gzip+min) and zero-dependency. Despite a tiny footprint, it comes batteries included with editor features: 
+An overpowered plaintext buffer for the web, managing billions^{[1]} of lines without slowdown. At its core is a rendering engine that sidesteps the DOM bottleneck.  
+It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with text editor features including:
 
 - Multicursor
 - Line gutter
 - Status line
 - Outliner mode
 - Block Selection
-- Emoji, Kanji, multi-width character support
 
-As a core engne, it's a viable building block for IDEs and other rich plaintext environments.
+*Try It* 👉 [[https://varrockbank.github.io/warrenbuffer/][Live Demo]] (Tree-sitter disabled in demo) 
 
-** Product Ethos
-Vim serves a northstar-minimal, capable, fast
+[1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and interations don't slow down thanks to V8. Compare with editors based on binding the entire sourcetext to DOM, typically as facades over <textarea>, that becomes unresponsive by ~O(100,000) lines./
 
-** JavaScript fatigue 
+** Ethos
 
-There are no build dependencies nor is NPM is involved.
+*Avoid JS fatigue:* There are no build dependencies, no NPM, no compilation step.
 
-** Tree-sitter 
+*Inspired by vim:* minimal, capable, fast
 
-Syntax highlighting is experimentally supported provided clients bring their on parser. 
+*Embedded:*  the features and tiny footprint uniquely positions this project to be a building block for larger apps (e.g. IDEs and other enriched plaintext environments). In fact, this is heuristic in scoping features. 
 
-** Try It
-👉 [[https://varrockbank.github.io/warrenbuffer/][Live Demo]] (Tree-sitter disabled in demo)
+** Extensibility 
+
+WarrenBuffer is extensible in that its model-view-controller are all exposed as part of its API. Writing an extension is 
+simply a matter of composing API calls or even overriding them, which is easy enough in JavaScript. 
+
+The following capabilities are provided as extensions:
+
+- syntax highlighting w/ tree-sitter
+- iOS integration 
+
+For tree-sitter, clients must vendor Tree-sitter and provide their own parser. 
+
+** Model-View-Controller 
+
+At its core, WarrenBuffer is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
+aka the View. Finally, there is a notion of a text Selection *ON* which text editor operations are overlaid, aka the Controller.  
 
 ** <textarea>-based libraries as an engine
 
