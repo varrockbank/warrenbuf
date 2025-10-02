@@ -1,16 +1,29 @@
 * WarrenBuffer
 
-WarrenBuffer is a 1KB zero-dependency text editor that scales to billions of lines in the web browser.
-It punches far above its weight with multicursor, gutter, status line, outline mode, block-selection
-and other capabilities. This makes WarrenBuffer viable as an engine for building custom IDEs or
-other webapps.
+is an overpowered text buffer for the web-capable of handling billions of lines. It's ~3KB (gzip+min) and zero-dependency. Despite a tiny footprint, it comes batteries included with editor features: 
 
-This project looks to Vim as a northstar: minimal, powerful, fast.
+- Multicursor
+- Line gutter
+- Status line
+- Outliner mode
+- Block Selection
+- Emoji, Kanji, multi-width character support
 
-Syntax highlighting is currently experimental. This project is an "early adopter" of the Tree-sitter
-parser-generator. It is the client's onus to vendor TreeSitter and supply the parser to WarrenBuffer.
+As a core engne, it's a viable building block for IDEs and other rich plaintext environments.
 
-Demo: https://varrockbank.github.io/warrenbuffer/ (treesitter disabled)
+** Product Ethos
+Vim serves a northstar-minimal, capable, fast
+
+** JavaScript fatigue 
+
+There are no build dependencies nor is NPM is involved.
+
+** Tree-sitter 
+
+Syntax highlighting is experimentally supported provided clients bring their on parser. 
+
+** Try It
+👉 [[https://varrockbank.github.io/warrenbuffer/][Live Demo]] (Tree-sitter disabled in demo)
 
 ** <textarea>-based libraries as an engine
 
