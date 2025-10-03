@@ -68,6 +68,14 @@ Run the provided setup script to install hooks automatically:
 
 The setup script creates the symlink and backs up any existing pre-commit hook.
 
+*Testing the hook before committing*
+
+To run the pre-commit hook manually without creating a commit:
+
+#+begin_src sh
+./hooks/pre-commit
+#+end_src
+
 ** Model-View-Controller 
 
 At its core, WarrenBuf is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
