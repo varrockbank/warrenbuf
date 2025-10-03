@@ -31,6 +31,43 @@ The following capabilities are provided as extensions:
 
 For tree-sitter, clients must vendor Tree-sitter and provide their own parser. 
 
+** Distribution
+
+There is no build process however these are the steps I use to minify WarrenBuf for distribution.
+
+*Recommended (no installation):*
+#+begin_src sh
+npx terser warrenbuf.js -o dist/warrenbuf.min.js -c -m
+#+end_src
+
+*Alternative (using globally installed terser):*
+#+begin_src sh
+npm install -g terser
+terser warrenbuf.js -o dist/warrenbuf.min.js -c -m
+#+end_src
+
+** Git Hooks
+
+A pre-commit hook automatically minifies warrenbuf.js before each commit, ensuring dist/warrenbuf.min.js stays in sync.
+
+*Option 1: Manual installation*
+
+The hooks/ directory is version controlled. Create a symlink to enable the hook:
+
+#+begin_src sh
+ln -s ../../hooks/pre-commit .git/hooks/pre-commit
+#+end_src
+
+*Option 2: Automated installation*
+
+Run the provided setup script to install hooks automatically:
+
+#+begin_src sh
+./scripts/setup-hooks.sh
+#+end_src
+
+The setup script creates the symlink and backs up any existing pre-commit hook.
+
 ** Model-View-Controller 
 
 At its core, WarrenBuf is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
