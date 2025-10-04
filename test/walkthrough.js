@@ -57,21 +57,6 @@ class Walkthrough {
     document.getElementById('walkthrough-test-name').textContent = test.name;
     document.getElementById('walkthrough-test-desc').textContent = test.description || '';
 
-    // Display DSL source
-    const dslCodeView = document.getElementById('walkthrough-code-dsl');
-    const dslKey = `${suiteName}:${test.name}`;
-    const dslSource = window.dslSourceMap && window.dslSourceMap[dslKey];
-
-    if (dslSource) {
-      const dslLines = dslSource.split('\n');
-      dslCodeView.innerHTML = dslLines.map(line => {
-        const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return `<div class="code-line">${escaped || '&nbsp;'}</div>`;
-      }).join('');
-    } else {
-      dslCodeView.innerHTML = '<div class="code-line" style="opacity: 0.5;">No DSL source available</div>';
-    }
-
     // Display test code with inline step markers
     const codeView = document.getElementById('walkthrough-code-js');
 
@@ -155,6 +140,67 @@ class Walkthrough {
       failureLineIndices,
       lineToStep
     };
+
+    // Process DSL source for display
+    const dslCodeView = document.getElementById('walkthrough-code-dsl');
+    const dslKey = `${suiteName}:${test.name}`;
+    const dslData = window.dslSourceMap && window.dslSourceMap[dslKey];
+
+    if (dslData) {
+      const dslSource = dslData.source || dslData; // Support both old and new format
+      const lineMap = dslData.lineMap || []; // Maps DSL line index -> JS line index
+      const dslLines = dslSource.split('\n');
+
+      // Create reverse map: JS line -> DSL line indices
+      const jsToDslMap = new Map();
+      lineMap.forEach((jsLineIdx, dslLineIdx) => {
+        if (!jsToDslMap.has(jsLineIdx)) {
+          jsToDslMap.set(jsLineIdx, []);
+        }
+        jsToDslMap.get(jsLineIdx).push(dslLineIdx);
+      });
+
+      // Map steps to DSL lines
+      const lineToDslStep = new Map();
+      lineToStep.forEach((stepIdx, jsLineIdx) => {
+        const dslLineIndices = jsToDslMap.get(jsLineIdx) || [];
+        dslLineIndices.forEach(dslLineIdx => {
+          lineToDslStep.set(dslLineIdx, stepIdx);
+        });
+      });
+
+      // Find error DSL line
+      let errorDslLineIndex = -1;
+      if (errorLineIndex >= 0) {
+        const dslLineIndices = jsToDslMap.get(errorLineIndex) || [];
+        errorDslLineIndex = dslLineIndices[0] || -1;
+      }
+
+      dslCodeView.innerHTML = dslLines.map((line, idx) => {
+        const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const stepNum = lineToDslStep.get(idx);
+        const isError = idx === errorDslLineIndex;
+        const isStep = stepNum !== undefined;
+
+        let className = 'code-line';
+        let content = escaped || '&nbsp;';
+
+        if (isError) {
+          className += ' error-line';
+          content = `<span class="error-marker">✗</span>${content}`;
+        } else if (isStep) {
+          className += ' step-line';
+          content = `<span class="step-marker">${stepNum + 1}</span>${content}`;
+        }
+
+        return `<div class="${className}" data-step="${stepNum !== undefined ? stepNum : ''}">${content}</div>`;
+      }).join('');
+
+      // Store DSL-specific data for renderCode
+      test.dslData = { dslLines, lineMap, jsToDslMap, lineToDslStep };
+    } else {
+      dslCodeView.innerHTML = '<div class="code-line" style="opacity: 0.5;">No DSL source available</div>';
+    }
 
     // Render source with step markers (expects hidden initially)
     this.renderCode();
@@ -257,6 +303,70 @@ class Walkthrough {
     }).join('');
 
     codeView.innerHTML = codeHtml;
+
+    // Also update DSL view if available
+    if (test.dslData) {
+      const dslCodeView = document.getElementById('walkthrough-code-dsl');
+      const { dslLines, jsToDslMap, lineToDslStep } = test.dslData;
+
+      // Map JS line indices to DSL line indices for success/failure
+      const dslFailureIndices = new Set();
+      const dslSuccessIndices = new Set();
+
+      if (failureLineIndices) {
+        failureLineIndices.forEach(jsLineIdx => {
+          const dslIndices = jsToDslMap.get(jsLineIdx) || [];
+          dslIndices.forEach(dslIdx => dslFailureIndices.add(dslIdx));
+        });
+      }
+
+      if (successLineIndices) {
+        successLineIndices.forEach(jsLineIdx => {
+          const dslIndices = jsToDslMap.get(jsLineIdx) || [];
+          dslIndices.forEach(dslIdx => dslSuccessIndices.add(dslIdx));
+        });
+      }
+
+      // Find max revealed DSL line
+      let maxRevealedDslLine = -1;
+      if (this.currentStep > 0) {
+        for (const [dslLineIdx, stepNum] of lineToDslStep.entries()) {
+          if (stepNum < this.currentStep) {
+            maxRevealedDslLine = Math.max(maxRevealedDslLine, dslLineIdx);
+          }
+        }
+      }
+
+      const dslCodeHtml = dslLines.map((line, lineIndex) => {
+        const stepNum = lineToDslStep.get(lineIndex);
+        const isStepLine = stepNum !== undefined;
+        const isFailureLine = dslFailureIndices.has(lineIndex);
+        const isSuccessLine = dslSuccessIndices.has(lineIndex);
+
+        const shouldRevealExpect = isComplete || lineIndex <= maxRevealedDslLine;
+
+        let classes = 'code-line';
+        if (isFailureLine && shouldRevealExpect) classes += ' error-line';
+        if (isSuccessLine && !isFailureLine && shouldRevealExpect) classes += ' success-line';
+        if (isStepLine) classes += ' step-line';
+
+        const onclick = isStepLine ? `onclick="walkthrough.jumpToStep(${stepNum})"` : '';
+
+        let marker = '';
+        if (isStepLine) {
+          marker += `<span class="step-marker">${stepNum + 1}</span>`;
+        }
+        if (isFailureLine && shouldRevealExpect) {
+          marker += `<span class="error-marker">✗</span>`;
+        } else if (isSuccessLine && shouldRevealExpect) {
+          marker += `<span class="success-marker">✓</span>`;
+        }
+
+        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
+      }).join('');
+
+      dslCodeView.innerHTML = dslCodeHtml;
+    }
   }
 
   stepNext() {

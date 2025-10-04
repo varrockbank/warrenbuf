@@ -50,6 +50,8 @@ class SpecGenerator {
     let currentTest = null;
     let currentTestDescription = null;
     let currentTestDslLines = [];
+    let currentTestJsLineCount = 0;
+    let dslToJsLineMap = []; // Maps DSL line index to JS line index
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -89,15 +91,18 @@ class SpecGenerator {
           const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
           output.push(`  }${descParam});`);
 
-          // Store DSL source in map
+          // Store DSL source and mapping in map
           const dslSource = currentTestDslLines.join('\\n');
-          output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = \`${dslSource}\`;`);
+          const lineMap = JSON.stringify(dslToJsLineMap);
+          output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = { source: \`${dslSource}\`, lineMap: ${lineMap} };`);
           output.push('');
         }
 
         currentTest = trimmed.substring(3).trim();
         currentTestDescription = null;
         currentTestDslLines = [];
+        currentTestJsLineCount = 0;
+        dslToJsLineMap = [];
         output.push(`  runner.it('${this.escapeString(currentTest)}', () => {`);
 
       // Test description: ### Description
@@ -106,15 +111,21 @@ class SpecGenerator {
 
       // Test body content
       } else if (currentTest !== null) {
+        const dslLineIndex = currentTestDslLines.length;
+
         // Empty line
         if (trimmed === '') {
           output.push('');
           currentTestDslLines.push('');
+          dslToJsLineMap.push(currentTestJsLineCount);
+          currentTestJsLineCount++;
         }
         // JavaScript pass-through (ends with semicolon or is a comment line)
         else if (trimmed.endsWith(';') || trimmed.startsWith('//')) {
           output.push(`    ${trimmed}`);
           currentTestDslLines.push(trimmed);
+          dslToJsLineMap.push(currentTestJsLineCount);
+          currentTestJsLineCount++;
         }
         // DSL command - delegate to transpiler
         else {
@@ -123,12 +134,16 @@ class SpecGenerator {
             if (jsLine) {
               output.push(`    ${jsLine}`);
               currentTestDslLines.push(trimmed);
+              dslToJsLineMap.push(currentTestJsLineCount);
+              currentTestJsLineCount++;
             }
           } catch (error) {
             // Include error as comment
             output.push(`    // Error transpiling: ${trimmed}`);
             output.push(`    // ${error.message}`);
             currentTestDslLines.push(`// Error: ${trimmed}`);
+            dslToJsLineMap.push(currentTestJsLineCount);
+            currentTestJsLineCount += 2; // Error is 2 lines
           }
         }
       }
@@ -140,9 +155,10 @@ class SpecGenerator {
       const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
       output.push(`  }${descParam});`);
 
-      // Store DSL source in map
+      // Store DSL source and mapping in map
       const dslSource = currentTestDslLines.join('\\n');
-      output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = \`${dslSource}\`;`);
+      const lineMap = JSON.stringify(dslToJsLineMap);
+      output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = { source: \`${dslSource}\`, lineMap: ${lineMap} };`);
       output.push('');
     }
 
