@@ -1,46 +1,54 @@
 # Basic Typing
 
-## Insert single character 'a'
+## should insert single character
+### Insert single character 'a'
 PRESS a
 expect(fixture).toHaveLines('a');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 1 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-## Insert 'Hello'
+## should insert word 'Hello'
+### Insert 'Hello'
 TYPE "Hello"
 expect(fixture).toHaveLines('Hello');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Insert 'Hello World' with spaces
+## should insert phrase with spaces
+### Insert 'Hello World' with spaces
 TYPE "Hello World"
 expect(fixture).toHaveLines('Hello World');
 
-## Insert sentence 'The quick brown fox'
+## should insert sentence
+### Insert sentence 'The quick brown fox'
 TYPE "The quick brown fox"
 expect(fixture).toHaveLines('The quick brown fox');
 
 
 # Backspace
 
-## Delete single char from 'Hello' → 'Hell'
+## should delete single character
+### Delete single char from 'Hello' → 'Hell'
 TYPE "Hello"
 backspace
 expect(fixture).toHaveLines('Hell');
 
-## Delete 3 chars from 'Hello' → 'He'
+## should delete multiple characters
+### Delete 3 chars from 'Hello' → 'He'
 TYPE "Hello"
 backspace 3 times
 expect(fixture).toHaveLines('He');
 
-## Delete all chars from 'Hi' → ''
+## should delete all characters leaving empty line
+### Delete all chars from 'Hi' → ''
 TYPE "Hi"
 backspace 2 times
 expect(fixture).toHaveLines('');
 
-## Delete from middle: 'Hello' → 'Helo'
+## should delete from middle of text
+### Delete from middle: 'Hello' → 'Helo'
 TYPE "Hello"
 left 2 times
 backspace
@@ -49,7 +57,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 2 });
 expect(SecondEdge).toEqual({ row: 0, col: 2 });
 
-## Delete 2 chars from middle
+## should delete multiple characters from middle
+### Delete 2 chars from middle
 TYPE "Hello World"
 left 6 times
 backspace 2 times
@@ -58,7 +67,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 3 });
 expect(SecondEdge).toEqual({ row: 0, col: 3 });
 
-## Backspace beyond line start
+## should stop at line start when backspacing
+### Backspace beyond line start
 TYPE "Hi"
 backspace 5 times
 expect(fixture).toHaveLines('');
@@ -69,12 +79,14 @@ expect(SecondEdge).toEqual({ row: 0, col: 0 });
 
 # Enter Key
 
-## Create new line: 'Hello'[Enter] → 2 lines
+## should create new line
+### Create new line: 'Hello'[Enter] → 2 lines
 TYPE "Hello"
 enter
 expect(fixture).toHaveLines('Hello', '');
 
-## Create multiple lines: 'Line 1'[Enter]'Line 2'[Enter]'Line 3' → 3 lines
+## should create multiple lines
+### Create multiple lines: 'Line 1'[Enter]'Line 2'[Enter]'Line 3' → 3 lines
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -82,14 +94,16 @@ enter
 TYPE "Line 3"
 expect(fixture).toHaveLines('Line 1', 'Line 2', 'Line 3');
 
-## Split line: 'Hello'[ArrowLeft×2][Enter] → 'Hel' and 'lo'
+## should split line at cursor position
+### Split line: 'Hello'[ArrowLeft×2][Enter] → 'Hel' and 'lo'
 TYPE "Hello"
 left
 left
 enter
 expect(fixture).toHaveLines('Hel', 'lo');
 
-## Enter at end of file creates new line
+## should create new line at end of file
+### Enter at end of file creates new line
 TYPE "First line"
 enter
 TYPE "Second line"
@@ -99,7 +113,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 2, col: 0 });
 expect(SecondEdge).toEqual({ row: 2, col: 0 });
 
-## Create multiple empty lines from empty document
+## should create multiple empty lines
+### Create multiple empty lines from empty document
 enter 5 times
 expect(fixture).toHaveLines('', '', '', '', '', '');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
@@ -109,20 +124,23 @@ expect(SecondEdge).toEqual({ row: 5, col: 0 });
 
 # Complex Sequences
 
-## Type, delete, retype
+## should handle type, delete, retype sequence
+### Type, delete, retype
 TYPE "Hello"
 backspace 2 times
 TYPE "y there"
 expect(fixture).toHaveLines('Hely there');
 
-## Create/delete line breaks
+## should create and delete line breaks
+### Create/delete line breaks
 TYPE "Hello"
 enter
 TYPE "World"
 backspace 6 times
 expect(fixture).toHaveLines('Hello');
 
-## Multi-line editing
+## should support multi-line editing
+### Multi-line editing
 TYPE "First"
 enter
 TYPE "Second"
@@ -130,7 +148,8 @@ up
 TYPE " Line"
 expect(fixture).toHaveLines('First Line', 'Second');
 
-## Delete across boundaries
+## should delete across line boundaries
+### Delete across boundaries
 TYPE "Hello"
 enter
 TYPE "World"
@@ -141,7 +160,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Edit at end of middle line
+## should edit at end of middle line
+### Edit at end of middle line
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -151,7 +171,8 @@ up
 TYPE " edited"
 expect(fixture).toHaveLines('Line 1', 'Line 2 edited', 'Line 3');
 
-## Edit at middle of middle line
+## should edit at middle of middle line
+### Edit at middle of middle line
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -166,7 +187,8 @@ expect(fixture).toHaveLines('Line 1', 'LinXe 2', 'Line 3');
 
 # Selection
 
-## Select one character with Shift+ArrowRight
+## should select one character forward
+### Select one character with Shift+ArrowRight
 TYPE "Hello"
 left with meta
 right with shift
@@ -175,7 +197,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-## Select one character with Shift+ArrowLeft
+## should select one character backward
+### Select one character with Shift+ArrowLeft
 TYPE "Hello"
 left with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
@@ -183,7 +206,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 4 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Select multiple lines with Shift+ArrowDown
+## should select multiple lines downward
+### Select multiple lines with Shift+ArrowDown
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -195,7 +219,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 1, col: 0 });
 
-## Move cursor up without selection
+## should move cursor up without creating selection
+### Move cursor up without selection
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -205,7 +230,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 6 });
 expect(SecondEdge).toEqual({ row: 0, col: 6 });
 
-## Select upward with Shift+ArrowUp
+## should select upward with Shift+ArrowUp
+### Select upward with Shift+ArrowUp
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -215,7 +241,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 6 });
 expect(SecondEdge).toEqual({ row: 1, col: 6 });
 
-## Extend selection with multiple Shift+Arrow
+## should extend selection with multiple Shift+Arrow keys
+### Extend selection with multiple Shift+Arrow
 TYPE "Hello World"
 left with meta
 right 5 times with shift
@@ -224,7 +251,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Regression: Selection.ordered returns correct order for forward/backward selections
+## should return correct order for forward and backward selections
+### Regression: Selection.ordered returns correct order for forward/backward selections
 TYPE "Hello World"
 left with meta
 right 5 times with shift
@@ -242,7 +270,8 @@ expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
 # Cursor movement - varying line lengths
 
-## Long to short: cursor at end of short line
+## should clamp cursor to end of shorter line
+### Long to short: cursor at end of short line
 TYPE "Short"
 enter
 TYPE "Much longer line"
@@ -251,7 +280,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Should restore original column when moving back
+## should restore original column when moving back
+### Should restore original column when moving back
 TYPE "Short"
 enter
 TYPE "Much longer line"
@@ -264,7 +294,8 @@ down
 expect(firstEdge).toEqual({ row: 1, col: 16 });
 expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
-## Clamp to shorter line end
+## should clamp to shorter line end
+### Clamp to shorter line end
 TYPE "A"
 enter
 TYPE "Very long line here"
@@ -273,7 +304,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 1 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-## Multiple lines with varying lengths
+## should navigate multiple lines with varying lengths
+### Multiple lines with varying lengths
 TYPE "Line one"
 enter
 TYPE "Two"
@@ -285,7 +317,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 8 });
 expect(SecondEdge).toEqual({ row: 0, col: 8 });
 
-## Move from middle of long line to end of short line
+## should move from middle of long line to end of short line
+### Move from middle of long line to end of short line
 TYPE "Short"
 enter
 TYPE "This is a much longer line"
@@ -296,7 +329,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-## Navigate from medium line to short and long lines
+## should navigate from medium line to short and long lines
+### Navigate from medium line to short and long lines
 TYPE "Short"
 enter
 TYPE "Medium!!"
@@ -315,7 +349,8 @@ down
 expect(firstEdge).toEqual({ row: 2, col: 8 });
 expect(SecondEdge).toEqual({ row: 2, col: 8 });
 
-## Navigate from medium line to short and long lines (natural typing)
+## should navigate from medium line to short and long lines with natural typing
+### Navigate from medium line to short and long lines (natural typing)
 TYPE "Short"
 enter
 TYPE "Medium!!"
@@ -336,7 +371,8 @@ expect(SecondEdge).toEqual({ row: 2, col: 8 });
 
 # Meta+Arrow navigation
 
-## Meta+Right moves to end of line
+## should move to end of line with Meta+Right
+### Meta+Right moves to end of line
 TYPE "Hello World"
 left with meta
 let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
@@ -347,7 +383,8 @@ right with meta
 expect(firstEdge).toEqual({ row: 0, col: 11 });
 expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
-## Meta+Left from middle of line
+## should move to start of line with Meta+Left from middle
+### Meta+Left from middle of line
 TYPE "Hello World"
 left 3 times
 left with meta
@@ -355,7 +392,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 0 });
 
-## Meta+Right from middle of line
+## should move to end of line with Meta+Right from middle
+### Meta+Right from middle of line
 TYPE "Hello World"
 left 3 times
 right with meta
@@ -363,7 +401,8 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 11 });
 expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
-## Meta+Left/Right on second line
+## should use Meta+Left and Meta+Right on second line
+### Meta+Left/Right on second line
 TYPE "First line"
 enter
 TYPE "Second line here"
@@ -376,7 +415,8 @@ right with meta
 expect(firstEdge).toEqual({ row: 1, col: 16 });
 expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
-## Meta+Right after moving between lines
+## should use Meta+Right after moving between lines
+### Meta+Right after moving between lines
 TYPE "Short"
 enter
 TYPE "Much longer line"
@@ -389,7 +429,8 @@ expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
 # Shift+Meta+Arrow selection
 
-## Shift+Meta+Right selects to end of line
+## should select to end of line with Shift+Meta+Right
+### Shift+Meta+Right selects to end of line
 TYPE "Hello World"
 left with meta
 right with meta, shift
@@ -398,7 +439,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-## Shift+Meta+Left selects to start of line
+## should select to start of line with Shift+Meta+Left
+### Shift+Meta+Left selects to start of line
 TYPE "Hello World"
 left with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
@@ -406,7 +448,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-## Shift+Meta+Right from middle selects to end
+## should select from middle to end with Shift+Meta+Right
+### Shift+Meta+Right from middle selects to end
 TYPE "Hello World"
 left 3 times
 right with meta, shift
@@ -415,7 +458,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 8 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-## Shift+Meta+Left from middle selects to start
+## should select from middle to start with Shift+Meta+Left
+### Shift+Meta+Left from middle selects to start
 TYPE "Hello World"
 left 3 times
 left with meta, shift
@@ -424,7 +468,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 8 });
 
-## Shift+Meta+Left on second line
+## should select to start of second line with Shift+Meta+Left
+### Shift+Meta+Left on second line
 TYPE "First line"
 enter
 TYPE "Second line here"
@@ -434,7 +479,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 1, col: 0 });
 expect(end).toEqual({ row: 1, col: 16 });
 
-## Extend selection to end with Shift+Meta+Right
+## should extend selection to end with Shift+Meta+Right
+### Extend selection to end with Shift+Meta+Right
 TYPE "Hello World Here"
 left with meta
 right 2 times with shift
@@ -447,7 +493,8 @@ expect(end).toEqual({ row: 0, col: 16 });
 
 # Multi-line selections
 
-## Select 3 rows: middle to middle
+## should select 3 rows from middle to middle
+### Select 3 rows: middle to middle
 TYPE "First line here"
 enter
 TYPE "Second line here"
@@ -464,7 +511,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 2, col: 6 });
 
-## Select 3 rows: beginning to end
+## should select 3 rows from beginning to end
+### Select 3 rows: beginning to end
 TYPE "First line here"
 enter
 TYPE "Second line here"
@@ -479,7 +527,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 2, col: 15 });
 
-## Select 3 rows: end of line to middle
+## should select 3 rows from end of line to middle
+### Select 3 rows: end of line to middle
 TYPE "First"
 enter
 TYPE "Second line here"
@@ -493,7 +542,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 5 });
 expect(end).toEqual({ row: 2, col: 5 });
 
-## Select 3 rows: middle to beginning
+## should select 3 rows from middle to beginning
+### Select 3 rows: middle to beginning
 TYPE "First line here"
 enter
 TYPE "Second line here"
@@ -509,7 +559,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 2, col: 0 });
 
-## Select from last character and extend down
+## should select from last character and extend down
+### Select from last character and extend down
 TYPE "First"
 enter
 TYPE "Second"
@@ -524,7 +575,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 4 });
 expect(end).toEqual({ row: 2, col: 0 });
 
-## Select down 4 rows from beginning
+## should select down 4 rows from beginning
+### Select down 4 rows from beginning
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -544,7 +596,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 4, col: 0 });
 
-## Select right 3 columns
+## should select right 3 columns
+### Select right 3 columns
 TYPE "Hello World"
 enter
 TYPE "Second line"
@@ -556,7 +609,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 3 });
 
-## Select down 4 rows then right 3 columns
+## should select down 4 rows then right 3 columns
+### Select down 4 rows then right 3 columns
 TYPE "Line 1"
 enter
 TYPE "Line 2"
@@ -575,7 +629,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 4, col: 3 });
 
-## Select from middle down 4 rows then right 3 columns
+## should select from middle down 4 rows then right 3 columns
+### Select from middle down 4 rows then right 3 columns
 TYPE "Line 1 text"
 enter
 TYPE "Line 2 text"
@@ -598,7 +653,8 @@ expect(end).toEqual({ row: 4, col: 8 });
 
 # Deleting selections
 
-## Delete 'Hello ' from 'Hello World'
+## should delete partial text from line
+### Delete 'Hello ' from 'Hello World'
 TYPE "Hello World"
 left with meta
 right 5 times with shift
@@ -609,7 +665,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-## Delete entire line
+## should delete entire line
+### Delete entire line
 TYPE "Delete me"
 left with meta, shift
 backspace
@@ -619,7 +676,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-## Delete two full lines plus first character
+## should delete two full lines plus first character
+### Delete two full lines plus first character
 TYPE "First line"
 enter
 TYPE "Second line"
@@ -635,7 +693,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-## Delete partial multi-line selection
+## should delete partial multi-line selection
+### Delete partial multi-line selection
 TYPE "First line here"
 enter
 TYPE "Second line here"
@@ -652,7 +711,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
-## Delete from middle to end across lines
+## should delete from middle to end across lines
+### Delete from middle to end across lines
 TYPE "First line"
 enter
 TYPE "Second line"
@@ -668,7 +728,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
-## Delete backward selection
+## should delete backward selection
+### Delete backward selection
 TYPE "Hello World"
 left 5 times with shift
 backspace
@@ -681,7 +742,8 @@ expect(end).toEqual({ row: 0, col: 6 });
 
 # Replacing selections
 
-## Replace 'Hello ' with 'X'
+## should replace partial text with single character
+### Replace 'Hello ' with 'X'
 TYPE "Hello World"
 left with meta
 right 5 times with shift
@@ -692,7 +754,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 1 });
 expect(end).toEqual({ row: 0, col: 1 });
 
-## Replace 'Hello ' with 'Goodbye'
+## should replace partial text with word
+### Replace 'Hello ' with 'Goodbye'
 TYPE "Hello World"
 left with meta
 right 5 times with shift
@@ -703,7 +766,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 7 });
 expect(end).toEqual({ row: 0, col: 7 });
 
-## Replace entire line
+## should replace entire line
+### Replace entire line
 TYPE "Old text"
 left with meta
 right with meta, shift
@@ -714,7 +778,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 3 });
 expect(end).toEqual({ row: 0, col: 3 });
 
-## Replace multi-line selection with 'X'
+## should replace multi-line selection with single character
+### Replace multi-line selection with 'X'
 TYPE "First line"
 enter
 TYPE "Second line"
@@ -730,7 +795,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 1 });
 expect(end).toEqual({ row: 0, col: 1 });
 
-## Replace partial multi-line with text
+## should replace partial multi-line with text
+### Replace partial multi-line with text
 TYPE "First line"
 enter
 TYPE "Second line"
@@ -747,7 +813,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 14 });
 expect(end).toEqual({ row: 0, col: 14 });
 
-## Replace backward selection
+## should replace backward selection
+### Replace backward selection
 TYPE "Hello World"
 left 5 times with shift
 TYPE "Everyone"
@@ -757,7 +824,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 14 });
 expect(end).toEqual({ row: 0, col: 14 });
 
-## Replace 'World' with space
+## should replace selection with space
+### Replace 'World' with space
 TYPE "HelloWorld"
 left with meta
 right 5 times
@@ -772,18 +840,21 @@ expect(end).toEqual({ row: 0, col: 6 });
 
 # Regression: Selection.ordered and isForwardSelection
 
-## isForwardSelection true when tail < head
+## should return true for isForwardSelection when tail is before head
+### isForwardSelection true when tail < head
 TYPE "Hello"
 left with meta
 right 3 times with shift
 expect(fixture.wb.Selection.isForwardSelection).toBe(true);
 
-## isForwardSelection false when head < tail
+## should return false for isForwardSelection when head is before tail
+### isForwardSelection false when head < tail
 TYPE "Hello"
 left 3 times with shift
 expect(fixture.wb.Selection.isForwardSelection).toBe(false);
 
-## Uses head.row when clamping column after moving head
+## should use head.row when clamping column after moving head
+### Uses head.row when clamping column after moving head
 TYPE "a"
 enter
 TYPE "bar"
@@ -793,7 +864,8 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({row: 0, col: 0});
 expect(end).toEqual({row: 1, col: 3});
 
-## Clamps using head.row when head moves to shorter line
+## should use head.row not tail.row when moving head down
+### Clamps using head.row when head moves to shorter line
 TYPE "Short"
 enter
 TYPE "A"

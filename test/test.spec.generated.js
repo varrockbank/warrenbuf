@@ -10,36 +10,36 @@ runner.describe('Basic Typing', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Insert single character 'a'', () => {
+  runner.it('should should insert single character', () => {
     fixture.press('a').once();
 expect(fixture).toHaveLines('a');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 1 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-  }, "Insert single character 'a'");
+  }, "should insert single character");
 
-  runner.it('should Insert 'Hello'', () => {
+  runner.it('should should insert word 'Hello'', () => {
     fixture.type('Hello');
 expect(fixture).toHaveLines('Hello');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Insert 'Hello'");
+  }, "should insert word 'Hello'");
 
-  runner.it('should Insert 'Hello World' with spaces', () => {
+  runner.it('should should insert phrase with spaces', () => {
     fixture.type('Hello World');
 expect(fixture).toHaveLines('Hello World');
 
-  }, "Insert 'Hello World' with spaces");
+  }, "should insert phrase with spaces");
 
-  runner.it('should Insert sentence 'The quick brown fox'', () => {
+  runner.it('should should insert sentence', () => {
     fixture.type('The quick brown fox');
 expect(fixture).toHaveLines('The quick brown fox');
 
 
-  }, "Insert sentence 'The quick brown fox'");
+  }, "should insert sentence");
 
 });
 
@@ -51,28 +51,28 @@ runner.describe('Backspace', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Delete single char from 'Hello' → 'Hell'', () => {
+  runner.it('should should delete single character', () => {
     fixture.type('Hello');
     fixture.press(Key.Backspace).once();
 expect(fixture).toHaveLines('Hell');
 
-  }, "Delete single char from 'Hello' → 'Hell'");
+  }, "should delete single character");
 
-  runner.it('should Delete 3 chars from 'Hello' → 'He'', () => {
+  runner.it('should should delete multiple characters', () => {
     fixture.type('Hello');
     fixture.press(Key.Backspace).times(3);
 expect(fixture).toHaveLines('He');
 
-  }, "Delete 3 chars from 'Hello' → 'He'");
+  }, "should delete multiple characters");
 
-  runner.it('should Delete all chars from 'Hi' → ''', () => {
+  runner.it('should should delete all characters leaving empty line', () => {
     fixture.type('Hi');
     fixture.press(Key.Backspace).times(2);
 expect(fixture).toHaveLines('');
 
-  }, "Delete all chars from 'Hi' → ''");
+  }, "should delete all characters leaving empty line");
 
-  runner.it('should Delete from middle: 'Hello' → 'Helo'', () => {
+  runner.it('should should delete from middle of text', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).times(2);
     fixture.press(Key.Backspace).once();
@@ -81,9 +81,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 2 });
 expect(SecondEdge).toEqual({ row: 0, col: 2 });
 
-  }, "Delete from middle: 'Hello' → 'Helo'");
+  }, "should delete from middle of text");
 
-  runner.it('should Delete 2 chars from middle', () => {
+  runner.it('should should delete multiple characters from middle', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).times(6);
     fixture.press(Key.Backspace).times(2);
@@ -92,9 +92,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 3 });
 expect(SecondEdge).toEqual({ row: 0, col: 3 });
 
-  }, "Delete 2 chars from middle");
+  }, "should delete multiple characters from middle");
 
-  runner.it('should Backspace beyond line start', () => {
+  runner.it('should should stop at line start when backspacing', () => {
     fixture.type('Hi');
     fixture.press(Key.Backspace).times(5);
 expect(fixture).toHaveLines('');
@@ -103,7 +103,7 @@ expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 0 });
 
 
-  }, "Backspace beyond line start");
+  }, "should stop at line start when backspacing");
 
 });
 
@@ -115,14 +115,14 @@ runner.describe('Enter Key', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Create new line: 'Hello'[Enter] → 2 lines', () => {
+  runner.it('should should create new line', () => {
     fixture.type('Hello');
     fixture.press(Key.Enter).once();
 expect(fixture).toHaveLines('Hello', '');
 
-  }, "Create new line: 'Hello'[Enter] → 2 lines");
+  }, "should create new line");
 
-  runner.it('should Create multiple lines: 'Line 1'[Enter]'Line 2'[Enter]'Line 3' → 3 lines', () => {
+  runner.it('should should create multiple lines', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -130,18 +130,18 @@ expect(fixture).toHaveLines('Hello', '');
     fixture.type('Line 3');
 expect(fixture).toHaveLines('Line 1', 'Line 2', 'Line 3');
 
-  }, "Create multiple lines: 'Line 1'[Enter]'Line 2'[Enter]'Line 3' → 3 lines");
+  }, "should create multiple lines");
 
-  runner.it('should Split line: 'Hello'[ArrowLeft×2][Enter] → 'Hel' and 'lo'', () => {
+  runner.it('should should split line at cursor position', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).once();
     fixture.press(Key.ArrowLeft).once();
     fixture.press(Key.Enter).once();
 expect(fixture).toHaveLines('Hel', 'lo');
 
-  }, "Split line: 'Hello'[ArrowLeft×2][Enter] → 'Hel' and 'lo'");
+  }, "should split line at cursor position");
 
-  runner.it('should Enter at end of file creates new line', () => {
+  runner.it('should should create new line at end of file', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -151,9 +151,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 2, col: 0 });
 expect(SecondEdge).toEqual({ row: 2, col: 0 });
 
-  }, "Enter at end of file creates new line");
+  }, "should create new line at end of file");
 
-  runner.it('should Create multiple empty lines from empty document', () => {
+  runner.it('should should create multiple empty lines', () => {
     fixture.press(Key.Enter).times(5);
 expect(fixture).toHaveLines('', '', '', '', '', '');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
@@ -161,7 +161,7 @@ expect(firstEdge).toEqual({ row: 5, col: 0 });
 expect(SecondEdge).toEqual({ row: 5, col: 0 });
 
 
-  }, "Create multiple empty lines from empty document");
+  }, "should create multiple empty lines");
 
 });
 
@@ -173,24 +173,24 @@ runner.describe('Complex Sequences', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Type, delete, retype', () => {
+  runner.it('should should handle type, delete, retype sequence', () => {
     fixture.type('Hello');
     fixture.press(Key.Backspace).times(2);
     fixture.type('y there');
 expect(fixture).toHaveLines('Hely there');
 
-  }, "Type, delete, retype");
+  }, "should handle type, delete, retype sequence");
 
-  runner.it('should Create/delete line breaks', () => {
+  runner.it('should should create and delete line breaks', () => {
     fixture.type('Hello');
     fixture.press(Key.Enter).once();
     fixture.type('World');
     fixture.press(Key.Backspace).times(6);
 expect(fixture).toHaveLines('Hello');
 
-  }, "Create/delete line breaks");
+  }, "should create and delete line breaks");
 
-  runner.it('should Multi-line editing', () => {
+  runner.it('should should support multi-line editing', () => {
     fixture.type('First');
     fixture.press(Key.Enter).once();
     fixture.type('Second');
@@ -198,9 +198,9 @@ expect(fixture).toHaveLines('Hello');
     fixture.type(' Line');
 expect(fixture).toHaveLines('First Line', 'Second');
 
-  }, "Multi-line editing");
+  }, "should support multi-line editing");
 
-  runner.it('should Delete across boundaries', () => {
+  runner.it('should should delete across line boundaries', () => {
     fixture.type('Hello');
     fixture.press(Key.Enter).once();
     fixture.type('World');
@@ -211,9 +211,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Delete across boundaries");
+  }, "should delete across line boundaries");
 
-  runner.it('should Edit at end of middle line', () => {
+  runner.it('should should edit at end of middle line', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -223,9 +223,9 @@ expect(SecondEdge).toEqual({ row: 0, col: 5 });
     fixture.type(' edited');
 expect(fixture).toHaveLines('Line 1', 'Line 2 edited', 'Line 3');
 
-  }, "Edit at end of middle line");
+  }, "should edit at end of middle line");
 
-  runner.it('should Edit at middle of middle line', () => {
+  runner.it('should should edit at middle of middle line', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -238,7 +238,7 @@ expect(fixture).toHaveLines('Line 1', 'Line 2 edited', 'Line 3');
 expect(fixture).toHaveLines('Line 1', 'LinXe 2', 'Line 3');
 
 
-  }, "Edit at middle of middle line");
+  }, "should edit at middle of middle line");
 
 });
 
@@ -250,7 +250,7 @@ runner.describe('Selection', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Select one character with Shift+ArrowRight', () => {
+  runner.it('should should select one character forward', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().once();
@@ -259,9 +259,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-  }, "Select one character with Shift+ArrowRight");
+  }, "should select one character forward");
 
-  runner.it('should Select one character with Shift+ArrowLeft', () => {
+  runner.it('should should select one character backward', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).withShiftKey().once();
 expect(fixture.wb.Selection.isSelection).toBe(true);
@@ -269,9 +269,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 4 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Select one character with Shift+ArrowLeft");
+  }, "should select one character backward");
 
-  runner.it('should Select multiple lines with Shift+ArrowDown', () => {
+  runner.it('should should select multiple lines downward', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -283,9 +283,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 1, col: 0 });
 
-  }, "Select multiple lines with Shift+ArrowDown");
+  }, "should select multiple lines downward");
 
-  runner.it('should Move cursor up without selection', () => {
+  runner.it('should should move cursor up without creating selection', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -295,9 +295,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 6 });
 expect(SecondEdge).toEqual({ row: 0, col: 6 });
 
-  }, "Move cursor up without selection");
+  }, "should move cursor up without creating selection");
 
-  runner.it('should Select upward with Shift+ArrowUp', () => {
+  runner.it('should should select upward with Shift+ArrowUp', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -307,9 +307,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 6 });
 expect(SecondEdge).toEqual({ row: 1, col: 6 });
 
-  }, "Select upward with Shift+ArrowUp");
+  }, "should select upward with Shift+ArrowUp");
 
-  runner.it('should Extend selection with multiple Shift+Arrow', () => {
+  runner.it('should should extend selection with multiple Shift+Arrow keys', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(5);
@@ -318,9 +318,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Extend selection with multiple Shift+Arrow");
+  }, "should extend selection with multiple Shift+Arrow keys");
 
-  runner.it('should Regression: Selection.ordered returns correct order for forward/backward selections', () => {
+  runner.it('should should return correct order for forward and backward selections', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(5);
@@ -336,7 +336,7 @@ expect(firstEdge).toEqual({ row: 0, col: 6 });
 expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
 
-  }, "Regression: Selection.ordered returns correct order for forward/backward selections");
+  }, "should return correct order for forward and backward selections");
 
 });
 
@@ -348,7 +348,7 @@ runner.describe('Cursor movement - varying line lengths', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Long to short: cursor at end of short line', () => {
+  runner.it('should should clamp cursor to end of shorter line', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('Much longer line');
@@ -357,9 +357,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Long to short: cursor at end of short line");
+  }, "should clamp cursor to end of shorter line");
 
-  runner.it('should Should restore original column when moving back', () => {
+  runner.it('should should restore original column when moving back', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('Much longer line');
@@ -372,9 +372,9 @@ expect(SecondEdge).toEqual({ row: 1, col: 16 });
 expect(firstEdge).toEqual({ row: 1, col: 16 });
 expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
-  }, "Should restore original column when moving back");
+  }, "should restore original column when moving back");
 
-  runner.it('should Clamp to shorter line end', () => {
+  runner.it('should should clamp to shorter line end', () => {
     fixture.type('A');
     fixture.press(Key.Enter).once();
     fixture.type('Very long line here');
@@ -383,9 +383,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 1 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
 
-  }, "Clamp to shorter line end");
+  }, "should clamp to shorter line end");
 
-  runner.it('should Multiple lines with varying lengths', () => {
+  runner.it('should should navigate multiple lines with varying lengths', () => {
     fixture.type('Line one');
     fixture.press(Key.Enter).once();
     fixture.type('Two');
@@ -397,9 +397,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 8 });
 expect(SecondEdge).toEqual({ row: 0, col: 8 });
 
-  }, "Multiple lines with varying lengths");
+  }, "should navigate multiple lines with varying lengths");
 
-  runner.it('should Move from middle of long line to end of short line', () => {
+  runner.it('should should move from middle of long line to end of short line', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('This is a much longer line');
@@ -410,9 +410,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
-  }, "Move from middle of long line to end of short line");
+  }, "should move from middle of long line to end of short line");
 
-  runner.it('should Navigate from medium line to short and long lines', () => {
+  runner.it('should should navigate from medium line to short and long lines', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('Medium!!');
@@ -431,9 +431,9 @@ expect(SecondEdge).toEqual({ row: 0, col: 5 });
 expect(firstEdge).toEqual({ row: 2, col: 8 });
 expect(SecondEdge).toEqual({ row: 2, col: 8 });
 
-  }, "Navigate from medium line to short and long lines");
+  }, "should navigate from medium line to short and long lines");
 
-  runner.it('should Navigate from medium line to short and long lines (natural typing)', () => {
+  runner.it('should should navigate from medium line to short and long lines with natural typing', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('Medium!!');
@@ -452,7 +452,7 @@ expect(firstEdge).toEqual({ row: 2, col: 8 });
 expect(SecondEdge).toEqual({ row: 2, col: 8 });
 
 
-  }, "Navigate from medium line to short and long lines (natural typing)");
+  }, "should navigate from medium line to short and long lines with natural typing");
 
 });
 
@@ -464,7 +464,7 @@ runner.describe('Meta+Arrow navigation', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Meta+Right moves to end of line', () => {
+  runner.it('should should move to end of line with Meta+Right', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
 let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
@@ -475,9 +475,9 @@ expect(SecondEdge).toEqual({ row: 0, col: 0 });
 expect(firstEdge).toEqual({ row: 0, col: 11 });
 expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
-  }, "Meta+Right moves to end of line");
+  }, "should move to end of line with Meta+Right");
 
-  runner.it('should Meta+Left from middle of line', () => {
+  runner.it('should should move to start of line with Meta+Left from middle', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).times(3);
     fixture.press(Key.ArrowLeft).withMetaKey().once();
@@ -485,9 +485,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 0 });
 expect(SecondEdge).toEqual({ row: 0, col: 0 });
 
-  }, "Meta+Left from middle of line");
+  }, "should move to start of line with Meta+Left from middle");
 
-  runner.it('should Meta+Right from middle of line', () => {
+  runner.it('should should move to end of line with Meta+Right from middle', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).times(3);
     fixture.press(Key.ArrowRight).withMetaKey().once();
@@ -495,9 +495,9 @@ const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 11 });
 expect(SecondEdge).toEqual({ row: 0, col: 11 });
 
-  }, "Meta+Right from middle of line");
+  }, "should move to end of line with Meta+Right from middle");
 
-  runner.it('should Meta+Left/Right on second line', () => {
+  runner.it('should should use Meta+Left and Meta+Right on second line', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -510,9 +510,9 @@ expect(SecondEdge).toEqual({ row: 1, col: 0 });
 expect(firstEdge).toEqual({ row: 1, col: 16 });
 expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
-  }, "Meta+Left/Right on second line");
+  }, "should use Meta+Left and Meta+Right on second line");
 
-  runner.it('should Meta+Right after moving between lines', () => {
+  runner.it('should should use Meta+Right after moving between lines', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('Much longer line');
@@ -523,7 +523,7 @@ expect(firstEdge).toEqual({ row: 0, col: 5 });
 expect(SecondEdge).toEqual({ row: 0, col: 5 });
 
 
-  }, "Meta+Right after moving between lines");
+  }, "should use Meta+Right after moving between lines");
 
 });
 
@@ -535,7 +535,7 @@ runner.describe('Shift+Meta+Arrow selection', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Shift+Meta+Right selects to end of line', () => {
+  runner.it('should should select to end of line with Shift+Meta+Right', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withMetaKey().withShiftKey().once();
@@ -544,9 +544,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-  }, "Shift+Meta+Right selects to end of line");
+  }, "should select to end of line with Shift+Meta+Right");
 
-  runner.it('should Shift+Meta+Left selects to start of line', () => {
+  runner.it('should should select to start of line with Shift+Meta+Left', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().withShiftKey().once();
 expect(fixture.wb.Selection.isSelection).toBe(true);
@@ -554,9 +554,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-  }, "Shift+Meta+Left selects to start of line");
+  }, "should select to start of line with Shift+Meta+Left");
 
-  runner.it('should Shift+Meta+Right from middle selects to end', () => {
+  runner.it('should should select from middle to end with Shift+Meta+Right', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).times(3);
     fixture.press(Key.ArrowRight).withMetaKey().withShiftKey().once();
@@ -565,9 +565,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 8 });
 expect(end).toEqual({ row: 0, col: 11 });
 
-  }, "Shift+Meta+Right from middle selects to end");
+  }, "should select from middle to end with Shift+Meta+Right");
 
-  runner.it('should Shift+Meta+Left from middle selects to start', () => {
+  runner.it('should should select from middle to start with Shift+Meta+Left', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).times(3);
     fixture.press(Key.ArrowLeft).withMetaKey().withShiftKey().once();
@@ -576,9 +576,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 8 });
 
-  }, "Shift+Meta+Left from middle selects to start");
+  }, "should select from middle to start with Shift+Meta+Left");
 
-  runner.it('should Shift+Meta+Left on second line', () => {
+  runner.it('should should select to start of second line with Shift+Meta+Left', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -588,9 +588,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 1, col: 0 });
 expect(end).toEqual({ row: 1, col: 16 });
 
-  }, "Shift+Meta+Left on second line");
+  }, "should select to start of second line with Shift+Meta+Left");
 
-  runner.it('should Extend selection to end with Shift+Meta+Right', () => {
+  runner.it('should should extend selection to end with Shift+Meta+Right', () => {
     fixture.type('Hello World Here');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(2);
@@ -601,7 +601,7 @@ expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 16 });
 
 
-  }, "Extend selection to end with Shift+Meta+Right");
+  }, "should extend selection to end with Shift+Meta+Right");
 
 });
 
@@ -613,7 +613,7 @@ runner.describe('Multi-line selections', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Select 3 rows: middle to middle', () => {
+  runner.it('should should select 3 rows from middle to middle', () => {
     fixture.type('First line here');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -630,9 +630,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 2, col: 6 });
 
-  }, "Select 3 rows: middle to middle");
+  }, "should select 3 rows from middle to middle");
 
-  runner.it('should Select 3 rows: beginning to end', () => {
+  runner.it('should should select 3 rows from beginning to end', () => {
     fixture.type('First line here');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -647,9 +647,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 2, col: 15 });
 
-  }, "Select 3 rows: beginning to end");
+  }, "should select 3 rows from beginning to end");
 
-  runner.it('should Select 3 rows: end of line to middle', () => {
+  runner.it('should should select 3 rows from end of line to middle', () => {
     fixture.type('First');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -663,9 +663,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 5 });
 expect(end).toEqual({ row: 2, col: 5 });
 
-  }, "Select 3 rows: end of line to middle");
+  }, "should select 3 rows from end of line to middle");
 
-  runner.it('should Select 3 rows: middle to beginning', () => {
+  runner.it('should should select 3 rows from middle to beginning', () => {
     fixture.type('First line here');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -681,9 +681,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 2, col: 0 });
 
-  }, "Select 3 rows: middle to beginning");
+  }, "should select 3 rows from middle to beginning");
 
-  runner.it('should Select from last character and extend down', () => {
+  runner.it('should should select from last character and extend down', () => {
     fixture.type('First');
     fixture.press(Key.Enter).once();
     fixture.type('Second');
@@ -698,9 +698,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 4 });
 expect(end).toEqual({ row: 2, col: 0 });
 
-  }, "Select from last character and extend down");
+  }, "should select from last character and extend down");
 
-  runner.it('should Select down 4 rows from beginning', () => {
+  runner.it('should should select down 4 rows from beginning', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -720,9 +720,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 4, col: 0 });
 
-  }, "Select down 4 rows from beginning");
+  }, "should select down 4 rows from beginning");
 
-  runner.it('should Select right 3 columns', () => {
+  runner.it('should should select right 3 columns', () => {
     fixture.type('Hello World');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -734,9 +734,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 3 });
 
-  }, "Select right 3 columns");
+  }, "should select right 3 columns");
 
-  runner.it('should Select down 4 rows then right 3 columns', () => {
+  runner.it('should should select down 4 rows then right 3 columns', () => {
     fixture.type('Line 1');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2');
@@ -755,9 +755,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 4, col: 3 });
 
-  }, "Select down 4 rows then right 3 columns");
+  }, "should select down 4 rows then right 3 columns");
 
-  runner.it('should Select from middle down 4 rows then right 3 columns', () => {
+  runner.it('should should select from middle down 4 rows then right 3 columns', () => {
     fixture.type('Line 1 text');
     fixture.press(Key.Enter).once();
     fixture.type('Line 2 text');
@@ -778,7 +778,7 @@ expect(start).toEqual({ row: 0, col: 5 });
 expect(end).toEqual({ row: 4, col: 8 });
 
 
-  }, "Select from middle down 4 rows then right 3 columns");
+  }, "should select from middle down 4 rows then right 3 columns");
 
 });
 
@@ -790,7 +790,7 @@ runner.describe('Deleting selections', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Delete 'Hello ' from 'Hello World'', () => {
+  runner.it('should should delete partial text from line', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(5);
@@ -801,9 +801,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-  }, "Delete 'Hello ' from 'Hello World'");
+  }, "should delete partial text from line");
 
-  runner.it('should Delete entire line', () => {
+  runner.it('should should delete entire line', () => {
     fixture.type('Delete me');
     fixture.press(Key.ArrowLeft).withMetaKey().withShiftKey().once();
     fixture.press(Key.Backspace).once();
@@ -813,9 +813,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-  }, "Delete entire line");
+  }, "should delete entire line");
 
-  runner.it('should Delete two full lines plus first character', () => {
+  runner.it('should should delete two full lines plus first character', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -831,9 +831,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({ row: 0, col: 0 });
 
-  }, "Delete two full lines plus first character");
+  }, "should delete two full lines plus first character");
 
-  runner.it('should Delete partial multi-line selection', () => {
+  runner.it('should should delete partial multi-line selection', () => {
     fixture.type('First line here');
     fixture.press(Key.Enter).once();
     fixture.type('Second line here');
@@ -850,9 +850,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
-  }, "Delete partial multi-line selection");
+  }, "should delete partial multi-line selection");
 
-  runner.it('should Delete from middle to end across lines', () => {
+  runner.it('should should delete from middle to end across lines', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -868,9 +868,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
-  }, "Delete from middle to end across lines");
+  }, "should delete from middle to end across lines");
 
-  runner.it('should Delete backward selection', () => {
+  runner.it('should should delete backward selection', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withShiftKey().times(5);
     fixture.press(Key.Backspace).once();
@@ -881,7 +881,7 @@ expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
 
-  }, "Delete backward selection");
+  }, "should delete backward selection");
 
 });
 
@@ -893,7 +893,7 @@ runner.describe('Replacing selections', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should Replace 'Hello ' with 'X'', () => {
+  runner.it('should should replace partial text with single character', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(5);
@@ -904,9 +904,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 1 });
 expect(end).toEqual({ row: 0, col: 1 });
 
-  }, "Replace 'Hello ' with 'X'");
+  }, "should replace partial text with single character");
 
-  runner.it('should Replace 'Hello ' with 'Goodbye'', () => {
+  runner.it('should should replace partial text with word', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(5);
@@ -917,9 +917,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 7 });
 expect(end).toEqual({ row: 0, col: 7 });
 
-  }, "Replace 'Hello ' with 'Goodbye'");
+  }, "should replace partial text with word");
 
-  runner.it('should Replace entire line', () => {
+  runner.it('should should replace entire line', () => {
     fixture.type('Old text');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withMetaKey().withShiftKey().once();
@@ -930,9 +930,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 3 });
 expect(end).toEqual({ row: 0, col: 3 });
 
-  }, "Replace entire line");
+  }, "should replace entire line");
 
-  runner.it('should Replace multi-line selection with 'X'', () => {
+  runner.it('should should replace multi-line selection with single character', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -948,9 +948,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 1 });
 expect(end).toEqual({ row: 0, col: 1 });
 
-  }, "Replace multi-line selection with 'X'");
+  }, "should replace multi-line selection with single character");
 
-  runner.it('should Replace partial multi-line with text', () => {
+  runner.it('should should replace partial multi-line with text', () => {
     fixture.type('First line');
     fixture.press(Key.Enter).once();
     fixture.type('Second line');
@@ -967,9 +967,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 14 });
 expect(end).toEqual({ row: 0, col: 14 });
 
-  }, "Replace partial multi-line with text");
+  }, "should replace partial multi-line with text");
 
-  runner.it('should Replace backward selection', () => {
+  runner.it('should should replace backward selection', () => {
     fixture.type('Hello World');
     fixture.press(Key.ArrowLeft).withShiftKey().times(5);
     fixture.type('Everyone');
@@ -979,9 +979,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 14 });
 expect(end).toEqual({ row: 0, col: 14 });
 
-  }, "Replace backward selection");
+  }, "should replace backward selection");
 
-  runner.it('should Replace 'World' with space', () => {
+  runner.it('should should replace selection with space', () => {
     fixture.type('HelloWorld');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).times(5);
@@ -994,7 +994,7 @@ expect(start).toEqual({ row: 0, col: 6 });
 expect(end).toEqual({ row: 0, col: 6 });
 
 
-  }, "Replace 'World' with space");
+  }, "should replace selection with space");
 
 });
 
@@ -1006,22 +1006,22 @@ runner.describe('Regression: Selection.ordered and isForwardSelection', () => {
     fixture = FixtureFactory.forTest();
   });
 
-  runner.it('should isForwardSelection true when tail < head', () => {
+  runner.it('should should return true for isForwardSelection when tail is before head', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).withMetaKey().once();
     fixture.press(Key.ArrowRight).withShiftKey().times(3);
 expect(fixture.wb.Selection.isForwardSelection).toBe(true);
 
-  }, "isForwardSelection true when tail < head");
+  }, "should return true for isForwardSelection when tail is before head");
 
-  runner.it('should isForwardSelection false when head < tail', () => {
+  runner.it('should should return false for isForwardSelection when head is before tail', () => {
     fixture.type('Hello');
     fixture.press(Key.ArrowLeft).withShiftKey().times(3);
 expect(fixture.wb.Selection.isForwardSelection).toBe(false);
 
-  }, "isForwardSelection false when head < tail");
+  }, "should return false for isForwardSelection when head is before tail");
 
-  runner.it('should Uses head.row when clamping column after moving head', () => {
+  runner.it('should should use head.row when clamping column after moving head', () => {
     fixture.type('a');
     fixture.press(Key.Enter).once();
     fixture.type('bar');
@@ -1031,9 +1031,9 @@ const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({row: 0, col: 0});
 expect(end).toEqual({row: 1, col: 3});
 
-  }, "Uses head.row when clamping column after moving head");
+  }, "should use head.row when clamping column after moving head");
 
-  runner.it('should Clamps using head.row when head moves to shorter line', () => {
+  runner.it('should should use head.row not tail.row when moving head down', () => {
     fixture.type('Short');
     fixture.press(Key.Enter).once();
     fixture.type('A');
@@ -1046,7 +1046,7 @@ expect(end).toEqual({row: 1, col: 3});
 const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({row: 2, col: 0});
-  }, "Clamps using head.row when head moves to shorter line");
+  }, "should use head.row not tail.row when moving head down");
 
 });
 
