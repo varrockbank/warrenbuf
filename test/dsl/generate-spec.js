@@ -15,6 +15,20 @@ class SpecGenerator {
   }
 
   /**
+   * Escape string for use in JavaScript string literals
+   * @param {string} str - String to escape
+   * @returns {string} Escaped string
+   */
+  escapeString(str) {
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
+  }
+
+  /**
    * Generate complete spec.js from DSL source
    * @param {string} dslSource - Complete DSL source
    * @returns {string} Complete JavaScript spec file
@@ -56,7 +70,7 @@ class SpecGenerator {
 
         currentSuite = trimmed.substring(2).trim();
         output.push(`// ${currentSuite}`);
-        output.push(`runner.describe('${currentSuite}', () => {`);
+        output.push(`runner.describe('${this.escapeString(currentSuite)}', () => {`);
         output.push('  let fixture;');
         output.push('');
         output.push('  runner.beforeEach(() => {');
@@ -68,14 +82,14 @@ class SpecGenerator {
       } else if (trimmed.startsWith('## ') && !trimmed.startsWith('### ')) {
         // Close previous test
         if (currentTest !== null) {
-          const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+          const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
           output.push(`  }${descParam});`);
           output.push('');
         }
 
         currentTest = trimmed.substring(3).trim();
         currentTestDescription = null;
-        output.push(`  runner.it('${currentTest}', () => {`);
+        output.push(`  runner.it('${this.escapeString(currentTest)}', () => {`);
 
       // Test description: ### Description
       } else if (trimmed.startsWith('### ')) {
@@ -110,7 +124,7 @@ class SpecGenerator {
 
     // Close last test
     if (currentTest !== null) {
-      const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+      const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
       output.push(`  }${descParam});`);
       output.push('');
     }
