@@ -73,6 +73,14 @@
             display: inline;
         }
 
+        .status-message.warning {
+            color: #daa520;
+        }
+
+        .warning-icon {
+            margin-right: 0.25rem;
+        }
+
         main {
             flex: 1;
             display: flex;
@@ -173,7 +181,7 @@
         <div class="pane">
             <div class="pane-header">
                 <span>Generated JavaScript</span>
-                <span id="status-stale" class="status-message">(source spec has changed, consider recompiling)</span>
+                <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
             </div>
             <div class="pane-content">
                 <div id="js-output"></div>
