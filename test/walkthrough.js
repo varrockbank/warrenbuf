@@ -59,7 +59,12 @@ class Walkthrough {
 
     // Display test code with inline step markers
     const codeView = document.getElementById('walkthrough-code-js');
-    const sourceLines = test.fnSource.split('\n');
+
+    // Extract just the function signature, omitting the body
+    const fullSource = test.fnSource;
+    const signatureMatch = fullSource.match(/^(\([^)]*\)\s*=>\s*)\{/);
+    const signature = signatureMatch ? signatureMatch[1] + '{ /* ... */ }' : '() => { /* ... */ }';
+    const sourceLines = [signature];
 
     // Map steps to source code lines by matching step descriptions
     const lineToStep = new Map();
@@ -188,7 +193,12 @@ class Walkthrough {
     if (!lineToStep) return;
 
     const codeView = document.getElementById('walkthrough-code-js');
-    const sourceLines = test.fnSource.split('\n');
+
+    // Extract just the function signature, omitting the body
+    const fullSource = test.fnSource;
+    const signatureMatch = fullSource.match(/^(\([^)]*\)\s*=>\s*)\{/);
+    const signature = signatureMatch ? signatureMatch[1] + '{ /* ... */ }' : '() => { /* ... */ }';
+    const sourceLines = [signature];
 
     // Determine which expects should be revealed based on current step
     const totalSteps = this.steps.length;
