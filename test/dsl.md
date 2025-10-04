@@ -26,7 +26,10 @@ Represents a single keypress.
 - `press 'a'` - single-quoted single character
 - `press Backspace` - key constant (unquoted)
 - `press Enter` - key constant (unquoted)
-- `press ArrowLeft` - key constant (unquoted)
+- `press ArrowLeft` or `press left` - arrow key (verbose or short form)
+- `press ArrowRight` or `press right` - arrow key (verbose or short form)
+- `press ArrowUp` or `press up` - arrow key (verbose or short form)
+- `press ArrowDown` or `press down` - arrow key (verbose or short form)
 
 #### Invalid:
 - ~~`press "a"`~~ - double quotes not allowed for keys
@@ -60,17 +63,17 @@ Order does not matter - quantification and modifiers can appear in any order.
 - `meta` - Meta/Command key modifier
 
 #### Examples:
-- `press ArrowRight with shift` - shift + arrow right, once
-- `press ArrowLeft with meta` - meta + arrow left, once
-- `press ArrowRight 5 times with shift` - shift + arrow right, five times
-- `press ArrowRight with shift 5 times` - shift + arrow right, five times (same as above)
+- `press right with shift` - shift + arrow right, once
+- `press left with meta` - meta + arrow left, once
+- `press right 5 times with shift` - shift + arrow right, five times
+- `press right with shift 5 times` - shift + arrow right, five times (same as above)
 - `press a with meta` - meta + 'a', once
-- `press ArrowRight with shift, meta` - shift + meta + arrow right
-- `press ArrowRight with meta, shift` - meta + shift + arrow right
+- `press right with shift, meta` - shift + meta + arrow right
+- `press right with meta, shift` - meta + shift + arrow right
 
 ---
 
-## Proposals
+## Proposals (Claude's)
 
 ### Proposal 1: Simple typing
 
@@ -160,4 +163,57 @@ type "First"
 press Enter
 type "Second"
 expect lines ["First", "Second"]
+```
+
+---
+
+## Proposals (User's)
+
+### v1.0.0 - Basic keypress
+
+**Syntax:** `press <key>`
+
+**Example:**
+```
+press a
+press Backspace
+press Enter
+```
+
+---
+
+### v1.1.0 - Quantification
+
+**Syntax:** `press <key> [N time(s)|once]`
+
+**Example:**
+```
+press Backspace 5 times
+press Enter once
+press a 3 times
+```
+
+---
+
+### v1.2.0 - Qualifications
+
+**Syntax:** `press <key> [quantification] [with <modifiers>]`
+
+**Example:**
+```
+press ArrowRight with shift
+press ArrowLeft 5 times with meta
+```
+
+---
+
+### v1.3.0 - Arrow shortcuts
+
+**Syntax:** Arrow keys support short forms: `left`, `right`, `up`, `down`
+
+**Example:**
+```
+press right with shift
+press left 5 times with meta
+press right 5 times with shift
 ```
