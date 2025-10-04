@@ -13,63 +13,183 @@
 
 ---
 
-## Syntax Rules
+## v3.0.0 - Toolchain definition
 
-### Single Keypress
+**Goal:** Define the concrete toolchain for processing DSL.
 
-**Base predicate:** `press <key>`
+### Toolchain Proposals
 
-Represents a single keypress.
+1. **Parser** - How to parse DSL → AST?
+2. **Transpiler** - DSL → JavaScript conversion?
+3. **Interpreter** - Direct execution?
+4. **Integration** - How it hooks into the test framework?
+5. **File format** - `.dsl` extension, where files live?
+6. **Build process** - When/how DSL is processed?
 
-#### Valid key formats:
-- `press a` - unquoted single character
-- `press 'a'` - single-quoted single character
-- `press Backspace` - key constant (unquoted)
-- `press Enter` - key constant (unquoted)
-- `press ArrowLeft` or `press left` - arrow key (verbose or short form)
-- `press ArrowRight` or `press right` - arrow key (verbose or short form)
-- `press ArrowUp` or `press up` - arrow key (verbose or short form)
-- `press ArrowDown` or `press down` - arrow key (verbose or short form)
+### User Decision
 
-#### Invalid:
-- ~~`press "a"`~~ - double quotes not allowed for keys
+**Approach: Transpilation**
 
-### Quantification
+The DSL will be transpiled to JavaScript, not interpreted directly.
 
-The number of times a key is pressed can be specified after the key.
+---
 
-**Pattern:** `press <key> [N time(s)|once]`
+## v2.2.0 - Disambiguate semicolon
 
-#### Examples:
-- `press a` - once (implicit)
-- `press a once` - once (explicit)
-- `press a 1 time` - once
-- `press a 3 times` - three times
-- `press Backspace 5 times` - five times
-- `press Enter 1 time` - once
+**Rule:** `PRESS ;` is ambiguous (conflicts with JavaScript line ending). Semicolon must be single-quoted: `PRESS ';'`
 
-If quantification is not specified, the key is pressed **once**.
+**Example:**
+```
+PRESS ';'
+PRESS ';' 3 times
+```
 
-### Qualifications
+---
 
-Modifiers can be applied to keypresses using `with` clause.
+## v2.1.0 - Empty lines allowed
 
-**Pattern:** `press <key> [quantification] [with <modifiers>]` or `press <key> [with <modifiers>] [quantification]`
+**Rule:** Empty lines are allowed between statements for readability.
 
-Order does not matter - quantification and modifiers can appear in any order.
+**Example:**
+```
+TYPE "Hello"
 
-#### Supported modifiers:
-- `shift` - Shift key modifier
-- `meta` - Meta/Command key modifier
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe("Hello");
 
-#### Examples:
-- `press right with shift` - shift + arrow right, once
-- `press left with meta` - meta + arrow left, once
-- `press right 5 times with shift` - shift + arrow right, five times
-- `press right with shift 5 times` - shift + arrow right, five times (same as above)
-- `press a with meta` - meta + 'a', once
-- `press right with shift, meta` - shift + meta + arrow right
-- `press right with meta, shift` - meta + shift + arrow right
+backspace 5 times
+
+expect(fixture.wb.Model.lines[0]).toBe("");
+```
+
+---
+
+## v2.0.0 - JavaScript interweaving
+
+**Major change:** DSL can be interwoven with JavaScript code.
+
+**Rule:** Any line ending with `;` is interpreted as JavaScript, not DSL.
+
+**Example:**
+```
+TYPE "Hello"
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe("Hello");
+backspace 5 times
+expect(fixture.wb.Model.lines[0]).toBe("");
+```
+
+This allows complex assertions and logic to coexist with natural language DSL commands.
+
+---
+
+## v1.6.0 - Normalized forms
+
+**Rules:**
+1. Special keys are lowercase (`backspace`, `enter`, `left`)
+2. Exclude `press` keyword for special keys only (keep `PRESS` for single characters)
+3. Use arrow shortcuts (`left`, `right`, `up`, `down`)
+4. Standard order: `<key> <quantification> <qualification>`
+5. Action keywords are capitalized (`PRESS`, `TYPE`)
+6. `TYPE` strings use double quotes; escape sequences follow JavaScript
+7. `PRESS` character omits single quotes around the character
+8. When both `meta` and `shift` are specified, `meta` always comes before `shift`
+
+**Example:**
+```
+PRESS a
+PRESS a 3 times
+TYPE "hello world"
+TYPE "hello\nworld"
+TYPE "say \"hello\""
+backspace
+backspace 5 times
+enter once
+left with meta
+right 5 times with shift
+right with meta, shift
+```
+
+---
+
+## v1.5.0 - Case insensitive special keys
+
+**Syntax:** Special keys (Backspace, Enter, ArrowLeft, Left, etc.) are case insensitive
+
+**Example:**
+```
+backspace
+BACKSPACE 5 times
+enter once
+LEFT with meta
+right 5 times with SHIFT
+```
+
+---
+
+## v1.4.0 - Omit "press" for special keys
+
+**Syntax:** The `press` keyword can be omitted for Backspace, Enter, and arrow keys
+
+**Example:**
+```
+Backspace
+Backspace 5 times
+Enter once
+left with meta
+right 5 times with shift
+```
+
+---
+
+## v1.3.0 - Arrow shortcuts
+
+**Syntax:** Arrow keys support short forms: `left`, `right`, `up`, `down`
+
+**Example:**
+```
+press right with shift
+press left 5 times with meta
+press right 5 times with shift
+```
+
+---
+
+## v1.2.0 - Qualifications
+
+**Syntax:** `press <key> [quantification] [with <modifiers>]`
+
+**Example:**
+```
+press ArrowRight with shift
+press ArrowLeft 5 times with meta
+```
+
+---
+
+## v1.1.0 - Quantification
+
+**Syntax:** `press <key> [N time(s)|once]`
+
+**Example:**
+```
+press Backspace 5 times
+press Enter once
+press a 3 times
+```
+
+---
+
+## v1.0.0 - Basic keypress
+
+**Syntax:** `press <key>`
+
+**Example:**
+```
+press a
+press Backspace
+press Enter
+```
 
 ---
 
@@ -167,182 +287,60 @@ expect lines ["First", "Second"]
 
 ---
 
-## Proposals (User's)
+## Syntax Rules (Reference)
 
-### v1.0.0 - Basic keypress
+### Single Keypress
 
-**Syntax:** `press <key>`
+**Base predicate:** `press <key>`
 
-**Example:**
-```
-press a
-press Backspace
-press Enter
-```
+Represents a single keypress.
 
----
+#### Valid key formats:
+- `press a` - unquoted single character
+- `press 'a'` - single-quoted single character
+- `press Backspace` - key constant (unquoted)
+- `press Enter` - key constant (unquoted)
+- `press ArrowLeft` or `press left` - arrow key (verbose or short form)
+- `press ArrowRight` or `press right` - arrow key (verbose or short form)
+- `press ArrowUp` or `press up` - arrow key (verbose or short form)
+- `press ArrowDown` or `press down` - arrow key (verbose or short form)
 
-### v1.1.0 - Quantification
+#### Invalid:
+- ~~`press "a"`~~ - double quotes not allowed for keys
 
-**Syntax:** `press <key> [N time(s)|once]`
+### Quantification
 
-**Example:**
-```
-press Backspace 5 times
-press Enter once
-press a 3 times
-```
+The number of times a key is pressed can be specified after the key.
 
----
+**Pattern:** `press <key> [N time(s)|once]`
 
-### v1.2.0 - Qualifications
+#### Examples:
+- `press a` - once (implicit)
+- `press a once` - once (explicit)
+- `press a 1 time` - once
+- `press a 3 times` - three times
+- `press Backspace 5 times` - five times
+- `press Enter 1 time` - once
 
-**Syntax:** `press <key> [quantification] [with <modifiers>]`
+If quantification is not specified, the key is pressed **once**.
 
-**Example:**
-```
-press ArrowRight with shift
-press ArrowLeft 5 times with meta
-```
+### Qualifications
 
----
+Modifiers can be applied to keypresses using `with` clause.
 
-### v1.3.0 - Arrow shortcuts
+**Pattern:** `press <key> [quantification] [with <modifiers>]` or `press <key> [with <modifiers>] [quantification]`
 
-**Syntax:** Arrow keys support short forms: `left`, `right`, `up`, `down`
+Order does not matter - quantification and modifiers can appear in any order.
 
-**Example:**
-```
-press right with shift
-press left 5 times with meta
-press right 5 times with shift
-```
+#### Supported modifiers:
+- `shift` - Shift key modifier
+- `meta` - Meta/Command key modifier
 
----
-
-### v1.4.0 - Omit "press" for special keys
-
-**Syntax:** The `press` keyword can be omitted for Backspace, Enter, and arrow keys
-
-**Example:**
-```
-Backspace
-Backspace 5 times
-Enter once
-left with meta
-right 5 times with shift
-```
-
----
-
-### v1.5.0 - Case insensitive special keys
-
-**Syntax:** Special keys (Backspace, Enter, ArrowLeft, Left, etc.) are case insensitive
-
-**Example:**
-```
-backspace
-BACKSPACE 5 times
-enter once
-LEFT with meta
-right 5 times with SHIFT
-```
-
----
-
-### v1.6.0 - Normalized forms
-
-**Rules:**
-1. Special keys are lowercase (`backspace`, `enter`, `left`)
-2. Exclude `press` keyword for special keys only (keep `PRESS` for single characters)
-3. Use arrow shortcuts (`left`, `right`, `up`, `down`)
-4. Standard order: `<key> <quantification> <qualification>`
-5. Action keywords are capitalized (`PRESS`, `TYPE`)
-6. `TYPE` strings use double quotes; escape sequences follow JavaScript
-7. `PRESS` character omits single quotes around the character
-8. When both `meta` and `shift` are specified, `meta` always comes before `shift`
-
-**Example:**
-```
-PRESS a
-PRESS a 3 times
-TYPE "hello world"
-TYPE "hello\nworld"
-TYPE "say \"hello\""
-backspace
-backspace 5 times
-enter once
-left with meta
-right 5 times with shift
-right with meta, shift
-```
-
----
-
-## v2.0.0 - JavaScript interweaving
-
-**Major change:** DSL can be interwoven with JavaScript code.
-
-**Rule:** Any line ending with `;` is interpreted as JavaScript, not DSL.
-
-**Example:**
-```
-TYPE "Hello"
-const text = fixture.wb.Model.lines[0];
-expect(text).toBe("Hello");
-backspace 5 times
-expect(fixture.wb.Model.lines[0]).toBe("");
-```
-
-This allows complex assertions and logic to coexist with natural language DSL commands.
-
----
-
-## v2.1.0 - Empty lines allowed
-
-**Rule:** Empty lines are allowed between statements for readability.
-
-**Example:**
-```
-TYPE "Hello"
-
-const text = fixture.wb.Model.lines[0];
-expect(text).toBe("Hello");
-
-backspace 5 times
-
-expect(fixture.wb.Model.lines[0]).toBe("");
-```
-
----
-
-## v2.2.0 - Disambiguate semicolon
-
-**Rule:** `PRESS ;` is ambiguous (conflicts with JavaScript line ending). Semicolon must be single-quoted: `PRESS ';'`
-
-**Example:**
-```
-PRESS ';'
-PRESS ';' 3 times
-```
-
----
-
-## v3.0.0 - Toolchain definition
-
-**Goal:** Define the concrete toolchain for processing DSL.
-
-### Toolchain Proposals
-
-1. **Parser** - How to parse DSL → AST?
-2. **Transpiler** - DSL → JavaScript conversion?
-3. **Interpreter** - Direct execution?
-4. **Integration** - How it hooks into the test framework?
-5. **File format** - `.dsl` extension, where files live?
-6. **Build process** - When/how DSL is processed?
-
-### User Decision
-
-**Approach: Transpilation**
-
-The DSL will be transpiled to JavaScript, not interpreted directly.
+#### Examples:
+- `press right with shift` - shift + arrow right, once
+- `press left with meta` - meta + arrow left, once
+- `press right 5 times with shift` - shift + arrow right, five times
+- `press right with shift 5 times` - shift + arrow right, five times (same as above)
+- `press a with meta` - meta + 'a', once
+- `press right with shift, meta` - shift + meta + arrow right
+- `press right with meta, shift` - meta + shift + arrow right
