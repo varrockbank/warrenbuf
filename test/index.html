@@ -788,6 +788,9 @@
                 const content = await response.text();
                 textarea.value = content;
                 transpileDSL();
+
+                // Run tests after loading and transpiling
+                await runAllTests();
             } catch (error) {
                 textarea.value = `Error loading DSL file: ${error.message}`;
                 console.error('Error loading DSL:', error);
