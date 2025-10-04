@@ -133,6 +133,88 @@ TYPE "World"`,
         expected: `fixture.type('Hello');
 fixture.press(Key.Enter).once();
 fixture.type('World');`
+      },
+      {
+        name: 'JavaScript interweaving: DSL with expect',
+        input: `TYPE "Hello"
+expect(fixture).toHaveLines('Hello');`,
+        expected: `fixture.type('Hello');
+expect(fixture).toHaveLines('Hello');`
+      },
+      {
+        name: 'JavaScript interweaving: variable declaration',
+        input: `TYPE "Test"
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe('Test');`,
+        expected: `fixture.type('Test');
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe('Test');`
+      },
+      {
+        name: 'JavaScript interweaving: selection check',
+        input: `TYPE "Hello"
+left 3 times with shift
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 2 });
+expect(end).toEqual({ row: 0, col: 5 });`,
+        expected: `fixture.type('Hello');
+fixture.press(Key.ArrowLeft).withShiftKey().times(3);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 2 });
+expect(end).toEqual({ row: 0, col: 5 });`
+      },
+      {
+        name: 'JavaScript interweaving: with empty lines',
+        input: `TYPE "Hello"
+
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe('Hello');
+
+backspace 5 times
+
+expect(fixture).toHaveLines('');`,
+        expected: `fixture.type('Hello');
+
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe('Hello');
+
+fixture.press(Key.Backspace).times(5);
+
+expect(fixture).toHaveLines('');`
+      },
+      {
+        name: 'JavaScript interweaving: multi-line editing with checks',
+        input: `TYPE "First"
+enter
+TYPE "Second"
+expect(fixture).toHaveLines('First', 'Second');
+up
+TYPE " Line"
+expect(fixture).toHaveLines('First Line', 'Second');`,
+        expected: `fixture.type('First');
+fixture.press(Key.Enter).once();
+fixture.type('Second');
+expect(fixture).toHaveLines('First', 'Second');
+fixture.press(Key.ArrowUp).once();
+fixture.type(' Line');
+expect(fixture).toHaveLines('First Line', 'Second');`
+      },
+      {
+        name: 'JavaScript interweaving: complex selection scenario',
+        input: `TYPE "Hello World"
+left with meta
+right 5 times with shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+TYPE "X"
+expect(fixture.wb.Selection.isSelection).toBe(false);
+expect(fixture).toHaveLines('XWorld');`,
+        expected: `fixture.type('Hello World');
+fixture.press(Key.ArrowLeft).withMetaKey().once();
+fixture.press(Key.ArrowRight).withShiftKey().times(5);
+expect(fixture.wb.Selection.isSelection).toBe(true);
+fixture.type('X');
+expect(fixture.wb.Selection.isSelection).toBe(false);
+expect(fixture).toHaveLines('XWorld');`
       }
     ];
 
