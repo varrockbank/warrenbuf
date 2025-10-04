@@ -4,6 +4,7 @@
  * Handles:
  * - Suite structure (# headers)
  * - Test structure (## headers)
+ * - Test descriptions (### headers)
  * - Test framework boilerplate
  * - Delegates line-by-line DSL conversion to DSLTranspiler
  */
@@ -30,6 +31,7 @@ class SpecGenerator {
 
     let currentSuite = null;
     let currentTest = null;
+    let currentTestDescription = null;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -39,9 +41,11 @@ class SpecGenerator {
       if (trimmed.startsWith('# ') && !trimmed.startsWith('## ')) {
         // Close previous test
         if (currentTest !== null) {
-          output.push(`  }, "${currentTest}");`);
+          const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+          output.push(`  }${descParam});`);
           output.push('');
           currentTest = null;
+          currentTestDescription = null;
         }
 
         // Close previous suite
@@ -61,15 +65,21 @@ class SpecGenerator {
         output.push('');
 
       // Test header: ## Test Name
-      } else if (trimmed.startsWith('## ')) {
+      } else if (trimmed.startsWith('## ') && !trimmed.startsWith('### ')) {
         // Close previous test
         if (currentTest !== null) {
-          output.push(`  }, "${currentTest}");`);
+          const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+          output.push(`  }${descParam});`);
           output.push('');
         }
 
         currentTest = trimmed.substring(3).trim();
-        output.push(`  runner.it('should ${currentTest}', () => {`);
+        currentTestDescription = null;
+        output.push(`  runner.it('${currentTest}', () => {`);
+
+      // Test description: ### Description
+      } else if (trimmed.startsWith('### ')) {
+        currentTestDescription = trimmed.substring(4).trim();
 
       // Test body content
       } else if (currentTest !== null) {
@@ -100,7 +110,8 @@ class SpecGenerator {
 
     // Close last test
     if (currentTest !== null) {
-      output.push(`  }, "${currentTest}");`);
+      const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+      output.push(`  }${descParam});`);
       output.push('');
     }
 
