@@ -105,27 +105,38 @@ class DSLTranspiler {
    * Example: PRESS a → fixture.press('a').once();
    * Example: PRESS " " → fixture.press(' ').once();
    * Example: PRESS ';' → fixture.press(';').once();
+   * Example: PRESS ';' 3 times → fixture.press(';').times(3);
    */
   transpilePRESS(cmd) {
-    // Match: PRESS 'char' or PRESS "char" or PRESS char
-    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'/);
-    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"/);
-    const matchUnquoted = cmd.match(/^PRESS\s+(.)/);
+    // Match: PRESS 'char' [quantification] or PRESS "char" [quantification] or PRESS char [quantification]
+    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'(?:\s+(\d+)\s+times?|\s+once)?$/);
+    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"(?:\s+(\d+)\s+times?|\s+once)?$/);
+    const matchUnquoted = cmd.match(/^PRESS\s+(.)(?:\s+(\d+)\s+times?|\s+once)?$/);
 
     let char;
+    let quantification;
     if (matchSingleQuoted) {
       char = matchSingleQuoted[1];
+      quantification = matchSingleQuoted[2];
     } else if (matchDoubleQuoted) {
       char = matchDoubleQuoted[1];
+      quantification = matchDoubleQuoted[2];
     } else if (matchUnquoted) {
       char = matchUnquoted[1];
+      quantification = matchUnquoted[2];
     } else {
       throw new Error(`Invalid PRESS command: ${cmd}`);
     }
 
     // Escape single quotes for JavaScript output
     const escaped = char.replace(/'/g, "\\'");
-    return `fixture.press('${escaped}').once();`;
+
+    // Add quantification
+    if (quantification) {
+      return `fixture.press('${escaped}').times(${quantification});`;
+    } else {
+      return `fixture.press('${escaped}').once();`;
+    }
   }
 
   /**

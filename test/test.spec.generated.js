@@ -1088,7 +1088,15 @@ expect(fixture).toHaveLines(';');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 1 });
 expect(SecondEdge).toEqual({ row: 0, col: 1 });
+
   }, "should handle pressing semicolon");
+
+  runner.it('should should handle pressing semicolon multiple times', () => {
+expect(fixture).toHaveLines(';;;');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 3 });
+expect(SecondEdge).toEqual({ row: 0, col: 3 });
+  }, "should handle pressing semicolon multiple times");
 
 });
 
