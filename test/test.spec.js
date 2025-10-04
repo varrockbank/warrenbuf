@@ -327,18 +327,14 @@ runner.describe('Cursor movement - varying line lengths', () => {
     fixture.type('Much longer line');
     // Assert cursor position after typing
     let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-    // expect(firstEdge).toEqual(null); // TEMPORARY: Intentionally failing to test walkthrough behavior
-    // expect(SecondEdge).toEqual({ row: 1, col: 16 });
-    expect(1).toEqual(null); // TEMPORARY: fail
-    expect(1).toBe(1); // TEMPORARY: succeed
+    expect(firstEdge).toEqual({ row: 1, col: 16 }); // One past last char
+    expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
     fixture.press(Key.ArrowUp).once();  // Move to "Short", col clamped to 5
     fixture.press(Key.ArrowDown).once(); // Move back to "Much longer line"
     [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-    // expect(firstEdge).toEqual({ row: 1, col: 16 }); // Should restore to col 16
-    // expect(SecondEdge).toEqual({ row: 1, col: 16 });
-    expect(1).toBe(3); // TEMPORARY: fail
-    expect(5).toBe(5); // TEMPORARY: succeed
+    expect(firstEdge).toEqual({ row: 1, col: 16 }); // Should restore to col 16
+    expect(SecondEdge).toEqual({ row: 1, col: 16 });
   }, "Should restore original column when moving back");
 
   runner.it('should clamp column to line end on shorter line', () => {
@@ -1085,4 +1081,28 @@ runner.describe('Regression: Selection.ordered and isForwardSelection', () => {
     expect(start).toEqual({ row: 0, col: 0 });
     expect(end).toEqual({row: 2, col: 0});
   }, "Clamps using head.row when head moves to shorter line");
+});
+
+// Walkthrough feature tests
+// These tests specifically validate the walkthrough UI with known pass/fail expects
+runner.describe('Walkthrough feature - regression tests', () => {
+  let fixture;
+
+  runner.beforeEach(() => {
+    fixture = new EditorFixture();
+  });
+
+  runner.it('should demonstrate interleaved success and failure expects', () => {
+    fixture.type('First line');
+    expect(1).toEqual(null); // Intentional fail for walkthrough demo
+
+    fixture.press(Key.Enter).once();
+    expect(1).toBe(1); // Intentional success for walkthrough demo
+
+    fixture.type('Second line');
+    expect(1).toBe(3); // Intentional fail for walkthrough demo
+
+    fixture.press(Key.ArrowLeft).withMetaKey().once();
+    expect(5).toBe(5); // Intentional success for walkthrough demo
+  }, "Interleaved success/fail expects for walkthrough testing");
 });
