@@ -148,6 +148,119 @@
     .shake {
       animation: shake 0.5s;
     }
+    .walkthrough-btn {
+      background: #9c640e;
+      color: white;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    .walkthrough-btn:hover {
+      background: #bb7711;
+    }
+    .walkthrough-panel {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0;
+      background: #1e1e1e;
+      border-top: 2px solid #4EC9B0;
+      z-index: 1000;
+      overflow: hidden;
+      transition: height 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .walkthrough-panel.active {
+      height: 70vh;
+    }
+    .walkthrough-header {
+      background: #2d2d30;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #3e3e3e;
+    }
+    .walkthrough-close {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .walkthrough-body {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    .walkthrough-left {
+      flex: 1;
+      background: #252526;
+      border-right: 1px solid #3e3e3e;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .walkthrough-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .code-view {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .code-view pre {
+      margin: 0;
+      color: #d4d4d4;
+    }
+    .step-controls-panel {
+      background: #2d2d30;
+      padding: 12px 16px;
+      border-top: 1px solid #3e3e3e;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .step-btn {
+      background: #0e639c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .step-btn:hover {
+      background: #1177bb;
+    }
+    .step-btn:disabled {
+      background: #555;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    .step-info {
+      flex: 1;
+      font-size: 13px;
+      color: #d4d4d4;
+    }
+    .editor-view {
+      flex: 1;
+      padding: 16px;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
@@ -173,6 +286,36 @@
   </div>
 
   <div id="test-results"></div>
+
+  <!-- Walkthrough panel -->
+  <div id="walkthrough-panel" class="walkthrough-panel">
+    <div class="walkthrough-header">
+      <div>
+        <strong id="walkthrough-test-name"></strong>
+        <span style="margin-left: 12px; opacity: 0.7; font-size: 12px;" id="walkthrough-test-desc"></span>
+      </div>
+      <button class="walkthrough-close" onclick="closeWalkthrough()">Close</button>
+    </div>
+    <div class="walkthrough-body">
+      <div class="walkthrough-left">
+        <div style="padding: 12px 16px; background: #2d2d30; border-bottom: 1px solid #3e3e3e;">
+          <strong>Test Code</strong>
+        </div>
+        <div class="code-view" id="walkthrough-code"></div>
+      </div>
+      <div class="walkthrough-right">
+        <div style="padding: 12px 16px; background: #2d2d30; border-bottom: 1px solid #3e3e3e;">
+          <strong>Editor</strong>
+        </div>
+        <div class="editor-view" id="walkthrough-editor"></div>
+        <div class="step-controls-panel">
+          <button class="step-btn" id="step-prev" onclick="stepPrev()">← Previous</button>
+          <div class="step-info" id="step-info">Step 0 / 0</div>
+          <button class="step-btn" id="step-next" onclick="stepNext()">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Hidden editor container for tests -->
   <div class="editor-container">
@@ -228,11 +371,15 @@
         const suiteBody = document.createElement('div');
         suiteBody.className = 'test-suite-body';
 
-        suite.results.forEach(test => {
+        suite.results.forEach((test, testIndex) => {
           const testDiv = document.createElement('div');
           testDiv.className = `test-case ${test.status}`;
 
           const icon = test.status === 'pass' ? '✓' : test.status === 'fail' ? '✗' : '○';
+          const walkthroughBtn = test.fixture && test.fixture.steps && test.fixture.steps.length > 0
+            ? `<button class="walkthrough-btn" onclick="openWalkthrough('${suite.name}', ${testIndex})">Walkthrough</button>`
+            : '';
+
           testDiv.innerHTML = `
             <span class="test-icon ${test.status}">${icon}</span>
             <div class="test-message">
@@ -240,6 +387,7 @@
               ${test.description ? `<div class="test-description">${test.description}</div>` : ''}
               ${test.error ? `<div class="test-error">${test.error.message}</div>` : ''}
             </div>
+            ${walkthroughBtn}
           `;
 
           suiteBody.appendChild(testDiv);
@@ -278,6 +426,122 @@
     }
 
     window.addEventListener('DOMContentLoaded', runAllTests);
+
+    // Walkthrough state
+    let currentWalkthrough = null;
+    let currentStep = 0;
+    let walkthroughEditor = null;
+
+    function openWalkthrough(suiteName, testIndex) {
+      const suite = runner.suites.find(s => s.name === suiteName);
+      if (!suite) return;
+
+      const test = suite.results[testIndex];
+      if (!test || !test.fixture || !test.fixture.steps) return;
+
+      currentWalkthrough = test;
+      currentStep = 0;
+
+      // Update panel header
+      document.getElementById('walkthrough-test-name').textContent = test.name;
+      document.getElementById('walkthrough-test-desc').textContent = test.description || '';
+
+      // Display test code
+      const codeView = document.getElementById('walkthrough-code');
+      codeView.innerHTML = `<pre>${escapeHtml(test.fnSource)}</pre>`;
+
+      // Create editor instance
+      const editorContainer = document.getElementById('walkthrough-editor');
+      editorContainer.innerHTML = `
+        <div class="wb no-select" style="width: 100%; height: 100%;">
+          <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+          <div style="display: flex">
+            <div class="wb-gutter"></div>
+            <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+          </div>
+          <div class="wb-status" style="display: flex; justify-content: space-between;">
+            <div class="wb-status-left" style="display: flex;">
+              <span class="wb-linecount"></span>
+            </div>
+            <div class="wb-status-right" style="display: flex;">
+              <span class="wb-coordinate"></span>
+              <span>|</span>
+              <span class="wb-indentation"></span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const editorNode = editorContainer.querySelector('.wb');
+      walkthroughEditor = new WarrenBuf(editorNode);
+
+      // Show panel
+      document.getElementById('walkthrough-panel').classList.add('active');
+
+      // Update step display
+      updateStepDisplay();
+    }
+
+    function closeWalkthrough() {
+      document.getElementById('walkthrough-panel').classList.remove('active');
+      currentWalkthrough = null;
+      currentStep = 0;
+      walkthroughEditor = null;
+    }
+
+    function stepNext() {
+      if (!currentWalkthrough || currentStep >= currentWalkthrough.fixture.steps.length) return;
+
+      const step = currentWalkthrough.fixture.steps[currentStep];
+      step.action();
+
+      currentStep++;
+      updateStepDisplay();
+    }
+
+    function stepPrev() {
+      if (!currentWalkthrough || currentStep <= 0) return;
+
+      // Reset editor and replay up to previous step
+      const editorContainer = document.getElementById('walkthrough-editor');
+      const editorNode = editorContainer.querySelector('.wb');
+      walkthroughEditor = new WarrenBuf(editorNode);
+
+      currentStep--;
+
+      // Replay all steps up to current
+      for (let i = 0; i < currentStep; i++) {
+        currentWalkthrough.fixture.steps[i].action();
+      }
+
+      updateStepDisplay();
+    }
+
+    function updateStepDisplay() {
+      if (!currentWalkthrough) return;
+
+      const totalSteps = currentWalkthrough.fixture.steps.length;
+      const stepInfo = document.getElementById('step-info');
+
+      if (currentStep === 0) {
+        stepInfo.textContent = `Ready to start (${totalSteps} steps)`;
+      } else if (currentStep < totalSteps) {
+        const step = currentWalkthrough.fixture.steps[currentStep - 1];
+        stepInfo.textContent = `Step ${currentStep}/${totalSteps}: ${step.description}`;
+      } else {
+        stepInfo.textContent = `Complete (${totalSteps}/${totalSteps})`;
+      }
+
+      // Update button states
+      document.getElementById('step-prev').disabled = currentStep === 0;
+      document.getElementById('step-next').disabled = currentStep >= totalSteps;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
   </script>
 </body>
 </html>

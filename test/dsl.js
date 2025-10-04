@@ -72,6 +72,14 @@ class EditorFixture {
 
     this.node = node;
     this.wb = new WarrenBuf(node);
+    this.steps = []; // Record all steps for walkthrough
+
+    // Store reference for test framework
+    window.currentTestFixture = this;
+  }
+
+  _recordStep(description, action) {
+    this.steps.push({ description, action });
   }
 
   /**
@@ -93,6 +101,7 @@ class EditorFixture {
     }
 
     const node = this.node;
+    const fixture = this;
     const builder = {
       _key: key,
       _modifiers: {},
@@ -108,11 +117,21 @@ class EditorFixture {
       },
 
       once() {
+        const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
+        const desc = modStr ? `press(${modStr}+${this._key})` : `press(${this._key})`;
+        fixture._recordStep(desc, () => dispatchKey(node, this._key, this._modifiers));
         dispatchKey(node, this._key, this._modifiers);
         return this;
       },
 
       times(count) {
+        const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
+        const desc = modStr ? `press(${modStr}+${this._key}).times(${count})` : `press(${this._key}).times(${count})`;
+        fixture._recordStep(desc, () => {
+          for (let i = 0; i < count; i++) {
+            dispatchKey(node, this._key, this._modifiers);
+          }
+        });
         for (let i = 0; i < count; i++) {
           dispatchKey(node, this._key, this._modifiers);
         }
@@ -132,6 +151,11 @@ class EditorFixture {
    *   editor.type('Hello World');
    */
   type(text) {
+    this._recordStep(`type('${text}')`, () => {
+      for (const char of text) {
+        dispatchKey(this.node, char);
+      }
+    });
     for (const char of text) {
       dispatchKey(this.node, char);
     }

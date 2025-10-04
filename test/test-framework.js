@@ -15,7 +15,13 @@ class TestRunner {
 
   it(name, fn, description = '') {
     if (!this.currentSuite) throw new Error('it() must be called inside describe()');
-    this.currentSuite.tests.push({ name, fn, description, status: 'pending' });
+    this.currentSuite.tests.push({
+      name,
+      fn,
+      fnSource: fn.toString(), // Save source code for walkthrough
+      description,
+      status: 'pending'
+    });
   }
 
   xit(name, fn, description = '') {
@@ -48,10 +54,14 @@ class TestRunner {
           await test.fn();
 
           test.status = 'pass';
+          // Capture fixture from global (set by EditorFixture constructor)
+          test.fixture = window.currentTestFixture;
           results.passed++;
         } catch (error) {
           test.status = 'fail';
           test.error = error;
+          // Capture fixture even on failure for debugging
+          test.fixture = window.currentTestFixture;
           results.failed++;
         }
 
