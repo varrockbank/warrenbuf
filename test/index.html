@@ -985,12 +985,18 @@
         // Global walkthrough instance
         const walkthrough = new Walkthrough();
 
-        // Close walkthrough with Escape key
+        // Walkthrough keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const walkthroughPanel = document.getElementById('walkthrough-panel');
-                if (walkthroughPanel && walkthroughPanel.classList.contains('active')) {
+            const walkthroughPanel = document.getElementById('walkthrough-panel');
+            if (walkthroughPanel && walkthroughPanel.classList.contains('active')) {
+                if (e.key === 'Escape') {
                     walkthrough.close();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    walkthrough.stepPrev();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    walkthrough.stepNext();
                 }
             }
         });
