@@ -58,7 +58,7 @@ class Walkthrough {
     document.getElementById('walkthrough-test-desc').textContent = test.description || '';
 
     // Display test code with inline step markers
-    const codeView = document.getElementById('walkthrough-code');
+    const codeView = document.getElementById('walkthrough-code-js');
     const sourceLines = test.fnSource.split('\n');
 
     // Map steps to source code lines by matching step descriptions
@@ -187,7 +187,7 @@ class Walkthrough {
     const { successLineIndices, failureLineIndices, lineToStep } = test.expectData || {};
     if (!lineToStep) return;
 
-    const codeView = document.getElementById('walkthrough-code');
+    const codeView = document.getElementById('walkthrough-code-js');
     const sourceLines = test.fnSource.split('\n');
 
     // Determine which expects should be revealed based on current step

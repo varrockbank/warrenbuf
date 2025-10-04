@@ -564,6 +564,25 @@
             padding: 16px;
             overflow: auto;
         }
+        .walkthrough-code-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: #858585;
+            font-family: inherit;
+            font-size: 0.85rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .walkthrough-code-tab:hover {
+            color: #cccccc;
+            background-color: #3e3e42;
+        }
+        .walkthrough-code-tab.active {
+            color: #ffffff;
+            border-bottom-color: #4EC9B0;
+        }
     </style>
 </head>
 <body>
@@ -654,10 +673,12 @@
         </div>
         <div class="walkthrough-body">
             <div class="walkthrough-left">
-                <div style="padding: 12px 16px; background: #2d2d30; border-bottom: 1px solid #3e3e3e;">
-                    <strong>Test Code</strong>
+                <div style="background: #2d2d30; border-bottom: 1px solid #3e3e3e; display: flex;">
+                    <button class="walkthrough-code-tab active" data-code-tab="js">JS</button>
+                    <button class="walkthrough-code-tab" data-code-tab="dsl">DSL</button>
                 </div>
-                <div class="code-view" id="walkthrough-code"></div>
+                <div class="code-view active" id="walkthrough-code-js"></div>
+                <div class="code-view" id="walkthrough-code-dsl" style="display: none;"></div>
             </div>
             <div class="walkthrough-right">
                 <div style="padding: 12px 16px; background: #2d2d30; border-bottom: 1px solid #3e3e3e;">
@@ -899,6 +920,30 @@
 
         // Global walkthrough instance
         const walkthrough = new Walkthrough();
+
+        // Walkthrough code tab switching
+        const walkthroughCodeTabs = document.querySelectorAll('.walkthrough-code-tab');
+        const walkthroughCodeJsView = document.getElementById('walkthrough-code-js');
+        const walkthroughCodeDslView = document.getElementById('walkthrough-code-dsl');
+
+        walkthroughCodeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-code-tab');
+
+                // Remove active class from all tabs
+                walkthroughCodeTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show/hide corresponding views
+                if (tabName === 'js') {
+                    walkthroughCodeJsView.style.display = 'block';
+                    walkthroughCodeDslView.style.display = 'none';
+                } else if (tabName === 'dsl') {
+                    walkthroughCodeJsView.style.display = 'none';
+                    walkthroughCodeDslView.style.display = 'block';
+                }
+            });
+        });
     </script>
 </body>
 </html>
