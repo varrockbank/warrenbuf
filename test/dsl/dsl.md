@@ -13,6 +13,25 @@
 
 ---
 
+## v3.1.0 - JavaScript inline comment limitation
+
+**Limitation:** JavaScript inline comments (`//`) after statements are not supported.
+
+**Rationale:** The DSL identifies JavaScript lines by checking if they end with `;`. Lines with inline comments end with comment text, not `;`, breaking this rule.
+
+**Workaround:** Use standalone comment lines. Lines where the trimmed content starts with `//` are classified as JavaScript and passed through directly (leading whitespace is permitted).
+
+**Example:**
+```
+// Standalone comments work
+  // Indented comments also work
+TYPE "Hello"
+const text = fixture.wb.Model.lines[0];  // This inline comment will NOT work
+expect(text).toBe("Hello");
+```
+
+---
+
 ## v3.0.0 - Toolchain definition
 
 **Goal:** Define the concrete toolchain for processing DSL.
