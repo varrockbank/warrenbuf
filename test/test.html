@@ -172,10 +172,6 @@
     .wb .wb-status span {
       padding-right: 4px;
     }
-    #walkthrough-editor .wb {
-      width: 100%;
-      height: 100%;
-    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
@@ -292,7 +288,7 @@
       font-size: 13px;
       color: #d4d4d4;
     }
-    .editor-view {
+    .editor-view-container {
       flex: 1;
       padding: 16px;
       overflow: auto;
@@ -343,7 +339,9 @@
         <div style="padding: 12px 16px; background: #2d2d30; border-bottom: 1px solid #3e3e3e;">
           <strong>Editor</strong>
         </div>
-        <div class="editor-view" id="walkthrough-editor"></div>
+        <div class="editor-view-container">
+          <div class="wb" id="walkthrough-editor"></div>
+        </div>
         <div class="step-controls-panel">
           <button class="step-btn" id="step-prev" onclick="stepPrev()">← Previous</button>
           <div class="step-info" id="step-info">Step 0 / 0</div>
@@ -487,28 +485,26 @@
       codeView.innerHTML = `<pre>${escapeHtml(test.fnSource)}</pre>`;
 
       // Create editor instance
-      const editorContainer = document.getElementById('walkthrough-editor');
-      editorContainer.innerHTML = `
-        <div class="wb no-select" style="width: 100%; height: 100%;">
-          <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-          <div style="display: flex">
-            <div class="wb-gutter"></div>
-            <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+      const editorNode = document.getElementById('walkthrough-editor');
+      editorNode.className = 'wb no-select';
+      editorNode.innerHTML = `
+        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+        <div style="display: flex">
+          <div class="wb-gutter"></div>
+          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+        </div>
+        <div class="wb-status" style="display: flex; justify-content: space-between;">
+          <div class="wb-status-left" style="display: flex;">
+            <span class="wb-linecount"></span>
           </div>
-          <div class="wb-status" style="display: flex; justify-content: space-between;">
-            <div class="wb-status-left" style="display: flex;">
-              <span class="wb-linecount"></span>
-            </div>
-            <div class="wb-status-right" style="display: flex;">
-              <span class="wb-coordinate"></span>
-              <span>|</span>
-              <span class="wb-indentation"></span>
-            </div>
+          <div class="wb-status-right" style="display: flex;">
+            <span class="wb-coordinate"></span>
+            <span>|</span>
+            <span class="wb-indentation"></span>
           </div>
         </div>
       `;
 
-      const editorNode = editorContainer.querySelector('.wb');
       walkthroughEditor = new EditorFixture(editorNode);
 
       // Copy steps from test fixture to walkthrough fixture
@@ -545,8 +541,26 @@
       if (!currentWalkthrough || currentStep <= 0) return;
 
       // Reset editor and replay up to previous step
-      const editorContainer = document.getElementById('walkthrough-editor');
-      const editorNode = editorContainer.querySelector('.wb');
+      const editorNode = document.getElementById('walkthrough-editor');
+      editorNode.className = 'wb no-select';
+      editorNode.innerHTML = `
+        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+        <div style="display: flex">
+          <div class="wb-gutter"></div>
+          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+        </div>
+        <div class="wb-status" style="display: flex; justify-content: space-between;">
+          <div class="wb-status-left" style="display: flex;">
+            <span class="wb-linecount"></span>
+          </div>
+          <div class="wb-status-right" style="display: flex;">
+            <span class="wb-coordinate"></span>
+            <span>|</span>
+            <span class="wb-indentation"></span>
+          </div>
+        </div>
+      `;
+
       walkthroughEditor = new EditorFixture(editorNode);
 
       // Copy steps from test fixture to walkthrough fixture

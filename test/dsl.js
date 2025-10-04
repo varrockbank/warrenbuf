@@ -80,7 +80,7 @@ class EditorFixture {
     }
 
     this.node = node;
-    this.wb = new WarrenBuf(node);
+    this.wb = new WarrenBuf(node, null, null, 10);
     this.steps = []; // Record all steps for walkthrough
 
     // Store reference for test framework (only for test runs, not walkthrough)
