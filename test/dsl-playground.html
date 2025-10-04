@@ -162,7 +162,7 @@
             <div class="pane-header">
                 <span>DSL Input</span>
                 <div>
-                    <span id="status-message" class="status-message">Generated JavaScript is up to date</span>
+                    <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
                     <button id="generate-btn">Generate</button>
                 </div>
             </div>
@@ -171,7 +171,10 @@
             </div>
         </div>
         <div class="pane">
-            <div class="pane-header">Generated JavaScript</div>
+            <div class="pane-header">
+                <span>Generated JavaScript</span>
+                <span id="status-stale" class="status-message">(source spec has changed, consider recompiling)</span>
+            </div>
             <div class="pane-content">
                 <div id="js-output"></div>
             </div>
@@ -186,7 +189,8 @@
         const textarea = document.getElementById('dsl-content');
         const outputDiv = document.getElementById('js-output');
         const generateBtn = document.getElementById('generate-btn');
-        const statusMessage = document.getElementById('status-message');
+        const statusUpToDate = document.getElementById('status-uptodate');
+        const statusStale = document.getElementById('status-stale');
 
         let lastGeneratedSource = '';
 
@@ -198,10 +202,12 @@
 
             if (isUpToDate) {
                 outputDiv.classList.remove('stale');
-                statusMessage.classList.add('visible');
+                statusUpToDate.classList.add('visible');
+                statusStale.classList.remove('visible');
             } else {
                 outputDiv.classList.add('stale');
-                statusMessage.classList.remove('visible');
+                statusUpToDate.classList.remove('visible');
+                statusStale.classList.add('visible');
             }
         }
 
