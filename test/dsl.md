@@ -13,6 +13,63 @@
 
 ---
 
+## Syntax Rules
+
+### Single Keypress
+
+**Base predicate:** `press <key>`
+
+Represents a single keypress.
+
+#### Valid key formats:
+- `press a` - unquoted single character
+- `press 'a'` - single-quoted single character
+- `press Backspace` - key constant (unquoted)
+- `press Enter` - key constant (unquoted)
+- `press ArrowLeft` - key constant (unquoted)
+
+#### Invalid:
+- ~~`press "a"`~~ - double quotes not allowed for keys
+
+### Quantification
+
+The number of times a key is pressed can be specified after the key.
+
+**Pattern:** `press <key> [N time(s)|once]`
+
+#### Examples:
+- `press a` - once (implicit)
+- `press a once` - once (explicit)
+- `press a 1 time` - once
+- `press a 3 times` - three times
+- `press Backspace 5 times` - five times
+- `press Enter 1 time` - once
+
+If quantification is not specified, the key is pressed **once**.
+
+### Qualifications
+
+Modifiers can be applied to keypresses using `with` clause.
+
+**Pattern:** `press <key> [quantification] [with <modifiers>]` or `press <key> [with <modifiers>] [quantification]`
+
+Order does not matter - quantification and modifiers can appear in any order.
+
+#### Supported modifiers:
+- `shift` - Shift key modifier
+- `meta` - Meta/Command key modifier
+
+#### Examples:
+- `press ArrowRight with shift` - shift + arrow right, once
+- `press ArrowLeft with meta` - meta + arrow left, once
+- `press ArrowRight 5 times with shift` - shift + arrow right, five times
+- `press ArrowRight with shift 5 times` - shift + arrow right, five times (same as above)
+- `press a with meta` - meta + 'a', once
+- `press ArrowRight with shift, meta` - shift + meta + arrow right
+- `press ArrowRight with meta, shift` - meta + shift + arrow right
+
+---
+
 ## Proposals
 
 ### Proposal 1: Simple typing
