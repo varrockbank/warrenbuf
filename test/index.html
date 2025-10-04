@@ -348,6 +348,7 @@
             align-items: center;
             gap: 8px;
             font-size: 13px;
+            margin-left: auto;
         }
         .summary-timing .icon {
             font-size: 16px;
@@ -702,7 +703,6 @@
                     <div class="summary-number" style="color: #757575" id="skipped-tests">0</div>
                     <div class="summary-label">Skipped</div>
                 </div>
-                <div class="summary-divider"></div>
                 <div id="test-timing" class="summary-timing"></div>
             </div>
             <div id="test-results"></div>
@@ -995,8 +995,8 @@
                 const timingDiv = document.getElementById('test-timing');
                 timingDiv.innerHTML = `
                     <span class="icon">⏱️</span>
-                    <span class="duration">${duration} ms</span>
-                    <span class="details">${startTime.toLocaleTimeString()} → ${endTime.toLocaleTimeString()}</span>
+                    <span class="duration">Runtime: ${duration} ms</span>
+                    <span class="details">(Started: ${startTime.toLocaleTimeString()} • Ended: ${endTime.toLocaleTimeString()})</span>
                 `;
 
                 // Trigger shake animation on timer
