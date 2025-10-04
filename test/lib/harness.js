@@ -76,9 +76,9 @@ function createEditorNode() {
  * @param {HTMLElement} node - Required DOM node to attach to
  */
 class EditorTestHarness {
-  constructor(node) {
+  constructor(node, size = 10) {
     this.node = node;
-    this.wb = new WarrenBuf(node, null, null, 10);
+    this.wb = new WarrenBuf(node, null, null, size);
     this.walkthrough = new Walkthrough();
 
     // Store reference for test framework
@@ -173,5 +173,5 @@ class EditorTestHarness {
 // EditorTestHarness factory
 const FixtureFactory = {
   forTest: () => new EditorTestHarness(createEditorNode()),
-  forWalkthrough: (node) => new EditorTestHarness(node)
+  forWalkthrough: (node) => new EditorTestHarness(node, 20)
 };
