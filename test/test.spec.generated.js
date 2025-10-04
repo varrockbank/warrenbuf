@@ -1046,7 +1046,26 @@ expect(end).toEqual({row: 1, col: 3});
 const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({row: 2, col: 0});
+
+
   }, "should use head.row not tail.row when moving head down");
+
+});
+
+// Walkthrough feature - regression tests
+runner.describe('Walkthrough feature - regression tests', () => {
+  let fixture;
+
+  runner.beforeEach(() => {
+    fixture = FixtureFactory.forTest();
+  });
+
+  runner.it('should should demonstrate interleaved success and failure expects', () => {
+    fixture.type('First line');
+    fixture.press(Key.Enter).once();
+    fixture.type('Second line');
+    fixture.press(Key.ArrowLeft).withMetaKey().once();
+  }, "should demonstrate interleaved success and failure expects");
 
 });
 

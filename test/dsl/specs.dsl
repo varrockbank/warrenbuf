@@ -878,3 +878,17 @@ down with shift
 const [start, end] = fixture.wb.Selection.ordered;
 expect(start).toEqual({ row: 0, col: 0 });
 expect(end).toEqual({row: 2, col: 0});
+
+
+# Walkthrough feature - regression tests
+
+## should demonstrate interleaved success and failure expects
+### Interleaved success/fail expects for walkthrough testing
+TYPE "First line"
+expect(1).toEqual(null); // Intentional fail for walkthrough demo
+enter
+expect(1).toBe(1); // Intentional success for walkthrough demo
+TYPE "Second line"
+expect(1).toBe(3); // Intentional fail for walkthrough demo
+left with meta
+expect(5).toBe(5); // Intentional success for walkthrough demo
