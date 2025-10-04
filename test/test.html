@@ -258,6 +258,37 @@
       margin: 0;
       color: #d4d4d4;
     }
+    .code-line {
+      padding: 2px 8px;
+      line-height: 1.6;
+    }
+    .code-line.step-line {
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      padding-left: 5px;
+    }
+    .code-line.step-line:hover {
+      background: #2d2d30;
+    }
+    .code-line.step-line.current {
+      background: #0e639c;
+      border-left-color: #4EC9B0;
+      color: white;
+      font-weight: bold;
+    }
+    .code-line.step-line.completed {
+      background: #1e3a1e;
+      border-left-color: #4CAF50;
+    }
+    .step-marker {
+      display: inline-block;
+      width: 25px;
+      text-align: right;
+      margin-right: 8px;
+      opacity: 0.7;
+      font-size: 11px;
+      color: #4EC9B0;
+    }
     .step-controls-panel {
       background: #2d2d30;
       padding: 12px 16px;
@@ -480,9 +511,37 @@
       document.getElementById('walkthrough-test-name').textContent = test.name;
       document.getElementById('walkthrough-test-desc').textContent = test.description || '';
 
-      // Display test code
+      // Display test code with inline step markers
       const codeView = document.getElementById('walkthrough-code');
-      codeView.innerHTML = `<pre>${escapeHtml(test.fnSource)}</pre>`;
+      const sourceLines = test.fnSource.split('\n');
+
+      // Map steps to source code lines by matching step descriptions
+      const lineToStep = new Map();
+      let stepIndex = 0;
+
+      sourceLines.forEach((line, lineIndex) => {
+        if (stepIndex < test.fixture.steps.length) {
+          const step = test.fixture.steps[stepIndex];
+          // Check if this line contains the step action (type, press, etc.)
+          if (line.includes('.type(') || line.includes('.press(')) {
+            lineToStep.set(lineIndex, stepIndex);
+            stepIndex++;
+          }
+        }
+      });
+
+      // Render source with step markers
+      const codeHtml = sourceLines.map((line, lineIndex) => {
+        const stepNum = lineToStep.get(lineIndex);
+        const isStepLine = stepNum !== undefined;
+        const classes = isStepLine ? 'code-line step-line' : 'code-line';
+        const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
+        const marker = isStepLine ? `<span class="step-marker">${stepNum + 1}</span>` : '';
+
+        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
+      }).join('');
+
+      codeView.innerHTML = codeHtml;
 
       // Create editor instance
       const editorNode = document.getElementById('walkthrough-editor');
@@ -597,6 +656,55 @@
       // Update button states
       document.getElementById('step-prev').disabled = currentStep === 0;
       document.getElementById('step-next').disabled = currentStep >= totalSteps;
+
+      // Update code line highlighting
+      const stepLines = document.querySelectorAll('.step-line');
+      stepLines.forEach((lineEl) => {
+        const stepNum = parseInt(lineEl.dataset.step);
+        lineEl.classList.remove('current', 'completed');
+        if (stepNum < currentStep - 1) {
+          lineEl.classList.add('completed');
+        } else if (stepNum === currentStep - 1) {
+          lineEl.classList.add('current');
+        }
+      });
+    }
+
+    function jumpToStep(targetStep) {
+      if (!currentWalkthrough) return;
+
+      // Reset editor and replay up to target step
+      const editorNode = document.getElementById('walkthrough-editor');
+      editorNode.className = 'wb no-select';
+      editorNode.innerHTML = `
+        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+        <div style="display: flex">
+          <div class="wb-gutter"></div>
+          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+        </div>
+        <div class="wb-status" style="display: flex; justify-content: space-between;">
+          <div class="wb-status-left" style="display: flex;">
+            <span class="wb-linecount"></span>
+          </div>
+          <div class="wb-status-right" style="display: flex;">
+            <span class="wb-coordinate"></span>
+            <span>|</span>
+            <span class="wb-indentation"></span>
+          </div>
+        </div>
+      `;
+
+      walkthroughEditor = new EditorFixture(editorNode);
+      walkthroughEditor.steps = currentWalkthrough.fixture.steps;
+      window.__walkthroughFixture = walkthroughEditor;
+
+      // Replay steps up to and including target
+      for (let i = 0; i <= targetStep; i++) {
+        walkthroughEditor.replayStep(i);
+      }
+
+      currentStep = targetStep + 1;
+      updateStepDisplay();
     }
 
     function escapeHtml(text) {
