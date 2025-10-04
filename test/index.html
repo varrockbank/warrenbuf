@@ -65,7 +65,15 @@
             color: #daa520;
         }
 
+        .status-message.success {
+            color: #4CAF50;
+        }
+
         .warning-icon {
+            margin-right: 0.25rem;
+        }
+
+        .success-icon {
             margin-right: 0.25rem;
         }
 
@@ -674,7 +682,7 @@
                 <div class="pane-header">
                     <span>DSL Input</span>
                     <div>
-                        <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
+                        <span id="status-uptodate" class="status-message success"><span class="success-icon">✓</span>Generated JavaScript is up to date</span>
                         <button id="generate-btn">Generate</button>
                     </div>
                 </div>
