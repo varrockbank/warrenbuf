@@ -245,42 +245,37 @@
     </header>
     <div class="tabs">
         <button class="tab" data-tab="tests">Tests</button>
-        <button class="tab active" data-tab="viewer">Viewer</button>
+        <button class="tab active" data-tab="source">Source</button>
     </div>
     <div id="tab-tests" class="tab-content">
         <main>
             <!-- Tests content will go here -->
         </main>
     </div>
-    <div id="tab-viewer" class="tab-content active">
-        <div class="subtabs">
-            <button class="subtab active" data-subtab="source">Source</button>
-        </div>
-        <div id="subtab-source" class="subtab-content active">
-            <main>
-                <div class="pane">
-                    <div class="pane-header">
-                        <span>DSL Input</span>
-                        <div>
-                            <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
-                            <button id="generate-btn">Generate</button>
-                        </div>
-                    </div>
-                    <div class="pane-content">
-                        <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
+    <div id="tab-source" class="tab-content active">
+        <main>
+            <div class="pane">
+                <div class="pane-header">
+                    <span>DSL Input</span>
+                    <div>
+                        <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
+                        <button id="generate-btn">Generate</button>
                     </div>
                 </div>
-                <div class="pane">
-                    <div class="pane-header">
-                        <span>Generated JavaScript</span>
-                        <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
-                    </div>
-                    <div class="pane-content">
-                        <div id="js-output"></div>
-                    </div>
+                <div class="pane-content">
+                    <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
                 </div>
-            </main>
-        </div>
+            </div>
+            <div class="pane">
+                <div class="pane-header">
+                    <span>Generated JavaScript</span>
+                    <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
+                </div>
+                <div class="pane-content">
+                    <div id="js-output"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="./dsl/transpiler.js"></script>
@@ -304,25 +299,7 @@
             });
         });
 
-        // Subtab switching
-        const subtabs = document.querySelectorAll('.subtab');
-        const subtabContents = document.querySelectorAll('.subtab-content');
-
-        subtabs.forEach(subtab => {
-            subtab.addEventListener('click', () => {
-                const subtabName = subtab.getAttribute('data-subtab');
-
-                // Remove active class from all subtabs and content
-                subtabs.forEach(st => st.classList.remove('active'));
-                subtabContents.forEach(content => content.classList.remove('active'));
-
-                // Add active class to clicked subtab and corresponding content
-                subtab.classList.add('active');
-                document.getElementById(`subtab-${subtabName}`).classList.add('active');
-            });
-        });
-
-        // Generator tab logic
+        // Source tab logic
         const transpiler = new DSLTranspiler();
         const generator = new SpecGenerator(transpiler);
         const textarea = document.getElementById('dsl-content');
