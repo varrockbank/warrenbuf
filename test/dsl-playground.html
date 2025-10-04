@@ -81,6 +81,45 @@
             margin-right: 0.25rem;
         }
 
+        .tabs {
+            background-color: #2d2d30;
+            display: flex;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: #858585;
+            font-family: inherit;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #cccccc;
+            background-color: #3e3e42;
+        }
+
+        .tab.active {
+            color: #ffffff;
+            border-bottom-color: #007acc;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
         main {
             flex: 1;
             display: flex;
@@ -165,33 +204,63 @@
     <header>
         <h1>DSL Playground - specs.dsl</h1>
     </header>
-    <main>
-        <div class="pane">
-            <div class="pane-header">
-                <span>DSL Input</span>
-                <div>
-                    <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
-                    <button id="generate-btn">Generate</button>
+    <div class="tabs">
+        <button class="tab active" data-tab="generator">Generator</button>
+        <button class="tab" data-tab="viewer">Viewer</button>
+    </div>
+    <div id="tab-generator" class="tab-content active">
+        <main>
+            <div class="pane">
+                <div class="pane-header">
+                    <span>DSL Input</span>
+                    <div>
+                        <span id="status-uptodate" class="status-message">Generated JavaScript is up to date</span>
+                        <button id="generate-btn">Generate</button>
+                    </div>
+                </div>
+                <div class="pane-content">
+                    <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
                 </div>
             </div>
-            <div class="pane-content">
-                <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
+            <div class="pane">
+                <div class="pane-header">
+                    <span>Generated JavaScript</span>
+                    <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
+                </div>
+                <div class="pane-content">
+                    <div id="js-output"></div>
+                </div>
             </div>
-        </div>
-        <div class="pane">
-            <div class="pane-header">
-                <span>Generated JavaScript</span>
-                <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
-            </div>
-            <div class="pane-content">
-                <div id="js-output"></div>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
+    <div id="tab-viewer" class="tab-content">
+        <main>
+            <!-- Viewer content will go here -->
+        </main>
+    </div>
 
     <script src="./dsl/transpiler.js"></script>
     <script src="./dsl/generate-spec.js"></script>
     <script>
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+
+                // Remove active class from all tabs and content
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+            });
+        });
+
+        // Generator tab logic
         const transpiler = new DSLTranspiler();
         const generator = new SpecGenerator(transpiler);
         const textarea = document.getElementById('dsl-content');
