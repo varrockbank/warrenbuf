@@ -621,35 +621,15 @@
       console.log('Success lines:', Array.from(successLineIndices));
       console.log('Failure lines:', Array.from(failureLineIndices));
 
-      // Render source with step markers and error highlighting
-      const codeHtml = sourceLines.map((line, lineIndex) => {
-        const stepNum = lineToStep.get(lineIndex);
-        const isStepLine = stepNum !== undefined;
-        const isFailureLine = failureLineIndices.has(lineIndex);
-        const isSuccessLine = successLineIndices.has(lineIndex);
+      // Store expect data for progressive revealing
+      currentWalkthrough.expectData = {
+        successLineIndices,
+        failureLineIndices,
+        lineToStep
+      };
 
-        let classes = 'code-line';
-        if (isFailureLine) classes += ' error-line';
-        if (isSuccessLine && !isFailureLine) classes += ' success-line';
-        if (isStepLine) classes += ' step-line';
-
-        const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
-
-        // Show markers
-        let marker = '';
-        if (isStepLine) {
-          marker += `<span class="step-marker">${stepNum + 1}</span>`;
-        }
-        if (isFailureLine) {
-          marker += `<span class="error-marker">✗</span>`;
-        } else if (isSuccessLine) {
-          marker += `<span class="success-marker">✓</span>`;
-        }
-
-        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
-      }).join('');
-
-      codeView.innerHTML = codeHtml;
+      // Render source with step markers (expects hidden initially)
+      renderWalkthroughCode();
 
       // Debug: log expect detection
       console.log('Test:', test.name, 'Status:', test.status);
@@ -711,6 +691,61 @@
       currentWalkthrough = null;
       currentStep = 0;
       walkthroughEditor = null;
+    }
+
+    function renderWalkthroughCode() {
+      if (!currentWalkthrough) return;
+
+      const test = currentWalkthrough;
+      const { successLineIndices, failureLineIndices, lineToStep } = test.expectData || {};
+      if (!lineToStep) return;
+
+      const codeView = document.getElementById('walkthrough-code');
+      const sourceLines = test.fnSource.split('\n');
+
+      // Determine which expects should be revealed based on current step
+      // An expect is revealed if it comes before or at the current step position
+      let maxRevealedLine = -1;
+      if (currentStep > 0) {
+        // Find the line number of the last executed step
+        for (const [lineIdx, stepNum] of lineToStep.entries()) {
+          if (stepNum < currentStep) {
+            maxRevealedLine = Math.max(maxRevealedLine, lineIdx);
+          }
+        }
+      }
+
+      const codeHtml = sourceLines.map((line, lineIndex) => {
+        const stepNum = lineToStep.get(lineIndex);
+        const isStepLine = stepNum !== undefined;
+        const isFailureLine = failureLineIndices?.has(lineIndex);
+        const isSuccessLine = successLineIndices?.has(lineIndex);
+
+        // Only show expect highlighting if we've passed this line in the walkthrough
+        const shouldRevealExpect = lineIndex <= maxRevealedLine;
+
+        let classes = 'code-line';
+        if (isFailureLine && shouldRevealExpect) classes += ' error-line';
+        if (isSuccessLine && !isFailureLine && shouldRevealExpect) classes += ' success-line';
+        if (isStepLine) classes += ' step-line';
+
+        const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
+
+        // Show markers
+        let marker = '';
+        if (isStepLine) {
+          marker += `<span class="step-marker">${stepNum + 1}</span>`;
+        }
+        if (isFailureLine && shouldRevealExpect) {
+          marker += `<span class="error-marker">✗</span>`;
+        } else if (isSuccessLine && shouldRevealExpect) {
+          marker += `<span class="success-marker">✓</span>`;
+        }
+
+        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
+      }).join('');
+
+      codeView.innerHTML = codeHtml;
     }
 
     function stepNext() {
@@ -784,7 +819,10 @@
       document.getElementById('step-prev').disabled = currentStep === 0;
       document.getElementById('step-next').disabled = currentStep >= totalSteps;
 
-      // Update code line highlighting
+      // Re-render code view to update expect highlighting based on current step
+      renderWalkthroughCode();
+
+      // Update code line highlighting for steps (current/completed states)
       const stepLines = document.querySelectorAll('.step-line');
       stepLines.forEach((lineEl) => {
         const stepNum = parseInt(lineEl.dataset.step);
