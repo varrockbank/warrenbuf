@@ -101,8 +101,8 @@ class SpecGenerator {
         if (trimmed === '') {
           output.push('');
         }
-        // JavaScript pass-through (ends with semicolon)
-        else if (trimmed.endsWith(';')) {
+        // JavaScript pass-through (contains semicolon)
+        else if (trimmed.includes(';')) {
           output.push(`    ${trimmed}`);
         }
         // DSL command - delegate to transpiler
