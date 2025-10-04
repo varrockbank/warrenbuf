@@ -379,7 +379,7 @@
         <strong id="walkthrough-test-name"></strong>
         <span style="margin-left: 12px; opacity: 0.7; font-size: 12px;" id="walkthrough-test-desc"></span>
       </div>
-      <button class="walkthrough-close" onclick="closeWalkthrough()">Close</button>
+      <button class="walkthrough-close" onclick="walkthrough.close()">Close</button>
     </div>
     <div class="walkthrough-body">
       <div class="walkthrough-left">
@@ -396,9 +396,9 @@
           <div class="wb" id="walkthrough-editor"></div>
         </div>
         <div class="step-controls-panel">
-          <button class="step-btn" id="step-prev" onclick="stepPrev()">← Previous</button>
+          <button class="step-btn" id="step-prev" onclick="walkthrough.stepPrev()">← Previous</button>
           <div class="step-info" id="step-info">Step 0 / 0</div>
-          <button class="step-btn" id="step-next" onclick="stepNext()">Next →</button>
+          <button class="step-btn" id="step-next" onclick="walkthrough.stepNext()">Next →</button>
         </div>
       </div>
     </div>
@@ -427,9 +427,14 @@
 
   <script src="../warrenbuf.js"></script>
   <script src="test-framework.js"></script>
+  <script src="walkthrough.js"></script>
   <script src="dsl.js"></script>
   <script src="expect.js"></script>
   <script src="test.spec.js"></script>
+  <script>
+    // Global walkthrough instance
+    const walkthrough = new Walkthrough();
+  </script>
   <script>
     // Render results
     function renderResults(results) {
@@ -463,8 +468,8 @@
           testDiv.className = `test-case ${test.status}`;
 
           const icon = test.status === 'pass' ? '✓' : test.status === 'fail' ? '✗' : '○';
-          const walkthroughBtn = test.fixture && test.fixture.steps && test.fixture.steps.length > 0
-            ? `<button class="walkthrough-btn" onclick="openWalkthrough('${suite.name}', ${testIndex})">Walkthrough</button>`
+          const walkthroughBtn = test.fixture && test.fixture.walkthrough && test.fixture.walkthrough.steps.length > 0
+            ? `<button class="walkthrough-btn" onclick="walkthrough.open('${suite.name}', ${testIndex})">Walkthrough</button>`
             : '';
 
           testDiv.innerHTML = `
@@ -513,348 +518,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', runAllTests);
-
-    // Walkthrough state
-    let currentWalkthrough = null;
-    let currentStep = 0;
-    let walkthroughEditor = null;
-
-    function openWalkthrough(suiteName, testIndex) {
-      const suite = runner.suites.find(s => s.name === suiteName);
-      if (!suite) return;
-
-      const test = suite.results[testIndex];
-      if (!test || !test.fixture || !test.fixture.steps) return;
-
-      currentWalkthrough = test;
-      currentStep = 0;
-
-      // Update panel header
-      document.getElementById('walkthrough-test-name').textContent = test.name;
-      document.getElementById('walkthrough-test-desc').textContent = test.description || '';
-
-      // Display test code with inline step markers
-      const codeView = document.getElementById('walkthrough-code');
-      const sourceLines = test.fnSource.split('\n');
-
-      // Map steps to source code lines by matching step descriptions
-      const lineToStep = new Map();
-      let stepIndex = 0;
-
-      sourceLines.forEach((line, lineIndex) => {
-        if (stepIndex < test.fixture.steps.length) {
-          const step = test.fixture.steps[stepIndex];
-          // Check if this line contains the step action (type, press, etc.)
-          if (line.includes('.type(') || line.includes('.press(')) {
-            lineToStep.set(lineIndex, stepIndex);
-            stepIndex++;
-          }
-        }
-      });
-
-      // Find error line if test failed
-      let errorLineIndex = -1;
-      if (test.status === 'fail' && test.error) {
-        // Use the enhanced call stack we captured
-        const stackToUse = test.error.expectCallStack || test.error.stack;
-
-        if (stackToUse) {
-          // Parse stack to find the test function line
-          const stackLines = stackToUse.split('\n');
-
-          // Look for the line in the test function (usually has "at" and the function reference)
-          for (const stackLine of stackLines) {
-            // Match patterns like "eval:5:10" or "<anonymous>:5:10"
-            const match = stackLine.match(/<anonymous>:(\d+):(\d+)/);
-            if (match) {
-              const lineNum = parseInt(match[1]);
-              // Map to source line (accounting for function wrapper)
-              errorLineIndex = lineNum - 2; // Adjust for function declaration
-
-              if (errorLineIndex >= 0 && errorLineIndex < sourceLines.length) {
-                break;
-              }
-            }
-          }
-        }
-
-        // Better fallback: find the first expect() that matches the error message
-        if (errorLineIndex === -1 || errorLineIndex < 0 || errorLineIndex >= sourceLines.length) {
-          const errorMsg = test.error.message || '';
-          sourceLines.forEach((line, idx) => {
-            if (line.includes('expect(') && errorLineIndex === -1) {
-              errorLineIndex = idx;
-            }
-          });
-        }
-      }
-
-      // Find successful and failed expect lines using sequence numbers
-      const successLineIndices = new Set();
-      const failureLineIndices = new Set();
-
-      // Find all expect lines in the function source (in order)
-      const expectLines = [];
-      sourceLines.forEach((line, idx) => {
-        if (line.includes('expect(') && !line.trim().startsWith('//')) {
-          expectLines.push(idx);
-        }
-      });
-
-      // Map expect results to source lines by sequence number
-      // expectResults is sorted by execution order (sequence 0, 1, 2, ...)
-      const expectResults = test.expectResults || [];
-
-      expectResults.forEach((result, i) => {
-        if (i < expectLines.length) {
-          const lineIdx = expectLines[i];
-          if (result.success) {
-            successLineIndices.add(lineIdx);
-          } else {
-            failureLineIndices.add(lineIdx);
-          }
-        }
-      });
-
-      // Store expect data for progressive revealing
-      currentWalkthrough.expectData = {
-        successLineIndices,
-        failureLineIndices,
-        lineToStep
-      };
-
-      // Render source with step markers (expects hidden initially)
-      renderWalkthroughCode();
-
-      // Create editor instance
-      const editorNode = document.getElementById('walkthrough-editor');
-      editorNode.className = 'wb no-select';
-      editorNode.innerHTML = `
-        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-        <div style="display: flex">
-          <div class="wb-gutter"></div>
-          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-        </div>
-        <div class="wb-status" style="display: flex; justify-content: space-between;">
-          <div class="wb-status-left" style="display: flex;">
-            <span class="wb-linecount"></span>
-          </div>
-          <div class="wb-status-right" style="display: flex;">
-            <span class="wb-coordinate"></span>
-            <span>|</span>
-            <span class="wb-indentation"></span>
-          </div>
-        </div>
-      `;
-
-      walkthroughEditor = new EditorFixture(editorNode);
-
-      // Copy steps from test fixture to walkthrough fixture
-      walkthroughEditor.steps = test.fixture.steps;
-
-      // Expose to window for console debugging
-      window.__walkthroughFixture = walkthroughEditor;
-
-      // Show panel
-      document.getElementById('walkthrough-panel').classList.add('active');
-
-      // Update step display
-      updateStepDisplay();
-    }
-
-    function closeWalkthrough() {
-      document.getElementById('walkthrough-panel').classList.remove('active');
-      currentWalkthrough = null;
-      currentStep = 0;
-      walkthroughEditor = null;
-    }
-
-    function renderWalkthroughCode() {
-      if (!currentWalkthrough) return;
-
-      const test = currentWalkthrough;
-      const { successLineIndices, failureLineIndices, lineToStep } = test.expectData || {};
-      if (!lineToStep) return;
-
-      const codeView = document.getElementById('walkthrough-code');
-      const sourceLines = test.fnSource.split('\n');
-
-      // Determine which expects should be revealed based on current step
-      const totalSteps = currentWalkthrough.fixture.steps.length;
-      const isComplete = currentStep >= totalSteps;
-
-      // An expect is revealed if it comes before or at the current step position
-      // OR if we've completed all walkthrough steps (reveal all remaining expects)
-      let maxRevealedLine = -1;
-      if (currentStep > 0) {
-        // Find the line number of the last executed step
-        for (const [lineIdx, stepNum] of lineToStep.entries()) {
-          if (stepNum < currentStep) {
-            maxRevealedLine = Math.max(maxRevealedLine, lineIdx);
-          }
-        }
-      }
-
-      const codeHtml = sourceLines.map((line, lineIndex) => {
-        const stepNum = lineToStep.get(lineIndex);
-        const isStepLine = stepNum !== undefined;
-        const isFailureLine = failureLineIndices?.has(lineIndex);
-        const isSuccessLine = successLineIndices?.has(lineIndex);
-
-        // Show expect highlighting if we've passed this line OR completed all steps
-        const shouldRevealExpect = isComplete || lineIndex <= maxRevealedLine;
-
-        let classes = 'code-line';
-        if (isFailureLine && shouldRevealExpect) classes += ' error-line';
-        if (isSuccessLine && !isFailureLine && shouldRevealExpect) classes += ' success-line';
-        if (isStepLine) classes += ' step-line';
-
-        const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
-
-        // Show markers
-        let marker = '';
-        if (isStepLine) {
-          marker += `<span class="step-marker">${stepNum + 1}</span>`;
-        }
-        if (isFailureLine && shouldRevealExpect) {
-          marker += `<span class="error-marker">✗</span>`;
-        } else if (isSuccessLine && shouldRevealExpect) {
-          marker += `<span class="success-marker">✓</span>`;
-        }
-
-        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
-      }).join('');
-
-      codeView.innerHTML = codeHtml;
-    }
-
-    function stepNext() {
-      if (!currentWalkthrough || currentStep >= currentWalkthrough.fixture.steps.length) return;
-
-      // Replay the step on the walkthrough fixture
-      walkthroughEditor.replayStep(currentStep);
-
-      currentStep++;
-      updateStepDisplay();
-    }
-
-    function stepPrev() {
-      if (!currentWalkthrough || currentStep <= 0) return;
-
-      // Reset editor and replay up to previous step
-      const editorNode = document.getElementById('walkthrough-editor');
-      editorNode.className = 'wb no-select';
-      editorNode.innerHTML = `
-        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-        <div style="display: flex">
-          <div class="wb-gutter"></div>
-          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-        </div>
-        <div class="wb-status" style="display: flex; justify-content: space-between;">
-          <div class="wb-status-left" style="display: flex;">
-            <span class="wb-linecount"></span>
-          </div>
-          <div class="wb-status-right" style="display: flex;">
-            <span class="wb-coordinate"></span>
-            <span>|</span>
-            <span class="wb-indentation"></span>
-          </div>
-        </div>
-      `;
-
-      walkthroughEditor = new EditorFixture(editorNode);
-
-      // Copy steps from test fixture to walkthrough fixture
-      walkthroughEditor.steps = currentWalkthrough.fixture.steps;
-
-      // Expose to window for console debugging
-      window.__walkthroughFixture = walkthroughEditor;
-
-      currentStep--;
-
-      // Replay all steps up to current on the walkthrough fixture
-      for (let i = 0; i < currentStep; i++) {
-        walkthroughEditor.replayStep(i);
-      }
-
-      updateStepDisplay();
-    }
-
-    function updateStepDisplay() {
-      if (!currentWalkthrough) return;
-
-      const totalSteps = currentWalkthrough.fixture.steps.length;
-      const stepInfo = document.getElementById('step-info');
-
-      if (currentStep === 0) {
-        stepInfo.textContent = `Ready to start (${totalSteps} steps)`;
-      } else if (currentStep <= totalSteps) {
-        const step = currentWalkthrough.fixture.steps[currentStep - 1];
-        stepInfo.textContent = `Step ${currentStep}/${totalSteps}: ${step.description}`;
-      }
-
-      // Update button states
-      document.getElementById('step-prev').disabled = currentStep === 0;
-      document.getElementById('step-next').disabled = currentStep >= totalSteps;
-
-      // Re-render code view to update expect highlighting based on current step
-      renderWalkthroughCode();
-
-      // Update code line highlighting for steps (current/completed states)
-      const stepLines = document.querySelectorAll('.step-line');
-      stepLines.forEach((lineEl) => {
-        const stepNum = parseInt(lineEl.dataset.step);
-        lineEl.classList.remove('current', 'completed');
-        if (stepNum < currentStep - 1) {
-          lineEl.classList.add('completed');
-        } else if (stepNum === currentStep - 1) {
-          lineEl.classList.add('current');
-        }
-      });
-    }
-
-    function jumpToStep(targetStep) {
-      if (!currentWalkthrough) return;
-
-      // Reset editor and replay up to target step
-      const editorNode = document.getElementById('walkthrough-editor');
-      editorNode.className = 'wb no-select';
-      editorNode.innerHTML = `
-        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-        <div style="display: flex">
-          <div class="wb-gutter"></div>
-          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-        </div>
-        <div class="wb-status" style="display: flex; justify-content: space-between;">
-          <div class="wb-status-left" style="display: flex;">
-            <span class="wb-linecount"></span>
-          </div>
-          <div class="wb-status-right" style="display: flex;">
-            <span class="wb-coordinate"></span>
-            <span>|</span>
-            <span class="wb-indentation"></span>
-          </div>
-        </div>
-      `;
-
-      walkthroughEditor = new EditorFixture(editorNode);
-      walkthroughEditor.steps = currentWalkthrough.fixture.steps;
-      window.__walkthroughFixture = walkthroughEditor;
-
-      // Replay steps up to and including target
-      for (let i = 0; i <= targetStep; i++) {
-        walkthroughEditor.replayStep(i);
-      }
-
-      currentStep = targetStep + 1;
-      updateStepDisplay();
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
   </script>
 </body>
 </html>

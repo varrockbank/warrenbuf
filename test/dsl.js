@@ -79,34 +79,10 @@ class EditorTestHarness {
   constructor(node) {
     this.node = node;
     this.wb = new WarrenBuf(node, null, null, 10);
-    this.steps = []; // Record all steps for walkthrough
+    this.walkthrough = new Walkthrough();
 
     // Store reference for test framework
     window.currentTestFixture = this;
-  }
-
-  _recordStep(description, metadata) {
-    this.steps.push({
-      description,
-      metadata  // Store operation details, not closures
-    });
-  }
-
-  // Replay a step on this fixture (used for walkthrough)
-  replayStep(stepIndex) {
-    const step = this.steps[stepIndex];
-    const meta = step.metadata;
-
-    if (meta.type === 'type') {
-      for (const char of meta.text) {
-        dispatchKey(this.node, char);
-      }
-    } else if (meta.type === 'press') {
-      const count = meta.count || 1;
-      for (let i = 0; i < count; i++) {
-        dispatchKey(this.node, meta.key, meta.modifiers);
-      }
-    }
   }
 
   /**
@@ -146,7 +122,7 @@ class EditorTestHarness {
       once() {
         const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
         const desc = modStr ? `press(${modStr}+${this._key})` : `press(${this._key})`;
-        fixture._recordStep(desc, {
+        fixture.walkthrough.recordStep(desc, {
           type: 'press',
           key: this._key,
           modifiers: { ...this._modifiers },
@@ -159,7 +135,7 @@ class EditorTestHarness {
       times(count) {
         const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
         const desc = modStr ? `press(${modStr}+${this._key}).times(${count})` : `press(${this._key}).times(${count})`;
-        fixture._recordStep(desc, {
+        fixture.walkthrough.recordStep(desc, {
           type: 'press',
           key: this._key,
           modifiers: { ...this._modifiers },
@@ -184,7 +160,7 @@ class EditorTestHarness {
    *   editor.type('Hello World');
    */
   type(text) {
-    this._recordStep(`type('${text}')`, {
+    this.walkthrough.recordStep(`type('${text}')`, {
       type: 'type',
       text: text
     });
