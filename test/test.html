@@ -812,11 +812,9 @@
 
       if (currentStep === 0) {
         stepInfo.textContent = `Ready to start (${totalSteps} steps)`;
-      } else if (currentStep < totalSteps) {
+      } else if (currentStep <= totalSteps) {
         const step = currentWalkthrough.fixture.steps[currentStep - 1];
         stepInfo.textContent = `Step ${currentStep}/${totalSteps}: ${step.description}`;
-      } else {
-        stepInfo.textContent = `Complete (${totalSteps}/${totalSteps})`;
       }
 
       // Update button states
