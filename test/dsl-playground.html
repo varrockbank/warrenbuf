@@ -62,6 +62,17 @@
             opacity: 0.5;
         }
 
+        .status-message {
+            font-size: 0.8rem;
+            color: #858585;
+            display: none;
+            margin-right: 0.5rem;
+        }
+
+        .status-message.visible {
+            display: inline;
+        }
+
         main {
             flex: 1;
             display: flex;
@@ -150,7 +161,10 @@
         <div class="pane">
             <div class="pane-header">
                 <span>DSL Input</span>
-                <button id="generate-btn">Generate</button>
+                <div>
+                    <span id="status-message" class="status-message">Generated JavaScript is up to date</span>
+                    <button id="generate-btn">Generate</button>
+                </div>
             </div>
             <div class="pane-content">
                 <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
@@ -172,6 +186,7 @@
         const textarea = document.getElementById('dsl-content');
         const outputDiv = document.getElementById('js-output');
         const generateBtn = document.getElementById('generate-btn');
+        const statusMessage = document.getElementById('status-message');
 
         let lastGeneratedSource = '';
 
@@ -183,8 +198,10 @@
 
             if (isUpToDate) {
                 outputDiv.classList.remove('stale');
+                statusMessage.classList.add('visible');
             } else {
                 outputDiv.classList.add('stale');
+                statusMessage.classList.remove('visible');
             }
         }
 
