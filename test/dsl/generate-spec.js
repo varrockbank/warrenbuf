@@ -61,8 +61,13 @@ class SpecGenerator {
       if (trimmed.startsWith('# ') && !trimmed.startsWith('## ')) {
         // Close previous test
         if (currentTest !== null) {
-          const descParam = currentTestDescription ? `, "${currentTestDescription}"` : '';
+          const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
           output.push(`  }${descParam});`);
+
+          // Store DSL source and mapping in map
+          const dslSource = currentTestDslLines.join('\\n');
+          const lineMap = JSON.stringify(dslToJsLineMap);
+          output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = { source: \`${dslSource}\`, lineMap: ${lineMap} };`);
           output.push('');
           currentTest = null;
           currentTestDescription = null;
