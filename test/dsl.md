@@ -247,3 +247,30 @@ enter once
 LEFT with meta
 right 5 times with SHIFT
 ```
+
+---
+
+### v1.6.0 - Normalized forms
+
+**Rules:**
+1. Special keys are lowercase (`backspace`, `enter`, `left`)
+2. Exclude `press` keyword for special keys only (keep `PRESS` for single characters)
+3. Use arrow shortcuts (`left`, `right`, `up`, `down`)
+4. Standard order: `<key> <quantification> <qualification>`
+5. Action keywords are capitalized (`PRESS`, `TYPE`)
+6. `TYPE` strings use double quotes; escape sequences follow JavaScript
+7. `PRESS` character omits single quotes around the character
+
+**Example:**
+```
+PRESS a
+PRESS a 3 times
+TYPE "hello world"
+TYPE "hello\nworld"
+TYPE "say \"hello\""
+backspace
+backspace 5 times
+enter once
+left with meta
+right 5 times with shift
+```
