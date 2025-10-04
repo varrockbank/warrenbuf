@@ -260,6 +260,7 @@ right 5 times with SHIFT
 5. Action keywords are capitalized (`PRESS`, `TYPE`)
 6. `TYPE` strings use double quotes; escape sequences follow JavaScript
 7. `PRESS` character omits single quotes around the character
+8. When both `meta` and `shift` are specified, `meta` always comes before `shift`
 
 **Example:**
 ```
@@ -273,4 +274,5 @@ backspace 5 times
 enter once
 left with meta
 right 5 times with shift
+right with meta, shift
 ```
