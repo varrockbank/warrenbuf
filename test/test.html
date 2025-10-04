@@ -140,6 +140,42 @@
       font-family: monospace;
       border: 1px solid black;
     }
+    .no-select {
+      user-select: none;       /* Standard */
+      -webkit-user-select: none; /* Safari */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* IE/Edge (old) */
+    }
+    .wb-clipboard-bridge {
+      position: fixed;      /* out of normal flow so it won't jump layout */
+      left: 0;
+      top: 1px;
+      width: 0;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none; /* avoid clicks */
+    }
+    .wb .wb-lines>pre::before {
+      content: "\200B";
+    }
+    .wb .wb-lines pre {
+      margin: 0;
+      overflow: hidden;
+    }
+    .wb .wb-selection {
+      left: 0ch;
+      top: 0ch;
+      background-color: #EDAD10;
+      position: absolute;
+      mix-blend-mode: difference;        /* inverts underlying pixels */
+    }
+    .wb .wb-status span {
+      padding-right: 4px;
+    }
+    #walkthrough-editor .wb {
+      width: 100%;
+      height: 100%;
+    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
