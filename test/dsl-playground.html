@@ -681,7 +681,7 @@
     <script src="walkthrough.js"></script>
     <script src="harness.js"></script>
     <script src="expect.js"></script>
-    <script src="test.spec.js"></script>
+    <!-- Tests are loaded from generated JavaScript instead of test.spec.js -->
 
     <!-- DSL generator dependencies -->
     <script src="./dsl/transpiler.js"></script>
@@ -838,24 +838,45 @@
         }
 
         async function runAllTests() {
-            const startTime = new Date();
-            const results = await runner.run();
-            const endTime = new Date();
-            const duration = endTime - startTime;
+            // Load tests from generated JavaScript
+            const generatedJS = outputDiv.textContent;
 
-            const timingDiv = document.getElementById('test-timing');
-            timingDiv.innerHTML = `
-                Test started at: ${startTime.toLocaleTimeString()}<br>
-                Test ended at: ${endTime.toLocaleTimeString()}<br>
-                Duration: ${duration} ms
-            `;
+            if (!generatedJS || generatedJS.startsWith('Error:')) {
+                const resultsContainer = document.getElementById('test-results');
+                resultsContainer.innerHTML = '<div style="padding: 20px; color: #f48771;">No valid test specification available. Generate JavaScript from the Source tab first.</div>';
+                return;
+            }
 
-            // Trigger shake animation on timer
-            timingDiv.classList.remove('shake');
-            void timingDiv.offsetWidth; // Force reflow
-            timingDiv.classList.add('shake');
+            try {
+                // Clear previous test definitions
+                runner.suites = [];
 
-            renderResults(results);
+                // Execute generated JavaScript to define tests
+                eval(generatedJS);
+
+                const startTime = new Date();
+                const results = await runner.run();
+                const endTime = new Date();
+                const duration = endTime - startTime;
+
+                const timingDiv = document.getElementById('test-timing');
+                timingDiv.innerHTML = `
+                    Test started at: ${startTime.toLocaleTimeString()}<br>
+                    Test ended at: ${endTime.toLocaleTimeString()}<br>
+                    Duration: ${duration} ms
+                `;
+
+                // Trigger shake animation on timer
+                timingDiv.classList.remove('shake');
+                void timingDiv.offsetWidth; // Force reflow
+                timingDiv.classList.add('shake');
+
+                renderResults(results);
+            } catch (error) {
+                const resultsContainer = document.getElementById('test-results');
+                resultsContainer.innerHTML = `<div style="padding: 20px; color: #f48771;">Error loading tests: ${error.message}</div>`;
+                console.error('Error executing generated tests:', error);
+            }
         }
 
         // Auto-run tests when switching to Tests tab
