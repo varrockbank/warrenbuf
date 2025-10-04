@@ -78,11 +78,23 @@
             margin-right: 0.25rem;
         }
 
-        .tabs {
+        .tabs-wrapper {
             background-color: #2d2d30;
+            width: 100%;
+        }
+
+        .tabs {
             display: flex;
-            justify-content: center;
+            align-items: center;
             padding-top: 5px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #test-stale-warning {
+            margin-left: auto;
+            margin-right: 1rem;
+            font-size: 0.9rem;
         }
 
         .tab {
@@ -637,9 +649,12 @@
     </style>
 </head>
 <body>
-    <div class="tabs">
-        <button class="tab active" data-tab="tests">Tests</button>
-        <button class="tab" data-tab="source">Source</button>
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <button class="tab active" data-tab="tests">Tests</button>
+            <button class="tab" data-tab="source">Source</button>
+            <span id="test-stale-warning" class="status-message warning" style="display: none;"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
+        </div>
     </div>
     <div id="tab-tests" class="tab-content active">
         <main>
@@ -704,7 +719,6 @@
             <div class="pane">
                 <div class="pane-header">
                     <span>Generated JavaScript</span>
-                    <span id="status-stale" class="status-message warning"><span class="warning-icon">⚠</span>(source spec has changed, consider recompiling)</span>
                 </div>
                 <div class="pane-content">
                     <div id="js-output"></div>
@@ -792,7 +806,6 @@
         const outputDiv = document.getElementById('js-output');
         const generateBtn = document.getElementById('generate-btn');
         const statusUpToDate = document.getElementById('status-uptodate');
-        const statusStale = document.getElementById('status-stale');
 
         let lastGeneratedSource = '';
 
@@ -802,14 +815,16 @@
 
             generateBtn.disabled = isUpToDate;
 
+            const testStaleWarning = document.getElementById('test-stale-warning');
+
             if (isUpToDate) {
                 outputDiv.classList.remove('stale');
                 statusUpToDate.classList.add('visible');
-                statusStale.classList.remove('visible');
+                if (testStaleWarning) testStaleWarning.style.display = 'none';
             } else {
                 outputDiv.classList.add('stale');
                 statusUpToDate.classList.remove('visible');
-                statusStale.classList.add('visible');
+                if (testStaleWarning) testStaleWarning.style.display = 'inline';
             }
         }
 
