@@ -833,7 +833,7 @@
                     testDiv.className = `test-case ${test.status}`;
 
                     const icon = test.status === 'pass' ? '✓' : test.status === 'fail' ? '✗' : '○';
-                    const walkthroughBtn = test.fixture && test.fixture.walkthrough && test.fixture.walkthrough.steps.length > 0
+                    const walkthroughBtn = test.fixture && test.fixture.walkthrough
                         ? `<button class="walkthrough-btn" onclick="walkthrough.open('${suite.name}', ${testIndex})">Walkthrough</button>`
                         : '';
 
