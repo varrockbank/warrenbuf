@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSL Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #2d2d30;
+            padding: 1rem;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #cccccc;
+        }
+
+        main {
+            flex: 1;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #007acc;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #858585;
+        }
+
+        .error {
+            color: #f48771;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DSL Playground - specs.dsl</h1>
+    </header>
+    <main>
+        <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
+    </main>
+
+    <script>
+        async function loadDSL() {
+            const textarea = document.getElementById('dsl-content');
+
+            try {
+                const response = await fetch('./dsl/specs.dsl');
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load: ${response.status} ${response.statusText}`);
+                }
+
+                const content = await response.text();
+                textarea.value = content;
+            } catch (error) {
+                textarea.value = `Error loading DSL file: ${error.message}`;
+                console.error('Error loading DSL:', error);
+            }
+        }
+
+        // Load DSL when page loads
+        window.addEventListener('DOMContentLoaded', loadDSL);
+    </script>
+</body>
+</html>
