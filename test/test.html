@@ -616,11 +616,6 @@
         }
       });
 
-      console.log('Expect lines in source:', expectLines);
-      console.log('Expect results:', expectResults);
-      console.log('Success lines:', Array.from(successLineIndices));
-      console.log('Failure lines:', Array.from(failureLineIndices));
-
       // Store expect data for progressive revealing
       currentWalkthrough.expectData = {
         successLineIndices,
@@ -630,25 +625,6 @@
 
       // Render source with step markers (expects hidden initially)
       renderWalkthroughCode();
-
-      // Debug: log expect detection
-      console.log('Test:', test.name, 'Status:', test.status);
-      console.log('test.successfulExpects:', test.successfulExpects);
-      console.log('Successful expect lines:', Array.from(successLineIndices));
-      if (test.status === 'fail') {
-        console.log('Error line index:', errorLineIndex);
-        console.log('Error:', test.error);
-        if (errorLineIndex >= 0 && errorLineIndex < sourceLines.length) {
-          console.log('Error line content:', sourceLines[errorLineIndex]);
-        }
-      }
-
-      // Debug: show all expect lines
-      sourceLines.forEach((line, idx) => {
-        if (line.includes('expect(')) {
-          console.log(`Line ${idx}: ${line.trim()} - Success: ${successLineIndices.has(idx)}, Error: ${idx === errorLineIndex}`);
-        }
-      });
 
       // Create editor instance
       const editorNode = document.getElementById('walkthrough-editor');

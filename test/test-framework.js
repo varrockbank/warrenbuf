@@ -100,9 +100,6 @@ class TestRunner {
           // Capture fixture and expect results from global (set by EditorFixture constructor)
           test.fixture = window.currentTestFixture;
           test.expectResults = expectResults;
-          const numSuccess = expectResults.filter(r => r.success).length;
-          const numFailed = expectResults.filter(r => !r.success).length;
-          console.log(`Test "${test.name}" completed. Successful: ${numSuccess}, Failed: ${numFailed}`);
         } catch (error) {
           // Restore original expect
           window.expect = originalExpect;
@@ -112,9 +109,6 @@ class TestRunner {
           // Capture fixture and expect results even on failure for debugging
           test.fixture = window.currentTestFixture;
           test.expectResults = expectResults;
-          const numSuccess = expectResults.filter(r => r.success).length;
-          const numFailed = expectResults.filter(r => !r.success).length;
-          console.log(`Test "${test.name}" failed. Successful: ${numSuccess}, Failed: ${numFailed}`, firstError);
           results.failed++;
         }
 
