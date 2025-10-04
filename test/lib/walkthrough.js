@@ -234,12 +234,14 @@ class Walkthrough {
     // Expose to window for console debugging
     window.__walkthroughFixture = this.walkthroughHarness;
 
-    // Show panel and update display
+    // Show panel and backdrop, then update display
+    document.getElementById('walkthrough-backdrop').classList.add('active');
     document.getElementById('walkthrough-panel').classList.add('active');
     this.updateDisplay();
   }
 
   close() {
+    document.getElementById('walkthrough-backdrop').classList.remove('active');
     document.getElementById('walkthrough-panel').classList.remove('active');
     this.currentTest = null;
     this.currentStep = 0;

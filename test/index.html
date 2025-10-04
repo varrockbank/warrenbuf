@@ -411,6 +411,22 @@
         .walkthrough-btn:hover {
             background: #bb7711;
         }
+        .walkthrough-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .walkthrough-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
         .walkthrough-panel {
             position: fixed;
             left: 0;
@@ -666,6 +682,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Walkthrough backdrop -->
+    <div id="walkthrough-backdrop" class="walkthrough-backdrop"></div>
 
     <!-- Walkthrough panel -->
     <div id="walkthrough-panel" class="walkthrough-panel">
