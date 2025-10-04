@@ -704,7 +704,11 @@
       const sourceLines = test.fnSource.split('\n');
 
       // Determine which expects should be revealed based on current step
+      const totalSteps = currentWalkthrough.fixture.steps.length;
+      const isComplete = currentStep >= totalSteps;
+
       // An expect is revealed if it comes before or at the current step position
+      // OR if we've completed all walkthrough steps (reveal all remaining expects)
       let maxRevealedLine = -1;
       if (currentStep > 0) {
         // Find the line number of the last executed step
@@ -721,8 +725,8 @@
         const isFailureLine = failureLineIndices?.has(lineIndex);
         const isSuccessLine = successLineIndices?.has(lineIndex);
 
-        // Only show expect highlighting if we've passed this line in the walkthrough
-        const shouldRevealExpect = lineIndex <= maxRevealedLine;
+        // Show expect highlighting if we've passed this line OR completed all steps
+        const shouldRevealExpect = isComplete || lineIndex <= maxRevealedLine;
 
         let classes = 'code-line';
         if (isFailureLine && shouldRevealExpect) classes += ' error-line';
