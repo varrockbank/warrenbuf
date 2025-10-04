@@ -128,10 +128,26 @@
         </div>
     </main>
 
+    <script src="./dsl/transpiler.js"></script>
     <script>
-        async function loadDSL() {
-            const textarea = document.getElementById('dsl-content');
+        const transpiler = new DSLTranspiler();
+        const textarea = document.getElementById('dsl-content');
+        const outputDiv = document.getElementById('js-output');
 
+        function transpileDSL() {
+            const dslSource = textarea.value;
+
+            try {
+                const jsOutput = transpiler.transpile(dslSource);
+                outputDiv.textContent = jsOutput;
+                outputDiv.style.color = '#d4d4d4';
+            } catch (error) {
+                outputDiv.textContent = `Error: ${error.message}`;
+                outputDiv.style.color = '#f48771';
+            }
+        }
+
+        async function loadDSL() {
             try {
                 const response = await fetch('./dsl/specs.dsl');
 
@@ -141,11 +157,15 @@
 
                 const content = await response.text();
                 textarea.value = content;
+                transpileDSL();
             } catch (error) {
                 textarea.value = `Error loading DSL file: ${error.message}`;
                 console.error('Error loading DSL:', error);
             }
         }
+
+        // Transpile on input
+        textarea.addEventListener('input', transpileDSL);
 
         // Load DSL when page loads
         window.addEventListener('DOMContentLoaded', loadDSL);
