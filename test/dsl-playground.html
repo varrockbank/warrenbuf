@@ -55,6 +55,16 @@
             background-color: #004578;
         }
 
+        button:disabled {
+            background-color: #3e3e42;
+            color: #858585;
+            cursor: not-allowed;
+        }
+
+        #js-output.stale {
+            opacity: 0.5;
+        }
+
         main {
             flex: 1;
             display: flex;
@@ -159,6 +169,22 @@
         const generator = new SpecGenerator(transpiler);
         const textarea = document.getElementById('dsl-content');
         const outputDiv = document.getElementById('js-output');
+        const generateBtn = document.getElementById('generate-btn');
+
+        let lastGeneratedSource = '';
+
+        function updateUIState() {
+            const currentSource = textarea.value;
+            const isUpToDate = currentSource === lastGeneratedSource;
+
+            generateBtn.disabled = isUpToDate;
+
+            if (isUpToDate) {
+                outputDiv.classList.remove('stale');
+            } else {
+                outputDiv.classList.add('stale');
+            }
+        }
 
         function transpileDSL() {
             const dslSource = textarea.value;
@@ -167,9 +193,13 @@
                 const jsOutput = generator.generate(dslSource);
                 outputDiv.textContent = jsOutput;
                 outputDiv.style.color = '#d4d4d4';
+                lastGeneratedSource = dslSource;
+                updateUIState();
             } catch (error) {
                 outputDiv.textContent = `Error: ${error.message}`;
                 outputDiv.style.color = '#f48771';
+                lastGeneratedSource = dslSource;
+                updateUIState();
             }
         }
 
@@ -191,8 +221,10 @@
         }
 
         // Generate button
-        const generateBtn = document.getElementById('generate-btn');
         generateBtn.addEventListener('click', transpileDSL);
+
+        // Check for changes on input
+        textarea.addEventListener('input', updateUIState);
 
         // Load DSL when page loads
         window.addEventListener('DOMContentLoaded', loadDSL);
