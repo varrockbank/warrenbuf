@@ -40,6 +40,36 @@ const Key = {
 const VALID_KEYS = new Set(Object.values(Key));
 
 /**
+ * Helper to create a new DOM node for EditorFixture
+ */
+function createEditorNode() {
+  const container = document.querySelector('.editor-container');
+  const node = document.createElement('div');
+  node.className = 'wb no-select';
+  node.innerHTML = `
+    <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+    <div style="display: flex">
+      <div class="wb-gutter"></div>
+      <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
+    </div>
+    <div class="wb-status" style="display: flex; justify-content: space-between;">
+      <div class="wb-status-left" style="display: flex;">
+        <span class="wb-linecount"></span>
+      </div>
+      <div class="wb-status-right" style="display: flex;">
+        <span class="wb-coordinate"></span>
+        <span>|</span>
+        <span class="wb-indentation"></span>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = '';
+  container.appendChild(node);
+  return node;
+}
+
+/**
  * Test environment for a single editor instance.
  * Provides literate methods for user interactions.
  *
@@ -163,3 +193,9 @@ class EditorFixture {
     }
   }
 }
+
+// EditorFixture factory
+const FixtureFactory = {
+  forTest: () => new EditorFixture(createEditorNode()),
+  forWalkthrough: (node) => new EditorFixture(node)
+};

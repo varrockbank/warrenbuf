@@ -1,38 +1,10 @@
 // Test definitions
 const runner = new TestRunner();
 
-// Helper to create a new DOM node for EditorFixture
-function createEditorNode() {
-  const container = document.querySelector('.editor-container');
-  const node = document.createElement('div');
-  node.className = 'wb no-select';
-  node.innerHTML = `
-    <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-    <div style="display: flex">
-      <div class="wb-gutter"></div>
-      <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-    </div>
-    <div class="wb-status" style="display: flex; justify-content: space-between;">
-      <div class="wb-status-left" style="display: flex;">
-        <span class="wb-linecount"></span>
-      </div>
-      <div class="wb-status-right" style="display: flex;">
-        <span class="wb-coordinate"></span>
-        <span>|</span>
-        <span class="wb-indentation"></span>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = '';
-  container.appendChild(node);
-  return node;
-}
-
 // Basic Typing Tests
 runner.describe('Basic Typing', () => {
   let fixture;
-  runner.beforeEach(() => fixture = new EditorFixture(createEditorNode()));
+  runner.beforeEach(() => fixture = FixtureFactory.forTest());
 
   runner.it('should insert single character', () => {
     fixture.press('a').once();
@@ -66,7 +38,7 @@ runner.describe('Backspace', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should delete single character', () => {
@@ -122,7 +94,7 @@ runner.describe('Enter Key', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should create new line', () => {
@@ -173,7 +145,7 @@ runner.describe('Complex Sequences', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should type, delete, and retype', () => {
@@ -243,7 +215,7 @@ runner.describe('Selection', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should create selection with Shift+ArrowRight', () => {
@@ -336,7 +308,7 @@ runner.describe('Cursor movement - varying line lengths', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should preserve column when moving from long to short line', () => {
@@ -456,7 +428,7 @@ runner.describe('Meta+Arrow navigation', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should move to end of line with Meta+Right', () => {
@@ -522,7 +494,7 @@ runner.describe('Shift+Meta+Arrow selection', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should select to end of line with Shift+Meta+Right', () => {
@@ -592,7 +564,7 @@ runner.describe('Multi-line selections', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should select 3 rows with start in middle, end in middle', () => {
@@ -807,7 +779,7 @@ runner.describe('Deleting selections', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should delete single line selection with Backspace', () => {
@@ -921,7 +893,7 @@ runner.describe('Replacing selections', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should replace single line selection with typed character', () => {
@@ -1046,7 +1018,7 @@ runner.describe('Regression: Selection.ordered and isForwardSelection', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should correctly identify forward selection when tail < head', () => {
@@ -1117,7 +1089,7 @@ runner.describe('Walkthrough feature - regression tests', () => {
   let fixture;
 
   runner.beforeEach(() => {
-    fixture = new EditorFixture(createEditorNode());
+    fixture = FixtureFactory.forTest();
   });
 
   runner.it('should demonstrate interleaved success and failure expects', () => {
