@@ -291,6 +291,17 @@
       color: #f44336;
       font-weight: bold;
     }
+    .code-line.success-line {
+      background: #1e3a1e;
+      border-left: 3px solid #4CAF50;
+      padding-left: 5px;
+    }
+    .success-marker {
+      display: inline-block;
+      margin-right: 8px;
+      color: #4CAF50;
+      font-weight: bold;
+    }
     .step-marker {
       display: inline-block;
       width: 25px;
@@ -543,24 +554,33 @@
 
       // Find error line if test failed
       let errorLineIndex = -1;
-      if (test.status === 'fail' && test.error && test.error.stack) {
-        // Try to extract line number from error stack
-        // Look for patterns like "at <anonymous>:5:10" or similar
-        const stackLines = test.error.stack.split('\n');
-        for (const stackLine of stackLines) {
-          // Match patterns like ":lineNum:" in the stack trace
-          const match = stackLine.match(/:(\d+):/);
-          if (match) {
-            const absoluteLine = parseInt(match[1]);
-            // The line numbers in stack traces are 1-based and refer to the function body
-            // We need to map this to our source line index
-            errorLineIndex = absoluteLine - 2; // Adjust for function wrapper
-            break;
+      if (test.status === 'fail' && test.error) {
+        // Use the enhanced call stack we captured
+        const stackToUse = test.error.expectCallStack || test.error.stack;
+
+        if (stackToUse) {
+          // Parse stack to find the test function line
+          const stackLines = stackToUse.split('\n');
+
+          // Look for the line in the test function (usually has "at" and the function reference)
+          for (const stackLine of stackLines) {
+            // Match patterns like "eval:5:10" or "<anonymous>:5:10"
+            const match = stackLine.match(/<anonymous>:(\d+):(\d+)/);
+            if (match) {
+              const lineNum = parseInt(match[1]);
+              // Map to source line (accounting for function wrapper)
+              errorLineIndex = lineNum - 2; // Adjust for function declaration
+
+              if (errorLineIndex >= 0 && errorLineIndex < sourceLines.length) {
+                break;
+              }
+            }
           }
         }
 
-        // Fallback: look for expect() calls that might have failed
+        // Better fallback: find the first expect() that matches the error message
         if (errorLineIndex === -1 || errorLineIndex < 0 || errorLineIndex >= sourceLines.length) {
+          const errorMsg = test.error.message || '';
           sourceLines.forEach((line, idx) => {
             if (line.includes('expect(') && errorLineIndex === -1) {
               errorLineIndex = idx;
@@ -569,24 +589,86 @@
         }
       }
 
+      // Find successful and failed expect lines using sequence numbers
+      const successLineIndices = new Set();
+      const failureLineIndices = new Set();
+
+      // Find all expect lines in the function source (in order)
+      const expectLines = [];
+      sourceLines.forEach((line, idx) => {
+        if (line.includes('expect(') && !line.trim().startsWith('//')) {
+          expectLines.push(idx);
+        }
+      });
+
+      // Map expect results to source lines by sequence number
+      // expectResults is sorted by execution order (sequence 0, 1, 2, ...)
+      const expectResults = test.expectResults || [];
+
+      expectResults.forEach((result, i) => {
+        if (i < expectLines.length) {
+          const lineIdx = expectLines[i];
+          if (result.success) {
+            successLineIndices.add(lineIdx);
+          } else {
+            failureLineIndices.add(lineIdx);
+          }
+        }
+      });
+
+      console.log('Expect lines in source:', expectLines);
+      console.log('Expect results:', expectResults);
+      console.log('Success lines:', Array.from(successLineIndices));
+      console.log('Failure lines:', Array.from(failureLineIndices));
+
       // Render source with step markers and error highlighting
       const codeHtml = sourceLines.map((line, lineIndex) => {
         const stepNum = lineToStep.get(lineIndex);
         const isStepLine = stepNum !== undefined;
-        const isErrorLine = lineIndex === errorLineIndex;
+        const isFailureLine = failureLineIndices.has(lineIndex);
+        const isSuccessLine = successLineIndices.has(lineIndex);
 
         let classes = 'code-line';
-        if (isErrorLine) classes += ' error-line';
+        if (isFailureLine) classes += ' error-line';
+        if (isSuccessLine && !isFailureLine) classes += ' success-line';
         if (isStepLine) classes += ' step-line';
 
         const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
-        const marker = isStepLine ? `<span class="step-marker">${stepNum + 1}</span>` :
-                       isErrorLine ? `<span class="error-marker">✗</span>` : '';
+
+        // Show markers
+        let marker = '';
+        if (isStepLine) {
+          marker += `<span class="step-marker">${stepNum + 1}</span>`;
+        }
+        if (isFailureLine) {
+          marker += `<span class="error-marker">✗</span>`;
+        } else if (isSuccessLine) {
+          marker += `<span class="success-marker">✓</span>`;
+        }
 
         return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
       }).join('');
 
       codeView.innerHTML = codeHtml;
+
+      // Debug: log expect detection
+      console.log('Test:', test.name, 'Status:', test.status);
+      console.log('test.successfulExpects:', test.successfulExpects);
+      console.log('Successful expect lines:', Array.from(successLineIndices));
+      if (test.status === 'fail') {
+        console.log('Error line index:', errorLineIndex);
+        console.log('Error:', test.error);
+        if (errorLineIndex >= 0 && errorLineIndex < sourceLines.length) {
+          console.log('Error line content:', sourceLines[errorLineIndex]);
+        }
+      }
+
+      // Debug: show all expect lines
+      sourceLines.forEach((line, idx) => {
+        if (line.includes('expect(')) {
+          console.log(`Line ${idx}: ${line.trim()} - Success: ${successLineIndices.has(idx)}, Error: ${idx === errorLineIndex}`);
+        }
+      });
 
       // Create editor instance
       const editorNode = document.getElementById('walkthrough-editor');

@@ -51,6 +51,8 @@ class TestRunner {
 
         // Wrap expect to capture errors but continue execution
         let firstError = null;
+        const expectResults = []; // Array of {success: boolean, sequenceNum: number}
+        let expectSequence = 0;
         const originalExpect = window.expect;
         window.expect = function(actual) {
           const matchers = originalExpect(actual);
@@ -58,9 +60,16 @@ class TestRunner {
 
           for (const key in matchers) {
             wrappedMatchers[key] = function(...args) {
+              const sequenceNum = expectSequence++;
+
               try {
-                return matchers[key](...args);
+                const result = matchers[key](...args);
+                // Record successful expect with sequence number
+                expectResults.push({ success: true, sequenceNum });
+                return result;
               } catch (error) {
+                // Record failed expect with sequence number
+                expectResults.push({ success: false, sequenceNum });
                 if (!firstError) {
                   firstError = error;
                 }
@@ -88,16 +97,24 @@ class TestRunner {
             results.passed++;
           }
 
-          // Capture fixture from global (set by EditorFixture constructor)
+          // Capture fixture and expect results from global (set by EditorFixture constructor)
           test.fixture = window.currentTestFixture;
+          test.expectResults = expectResults;
+          const numSuccess = expectResults.filter(r => r.success).length;
+          const numFailed = expectResults.filter(r => !r.success).length;
+          console.log(`Test "${test.name}" completed. Successful: ${numSuccess}, Failed: ${numFailed}`);
         } catch (error) {
           // Restore original expect
           window.expect = originalExpect;
 
           test.status = 'fail';
           test.error = firstError || error;
-          // Capture fixture even on failure for debugging
+          // Capture fixture and expect results even on failure for debugging
           test.fixture = window.currentTestFixture;
+          test.expectResults = expectResults;
+          const numSuccess = expectResults.filter(r => r.success).length;
+          const numFailed = expectResults.filter(r => !r.success).length;
+          console.log(`Test "${test.name}" failed. Successful: ${numSuccess}, Failed: ${numFailed}`, firstError);
           results.failed++;
         }
 

@@ -327,14 +327,18 @@ runner.describe('Cursor movement - varying line lengths', () => {
     fixture.type('Much longer line');
     // Assert cursor position after typing
     let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-    expect(firstEdge).toEqual(null); // TEMPORARY: Intentionally failing to test walkthrough behavior
-    expect(SecondEdge).toEqual({ row: 1, col: 16 });
+    // expect(firstEdge).toEqual(null); // TEMPORARY: Intentionally failing to test walkthrough behavior
+    // expect(SecondEdge).toEqual({ row: 1, col: 16 });
+    expect(1).toEqual(null); // TEMPORARY: fail
+    expect(1).toBe(1); // TEMPORARY: succeed
 
     fixture.press(Key.ArrowUp).once();  // Move to "Short", col clamped to 5
     fixture.press(Key.ArrowDown).once(); // Move back to "Much longer line"
     [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-    expect(firstEdge).toEqual({ row: 1, col: 16 }); // Should restore to col 16
-    expect(SecondEdge).toEqual({ row: 1, col: 16 });
+    // expect(firstEdge).toEqual({ row: 1, col: 16 }); // Should restore to col 16
+    // expect(SecondEdge).toEqual({ row: 1, col: 16 });
+    expect(1).toBe(3); // TEMPORARY: fail
+    expect(5).toBe(5); // TEMPORARY: succeed
   }, "Should restore original column when moving back");
 
   runner.it('should clamp column to line end on shorter line', () => {
