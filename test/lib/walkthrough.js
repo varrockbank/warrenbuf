@@ -276,7 +276,16 @@ class Walkthrough {
       }
     }
 
-    const codeHtml = sourceLines.map((line, lineIndex) => {
+    // Highlight entire code block at once for proper context
+    const fullCode = sourceLines.join('\n');
+    const highlighted = typeof hljs !== 'undefined'
+      ? hljs.highlight(fullCode, { language: 'javascript' }).value
+      : escapeHtml(fullCode);
+
+    // Split highlighted HTML back into lines while preserving HTML tags
+    const highlightedLines = highlighted.split('\n');
+
+    const codeHtml = highlightedLines.map((line, lineIndex) => {
       const stepNum = lineToStep.get(lineIndex);
       const isStepLine = stepNum !== undefined;
       const isFailureLine = failureLineIndices?.has(lineIndex);
@@ -302,12 +311,7 @@ class Walkthrough {
         rightMarker += `<span class="success-marker">✓</span>`;
       }
 
-      // Apply syntax highlighting
-      const highlighted = typeof hljs !== 'undefined' && line.trim()
-        ? hljs.highlight(line, { language: 'javascript' }).value
-        : escapeHtml(line);
-
-      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${highlighted}${rightMarker}</div>`;
+      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${line}${rightMarker}</div>`;
     }).join('');
 
     codeView.innerHTML = codeHtml;
