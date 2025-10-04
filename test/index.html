@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSL Playground</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
     <style>
         * {
             margin: 0;
@@ -237,6 +238,11 @@
             line-height: 1.5;
             overflow: auto;
             white-space: pre;
+        }
+
+        #js-output .hljs {
+            background: transparent;
+            padding: 0;
         }
 
         .loading {
@@ -739,6 +745,9 @@
         </div>
     </div>
 
+    <!-- Syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <!-- Test dependencies -->
     <script src="../warrenbuf.js"></script>
     <script src="lib/test-framework.js"></script>
@@ -803,13 +812,16 @@
 
             try {
                 const jsOutput = generator.generate(dslSource);
-                outputDiv.textContent = jsOutput;
-                outputDiv.style.color = '#d4d4d4';
+                const highlighted = hljs.highlight(jsOutput, { language: 'javascript' }).value;
+                outputDiv.innerHTML = highlighted;
+                outputDiv.style.color = '';
+                outputDiv.dataset.plainJs = jsOutput; // Store plain JavaScript for eval
                 lastGeneratedSource = dslSource;
                 updateUIState();
             } catch (error) {
                 outputDiv.textContent = `Error: ${error.message}`;
                 outputDiv.style.color = '#f48771';
+                delete outputDiv.dataset.plainJs;
                 lastGeneratedSource = dslSource;
                 updateUIState();
             }
@@ -909,7 +921,7 @@
 
         async function runAllTests() {
             // Load tests from generated JavaScript
-            let generatedJS = outputDiv.textContent;
+            let generatedJS = outputDiv.dataset.plainJs || outputDiv.textContent;
 
             if (!generatedJS || generatedJS.startsWith('Error:')) {
                 const resultsContainer = document.getElementById('test-results');
