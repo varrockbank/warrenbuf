@@ -778,6 +778,8 @@
         window.addEventListener('DOMContentLoaded', loadDSL);
 
         // Test runner logic
+        const runner = new TestRunner();
+
         function renderResults(results) {
             const resultsContainer = document.getElementById('test-results');
             resultsContainer.innerHTML = '';
@@ -839,7 +841,7 @@
 
         async function runAllTests() {
             // Load tests from generated JavaScript
-            const generatedJS = outputDiv.textContent;
+            let generatedJS = outputDiv.textContent;
 
             if (!generatedJS || generatedJS.startsWith('Error:')) {
                 const resultsContainer = document.getElementById('test-results');
@@ -850,6 +852,9 @@
             try {
                 // Clear previous test definitions
                 runner.suites = [];
+
+                // Remove the runner declaration from generated code since we have a global runner
+                generatedJS = generatedJS.replace(/const runner = new TestRunner\(\);?\n?/, '');
 
                 // Execute generated JavaScript to define tests
                 eval(generatedJS);
