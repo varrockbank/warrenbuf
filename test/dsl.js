@@ -42,44 +42,75 @@ const VALID_KEYS = new Set(Object.values(Key));
 /**
  * Test environment for a single editor instance.
  * Provides literate methods for user interactions.
+ *
+ * @param {HTMLElement} [existingNode] - Optional DOM node to attach to. If not provided, creates new node in .editor-container
  */
 class EditorFixture {
-  constructor() {
-    const container = document.querySelector('.editor-container');
+  constructor(existingNode = null) {
+    let node;
 
-    const node = document.createElement('div');
-    node.className = 'wb no-select';
-    node.innerHTML = `
-      <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-      <div style="display: flex">
-        <div class="wb-gutter"></div>
-        <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-      </div>
-      <div class="wb-status" style="display: flex; justify-content: space-between;">
-        <div class="wb-status-left" style="display: flex;">
-          <span class="wb-linecount"></span>
+    if (existingNode) {
+      // Use provided node (for walkthrough panel)
+      node = existingNode;
+    } else {
+      // Create new node in hidden container (for tests)
+      const container = document.querySelector('.editor-container');
+      node = document.createElement('div');
+      node.className = 'wb no-select';
+      node.innerHTML = `
+        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+        <div style="display: flex">
+          <div class="wb-gutter"></div>
+          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
         </div>
-        <div class="wb-status-right" style="display: flex;">
-          <span class="wb-coordinate"></span>
-          <span>|</span>
-          <span class="wb-indentation"></span>
+        <div class="wb-status" style="display: flex; justify-content: space-between;">
+          <div class="wb-status-left" style="display: flex;">
+            <span class="wb-linecount"></span>
+          </div>
+          <div class="wb-status-right" style="display: flex;">
+            <span class="wb-coordinate"></span>
+            <span>|</span>
+            <span class="wb-indentation"></span>
+          </div>
         </div>
-      </div>
-    `;
+      `;
 
-    container.innerHTML = '';
-    container.appendChild(node);
+      container.innerHTML = '';
+      container.appendChild(node);
+    }
 
     this.node = node;
     this.wb = new WarrenBuf(node);
     this.steps = []; // Record all steps for walkthrough
 
-    // Store reference for test framework
-    window.currentTestFixture = this;
+    // Store reference for test framework (only for test runs, not walkthrough)
+    if (!existingNode) {
+      window.currentTestFixture = this;
+    }
   }
 
-  _recordStep(description, action) {
-    this.steps.push({ description, action });
+  _recordStep(description, metadata) {
+    this.steps.push({
+      description,
+      metadata  // Store operation details, not closures
+    });
+  }
+
+  // Replay a step on this fixture (used for walkthrough)
+  replayStep(stepIndex) {
+    const step = this.steps[stepIndex];
+    const meta = step.metadata;
+
+    if (meta.type === 'type') {
+      for (const char of meta.text) {
+        dispatchKey(this.node, char);
+      }
+    } else if (meta.type === 'press') {
+      const count = meta.count || 1;
+      for (let i = 0; i < count; i++) {
+        dispatchKey(this.node, meta.key, meta.modifiers);
+      }
+    }
   }
 
   /**
@@ -119,7 +150,12 @@ class EditorFixture {
       once() {
         const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
         const desc = modStr ? `press(${modStr}+${this._key})` : `press(${this._key})`;
-        fixture._recordStep(desc, () => dispatchKey(node, this._key, this._modifiers));
+        fixture._recordStep(desc, {
+          type: 'press',
+          key: this._key,
+          modifiers: { ...this._modifiers },
+          count: 1
+        });
         dispatchKey(node, this._key, this._modifiers);
         return this;
       },
@@ -127,10 +163,11 @@ class EditorFixture {
       times(count) {
         const modStr = Object.keys(this._modifiers).filter(k => this._modifiers[k]).join('+');
         const desc = modStr ? `press(${modStr}+${this._key}).times(${count})` : `press(${this._key}).times(${count})`;
-        fixture._recordStep(desc, () => {
-          for (let i = 0; i < count; i++) {
-            dispatchKey(node, this._key, this._modifiers);
-          }
+        fixture._recordStep(desc, {
+          type: 'press',
+          key: this._key,
+          modifiers: { ...this._modifiers },
+          count: count
         });
         for (let i = 0; i < count; i++) {
           dispatchKey(node, this._key, this._modifiers);
@@ -151,10 +188,9 @@ class EditorFixture {
    *   editor.type('Hello World');
    */
   type(text) {
-    this._recordStep(`type('${text}')`, () => {
-      for (const char of text) {
-        dispatchKey(this.node, char);
-      }
+    this._recordStep(`type('${text}')`, {
+      type: 'type',
+      text: text
     });
     for (const char of text) {
       dispatchKey(this.node, char);

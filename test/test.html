@@ -509,7 +509,13 @@
       `;
 
       const editorNode = editorContainer.querySelector('.wb');
-      walkthroughEditor = new WarrenBuf(editorNode);
+      walkthroughEditor = new EditorFixture(editorNode);
+
+      // Copy steps from test fixture to walkthrough fixture
+      walkthroughEditor.steps = test.fixture.steps;
+
+      // Expose to window for console debugging
+      window.__walkthroughFixture = walkthroughEditor;
 
       // Show panel
       document.getElementById('walkthrough-panel').classList.add('active');
@@ -528,8 +534,8 @@
     function stepNext() {
       if (!currentWalkthrough || currentStep >= currentWalkthrough.fixture.steps.length) return;
 
-      const step = currentWalkthrough.fixture.steps[currentStep];
-      step.action();
+      // Replay the step on the walkthrough fixture
+      walkthroughEditor.replayStep(currentStep);
 
       currentStep++;
       updateStepDisplay();
@@ -541,13 +547,19 @@
       // Reset editor and replay up to previous step
       const editorContainer = document.getElementById('walkthrough-editor');
       const editorNode = editorContainer.querySelector('.wb');
-      walkthroughEditor = new WarrenBuf(editorNode);
+      walkthroughEditor = new EditorFixture(editorNode);
+
+      // Copy steps from test fixture to walkthrough fixture
+      walkthroughEditor.steps = currentWalkthrough.fixture.steps;
+
+      // Expose to window for console debugging
+      window.__walkthroughFixture = walkthroughEditor;
 
       currentStep--;
 
-      // Replay all steps up to current
+      // Replay all steps up to current on the walkthrough fixture
       for (let i = 0; i < currentStep; i++) {
-        currentWalkthrough.fixture.steps[i].action();
+        walkthroughEditor.replayStep(i);
       }
 
       updateStepDisplay();
