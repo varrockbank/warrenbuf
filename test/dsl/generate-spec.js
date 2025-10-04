@@ -42,10 +42,14 @@ class SpecGenerator {
     output.push('// Generated from DSL');
     output.push('const runner = new TestRunner();');
     output.push('');
+    output.push('// DSL source map for walkthrough');
+    output.push('window.dslSourceMap = window.dslSourceMap || {};');
+    output.push('');
 
     let currentSuite = null;
     let currentTest = null;
     let currentTestDescription = null;
+    let currentTestDslLines = [];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -84,11 +88,16 @@ class SpecGenerator {
         if (currentTest !== null) {
           const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
           output.push(`  }${descParam});`);
+
+          // Store DSL source in map
+          const dslSource = currentTestDslLines.join('\\n');
+          output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = \`${dslSource}\`;`);
           output.push('');
         }
 
         currentTest = trimmed.substring(3).trim();
         currentTestDescription = null;
+        currentTestDslLines = [];
         output.push(`  runner.it('${this.escapeString(currentTest)}', () => {`);
 
       // Test description: ### Description
@@ -100,10 +109,12 @@ class SpecGenerator {
         // Empty line
         if (trimmed === '') {
           output.push('');
+          currentTestDslLines.push('');
         }
         // JavaScript pass-through (ends with semicolon or is a comment line)
         else if (trimmed.endsWith(';') || trimmed.startsWith('//')) {
           output.push(`    ${trimmed}`);
+          currentTestDslLines.push(trimmed);
         }
         // DSL command - delegate to transpiler
         else {
@@ -111,11 +122,13 @@ class SpecGenerator {
             const jsLine = this.transpiler.transpileLine(trimmed);
             if (jsLine) {
               output.push(`    ${jsLine}`);
+              currentTestDslLines.push(trimmed);
             }
           } catch (error) {
             // Include error as comment
             output.push(`    // Error transpiling: ${trimmed}`);
             output.push(`    // ${error.message}`);
+            currentTestDslLines.push(`// Error: ${trimmed}`);
           }
         }
       }
@@ -126,6 +139,10 @@ class SpecGenerator {
     if (currentTest !== null) {
       const descParam = currentTestDescription ? `, "${this.escapeString(currentTestDescription)}"` : '';
       output.push(`  }${descParam});`);
+
+      // Store DSL source in map
+      const dslSource = currentTestDslLines.join('\\n');
+      output.push(`  window.dslSourceMap['${this.escapeString(currentSuite)}:${this.escapeString(currentTest)}'] = \`${dslSource}\`;`);
       output.push('');
     }
 

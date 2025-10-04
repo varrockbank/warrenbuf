@@ -57,6 +57,21 @@ class Walkthrough {
     document.getElementById('walkthrough-test-name').textContent = test.name;
     document.getElementById('walkthrough-test-desc').textContent = test.description || '';
 
+    // Display DSL source
+    const dslCodeView = document.getElementById('walkthrough-code-dsl');
+    const dslKey = `${suiteName}:${test.name}`;
+    const dslSource = window.dslSourceMap && window.dslSourceMap[dslKey];
+
+    if (dslSource) {
+      const dslLines = dslSource.split('\n');
+      dslCodeView.innerHTML = dslLines.map(line => {
+        const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<div class="code-line">${escaped || '&nbsp;'}</div>`;
+      }).join('');
+    } else {
+      dslCodeView.innerHTML = '<div class="code-line" style="opacity: 0.5;">No DSL source available</div>';
+    }
+
     // Display test code with inline step markers
     const codeView = document.getElementById('walkthrough-code-js');
 
