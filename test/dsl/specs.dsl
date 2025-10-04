@@ -885,10 +885,14 @@ expect(end).toEqual({row: 2, col: 0});
 ## should demonstrate interleaved success and failure expects
 ### Interleaved success/fail expects for walkthrough testing
 TYPE "First line"
-expect(1).toEqual(null); // Intentional fail for walkthrough demo
+// Intentional fail for walkthrough demo
+expect(1).toEqual(null);
 enter
-expect(1).toBe(1); // Intentional success for walkthrough demo
+// Intentional success for walkthrough demo
+expect(1).toBe(1);
 TYPE "Second line"
-expect(1).toBe(3); // Intentional fail for walkthrough demo
+// Intentional fail for walkthrough demo
+expect(1).toBe(3);
 left with meta
-expect(5).toBe(5); // Intentional success for walkthrough demo
+// Intentional success for walkthrough demo
+expect(5).toBe(5);

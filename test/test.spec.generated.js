@@ -1062,9 +1062,13 @@ runner.describe('Walkthrough feature - regression tests', () => {
 
   runner.it('should should demonstrate interleaved success and failure expects', () => {
     fixture.type('First line');
+expect(1).toEqual(null);
     fixture.press(Key.Enter).once();
+expect(1).toBe(1);
     fixture.type('Second line');
+expect(1).toBe(3);
     fixture.press(Key.ArrowLeft).withMetaKey().once();
+expect(5).toBe(5);
   }, "should demonstrate interleaved success and failure expects");
 
 });
