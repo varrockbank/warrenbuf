@@ -48,9 +48,7 @@ terser warrenbuf.js -o dist/warrenbuf.min.js -c -m
 
 ** Git Hooks
 
-A pre-commit hook automatically:
-1. Regenerates test/test.spec.generated.js when test/dsl/specs.dsl is modified
-2. Minifies warrenbuf.js, ensuring dist/warrenbuf.min.js stays in sync
+A pre-commit hook automatically minifies warrenbuf.js, ensuring dist/warrenbuf.min.js stays in sync.
 
 *Option 1: Manual installation*
 

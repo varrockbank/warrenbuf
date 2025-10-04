@@ -1,27 +1,5 @@
 #!/bin/sh
-# Pre-commit hook to:
-# 1. Regenerate test.spec.generated.js when specs.dsl changes
-# 2. Generate minified dist file
-
-# Check if specs.dsl is being committed
-if git diff --cached --name-only | grep -q "test/dsl/specs.dsl"; then
-    echo "Detected changes to test/dsl/specs.dsl"
-    echo "Regenerating test.spec.generated.js..."
-
-    # Run the generator script
-    ./test/dsl/generate-specs.sh
-
-    # Check if generation was successful
-    if [ $? -eq 0 ]; then
-        # Add the generated file to the commit
-        git add test/test.spec.generated.js
-        echo "✓ Added test.spec.generated.js to commit"
-        echo ""
-    else
-        echo "✗ Failed to generate test.spec.generated.js"
-        exit 1
-    fi
-fi
+# Pre-commit hook to generate minified dist file
 
 echo "Generating dist/warrenbuf.min.js..."
 
