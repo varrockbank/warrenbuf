@@ -34,8 +34,31 @@
 
         main {
             flex: 1;
+            display: flex;
+            gap: 1rem;
             padding: 1rem;
             overflow: hidden;
+        }
+
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pane-header {
+            font-size: 0.9rem;
+            color: #858585;
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #2d2d30;
+            border-radius: 4px;
+        }
+
+        .pane-content {
+            flex: 1;
+            overflow: auto;
         }
 
         textarea {
@@ -57,6 +80,21 @@
             border-color: #007acc;
         }
 
+        #js-output {
+            width: 100%;
+            height: 100%;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+            white-space: pre;
+        }
+
         .loading {
             display: flex;
             align-items: center;
@@ -76,7 +114,18 @@
         <h1>DSL Playground - specs.dsl</h1>
     </header>
     <main>
-        <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
+        <div class="pane">
+            <div class="pane-header">DSL Input</div>
+            <div class="pane-content">
+                <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
+            </div>
+        </div>
+        <div class="pane">
+            <div class="pane-header">Generated JavaScript</div>
+            <div class="pane-content">
+                <div id="js-output"></div>
+            </div>
+        </div>
     </main>
 
     <script>
