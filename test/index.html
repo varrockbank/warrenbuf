@@ -950,6 +950,16 @@
         // Global walkthrough instance
         const walkthrough = new Walkthrough();
 
+        // Close walkthrough with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const walkthroughPanel = document.getElementById('walkthrough-panel');
+                if (walkthroughPanel && walkthroughPanel.classList.contains('active')) {
+                    walkthrough.close();
+                }
+            }
+        });
+
         // Walkthrough code tab switching
         const walkthroughCodeTabs = document.querySelectorAll('.walkthrough-code-tab');
         const walkthroughCodeJsView = document.getElementById('walkthrough-code-js');
