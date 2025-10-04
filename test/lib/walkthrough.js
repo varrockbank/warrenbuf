@@ -187,7 +187,7 @@ class Walkthrough {
 
         if (isError) {
           className += ' error-line';
-          content = `<span class="error-marker">✗</span>${content}`;
+          content = `${content}<span class="error-marker">✗</span>`;
         } else if (isStep) {
           className += ' step-line';
           content = `${content}<span class="step-marker">${stepNum + 1}</span>`;
@@ -297,9 +297,9 @@ class Walkthrough {
         rightMarker += `<span class="step-marker">${stepNum + 1}</span>`;
       }
       if (isFailureLine && shouldRevealExpect) {
-        leftMarker += `<span class="error-marker">✗</span>`;
+        rightMarker += `<span class="error-marker">✗</span>`;
       } else if (isSuccessLine && shouldRevealExpect) {
-        leftMarker += `<span class="success-marker">✓</span>`;
+        rightMarker += `<span class="success-marker">✓</span>`;
       }
 
       return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${escapeHtml(line)}${rightMarker}</div>`;
@@ -361,9 +361,9 @@ class Walkthrough {
           rightMarker += `<span class="step-marker">${stepNum + 1}</span>`;
         }
         if (isFailureLine && shouldRevealExpect) {
-          leftMarker += `<span class="error-marker">✗</span>`;
+          rightMarker += `<span class="error-marker">✗</span>`;
         } else if (isSuccessLine && shouldRevealExpect) {
-          leftMarker += `<span class="success-marker">✓</span>`;
+          rightMarker += `<span class="success-marker">✓</span>`;
         }
 
         return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${escapeHtml(line)}${rightMarker}</div>`;
