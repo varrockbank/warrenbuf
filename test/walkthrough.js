@@ -60,11 +60,11 @@ class Walkthrough {
     // Display test code with inline step markers
     const codeView = document.getElementById('walkthrough-code-js');
 
-    // Extract just the function signature, omitting the body
+    // Extract just the function body, omitting the signature
     const fullSource = test.fnSource;
-    const signatureMatch = fullSource.match(/^(\([^)]*\)\s*=>\s*)\{/);
-    const signature = signatureMatch ? signatureMatch[1] + '{ /* ... */ }' : '() => { /* ... */ }';
-    const sourceLines = [signature];
+    const bodyMatch = fullSource.match(/^[^{]*\{\n?([\s\S]*)\n?\s*\}$/);
+    const body = bodyMatch ? bodyMatch[1] : fullSource;
+    const sourceLines = body.split('\n');
 
     // Map steps to source code lines by matching step descriptions
     const lineToStep = new Map();
@@ -194,11 +194,11 @@ class Walkthrough {
 
     const codeView = document.getElementById('walkthrough-code-js');
 
-    // Extract just the function signature, omitting the body
+    // Extract just the function body, omitting the signature
     const fullSource = test.fnSource;
-    const signatureMatch = fullSource.match(/^(\([^)]*\)\s*=>\s*)\{/);
-    const signature = signatureMatch ? signatureMatch[1] + '{ /* ... */ }' : '() => { /* ... */ }';
-    const sourceLines = [signature];
+    const bodyMatch = fullSource.match(/^[^{]*\{\n?([\s\S]*)\n?\s*\}$/);
+    const body = bodyMatch ? bodyMatch[1] : fullSource;
+    const sourceLines = body.split('\n');
 
     // Determine which expects should be revealed based on current step
     const totalSteps = this.steps.length;
