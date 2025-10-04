@@ -55,7 +55,7 @@ class Walkthrough {
 
     // Update panel header
     document.getElementById('walkthrough-test-name').textContent = test.name;
-    document.getElementById('walkthrough-test-desc').textContent = test.description || '';
+    document.getElementById('walkthrough-test-desc').textContent = test.description ? `(${test.description})` : '';
 
     // Display test code with inline step markers
     const codeView = document.getElementById('walkthrough-code-js');
