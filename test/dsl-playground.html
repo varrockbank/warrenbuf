@@ -777,8 +777,9 @@
         // Load DSL when page loads
         window.addEventListener('DOMContentLoaded', loadDSL);
 
-        // Test runner logic
-        const runner = new TestRunner();
+        // Test runner logic - must be global for eval'd code
+        window.runner = new TestRunner();
+        const runner = window.runner;
 
         function renderResults(results) {
             const resultsContainer = document.getElementById('test-results');
