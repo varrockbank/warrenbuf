@@ -97,7 +97,7 @@ class TestRunner {
             results.passed++;
           }
 
-          // Capture fixture and expect results from global (set by EditorFixture constructor)
+          // Capture fixture and expect results from global (set by EditorTestHarness constructor)
           test.fixture = window.currentTestFixture;
           test.expectResults = expectResults;
         } catch (error) {

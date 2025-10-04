@@ -40,7 +40,7 @@ const Key = {
 const VALID_KEYS = new Set(Object.values(Key));
 
 /**
- * Helper to create a new DOM node for EditorFixture
+ * Helper to create a new DOM node for EditorTestHarness
  */
 function createEditorNode() {
   const container = document.querySelector('.editor-container');
@@ -75,7 +75,7 @@ function createEditorNode() {
  *
  * @param {HTMLElement} node - Required DOM node to attach to
  */
-class EditorFixture {
+class EditorTestHarness {
   constructor(node) {
     this.node = node;
     this.wb = new WarrenBuf(node, null, null, 10);
@@ -194,8 +194,8 @@ class EditorFixture {
   }
 }
 
-// EditorFixture factory
+// EditorTestHarness factory
 const FixtureFactory = {
-  forTest: () => new EditorFixture(createEditorNode()),
-  forWalkthrough: (node) => new EditorFixture(node)
+  forTest: () => new EditorTestHarness(createEditorNode()),
+  forWalkthrough: (node) => new EditorTestHarness(node)
 };
