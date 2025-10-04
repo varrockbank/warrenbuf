@@ -337,6 +337,31 @@
             color: #f44336;
             white-space: pre-wrap;
         }
+        .test-timing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #2d2d30;
+            border: 1px solid #3e3e3e;
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .test-timing-badge .icon {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        .test-timing-badge .duration {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4EC9B0;
+        }
+        .test-timing-badge .details {
+            font-size: 11px;
+            opacity: 0.6;
+            line-height: 1.3;
+        }
         .summary {
             background: #252526;
             padding: 16px;
@@ -658,7 +683,7 @@
     </div>
     <div id="tab-tests" class="tab-content active">
         <main>
-            <div id="test-timing" style="margin-bottom: 16px; opacity: 0.8; font-size: 14px; line-height: 1.6;"></div>
+            <div id="test-timing" class="test-timing-badge"></div>
             <div class="summary">
                 <div class="summary-item">
                     <div class="summary-number" id="total-tests">0</div>
@@ -967,9 +992,13 @@
 
                 const timingDiv = document.getElementById('test-timing');
                 timingDiv.innerHTML = `
-                    Test started at: ${startTime.toLocaleTimeString()}<br>
-                    Test ended at: ${endTime.toLocaleTimeString()}<br>
-                    Duration: ${duration} ms
+                    <span class="icon">⏱️</span>
+                    <div>
+                        <div class="duration">${duration} ms</div>
+                        <div class="details">
+                            ${startTime.toLocaleTimeString()} → ${endTime.toLocaleTimeString()}
+                        </div>
+                    </div>
                 `;
 
                 // Trigger shake animation on timer
