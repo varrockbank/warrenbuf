@@ -24,12 +24,35 @@
             background-color: #2d2d30;
             padding: 1rem;
             border-bottom: 1px solid #3e3e42;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         h1 {
             font-size: 1.2rem;
             font-weight: 500;
             color: #cccccc;
+        }
+
+        button {
+            background-color: #007acc;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #005a9e;
+        }
+
+        button:active {
+            background-color: #004578;
         }
 
         main {
@@ -112,6 +135,7 @@
 <body>
     <header>
         <h1>DSL Playground - specs.dsl</h1>
+        <button id="generate-btn">Generate</button>
     </header>
     <main>
         <div class="pane">
@@ -166,8 +190,9 @@
             }
         }
 
-        // Transpile on input
-        textarea.addEventListener('input', transpileDSL);
+        // Generate button
+        const generateBtn = document.getElementById('generate-btn');
+        generateBtn.addEventListener('click', transpileDSL);
 
         // Load DSL when page loads
         window.addEventListener('DOMContentLoaded', loadDSL);
