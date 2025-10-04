@@ -681,7 +681,6 @@
     <script src="walkthrough.js"></script>
     <script src="harness.js"></script>
     <script src="expect.js"></script>
-    <script src="test.spec.js"></script>
 
     <!-- DSL generator dependencies -->
     <script src="./dsl/transpiler.js"></script>
@@ -838,6 +837,22 @@
         }
 
         async function runAllTests() {
+            // Clear existing test suites
+            runner.suites = [];
+
+            // Get generated JavaScript from Source tab
+            const generatedJS = document.getElementById('js-output').textContent;
+
+            // Execute the generated test code
+            try {
+                eval(generatedJS);
+            } catch (error) {
+                console.error('Error executing generated tests:', error);
+                const timingDiv = document.getElementById('test-timing');
+                timingDiv.innerHTML = `<span style="color: #f44336;">Error executing generated tests: ${error.message}</span>`;
+                return;
+            }
+
             const startTime = new Date();
             const results = await runner.run();
             const endTime = new Date();
