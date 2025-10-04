@@ -452,20 +452,20 @@
         }
         .walkthrough-panel {
             position: fixed;
-            left: 0;
-            right: 0;
+            top: 0;
             bottom: 0;
-            height: 0;
+            right: 0;
+            width: 0;
             background: #1e1e1e;
-            border-top: 2px solid #4EC9B0;
+            border-left: 2px solid #4EC9B0;
             z-index: 1000;
             overflow: hidden;
-            transition: height 0.3s ease;
+            transition: width 0.3s ease;
             display: flex;
             flex-direction: column;
         }
         .walkthrough-panel.active {
-            height: 70vh;
+            width: 70vw;
         }
         .walkthrough-header {
             background: #2d2d30;
