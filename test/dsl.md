@@ -325,3 +325,24 @@ expect(fixture.wb.Model.lines[0]).toBe("");
 PRESS ';'
 PRESS ';' 3 times
 ```
+
+---
+
+## v3.0.0 - Toolchain definition
+
+**Goal:** Define the concrete toolchain for processing DSL.
+
+### Toolchain Proposals
+
+1. **Parser** - How to parse DSL → AST?
+2. **Transpiler** - DSL → JavaScript conversion?
+3. **Interpreter** - Direct execution?
+4. **Integration** - How it hooks into the test framework?
+5. **File format** - `.dsl` extension, where files live?
+6. **Build process** - When/how DSL is processed?
+
+### User Decision
+
+**Approach: Transpilation**
+
+The DSL will be transpiled to JavaScript, not interpreted directly.
