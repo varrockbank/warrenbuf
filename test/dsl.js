@@ -43,50 +43,16 @@ const VALID_KEYS = new Set(Object.values(Key));
  * Test environment for a single editor instance.
  * Provides literate methods for user interactions.
  *
- * @param {HTMLElement} [existingNode] - Optional DOM node to attach to. If not provided, creates new node in .editor-container
+ * @param {HTMLElement} node - Required DOM node to attach to
  */
 class EditorFixture {
-  constructor(existingNode = null) {
-    let node;
-
-    if (existingNode) {
-      // Use provided node (for walkthrough panel)
-      node = existingNode;
-    } else {
-      // Create new node in hidden container (for tests)
-      const container = document.querySelector('.editor-container');
-      node = document.createElement('div');
-      node.className = 'wb no-select';
-      node.innerHTML = `
-        <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
-        <div style="display: flex">
-          <div class="wb-gutter"></div>
-          <div class="wb-lines" style="flex: 1; overflow: hidden;"></div>
-        </div>
-        <div class="wb-status" style="display: flex; justify-content: space-between;">
-          <div class="wb-status-left" style="display: flex;">
-            <span class="wb-linecount"></span>
-          </div>
-          <div class="wb-status-right" style="display: flex;">
-            <span class="wb-coordinate"></span>
-            <span>|</span>
-            <span class="wb-indentation"></span>
-          </div>
-        </div>
-      `;
-
-      container.innerHTML = '';
-      container.appendChild(node);
-    }
-
+  constructor(node) {
     this.node = node;
     this.wb = new WarrenBuf(node, null, null, 10);
     this.steps = []; // Record all steps for walkthrough
 
-    // Store reference for test framework (only for test runs, not walkthrough)
-    if (!existingNode) {
-      window.currentTestFixture = this;
-    }
+    // Store reference for test framework
+    window.currentTestFixture = this;
   }
 
   _recordStep(description, metadata) {
