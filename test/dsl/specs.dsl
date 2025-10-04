@@ -896,3 +896,14 @@ expect(1).toBe(3);
 left with meta
 // Intentional success for walkthrough demo
 expect(5).toBe(5);
+
+
+# DSL regression tests
+
+## should handle pressing semicolon
+### PRESS ';' should produce ';'
+PRESS ';'
+expect(fixture).toHaveLines(';');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 1 });
+expect(SecondEdge).toEqual({ row: 0, col: 1 });

@@ -104,22 +104,28 @@ class DSLTranspiler {
    * Transpile PRESS command
    * Example: PRESS a → fixture.press('a').once();
    * Example: PRESS " " → fixture.press(' ').once();
+   * Example: PRESS ';' → fixture.press(';').once();
    */
   transpilePRESS(cmd) {
-    // Match: PRESS "char" or PRESS char
-    const matchQuoted = cmd.match(/^PRESS\s+"(.+?)"/);
+    // Match: PRESS 'char' or PRESS "char" or PRESS char
+    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'/);
+    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"/);
     const matchUnquoted = cmd.match(/^PRESS\s+(.)/);
 
     let char;
-    if (matchQuoted) {
-      char = matchQuoted[1];
+    if (matchSingleQuoted) {
+      char = matchSingleQuoted[1];
+    } else if (matchDoubleQuoted) {
+      char = matchDoubleQuoted[1];
     } else if (matchUnquoted) {
       char = matchUnquoted[1];
     } else {
       throw new Error(`Invalid PRESS command: ${cmd}`);
     }
 
-    return `fixture.press('${char}').once();`;
+    // Escape single quotes for JavaScript output
+    const escaped = char.replace(/'/g, "\\'");
+    return `fixture.press('${escaped}').once();`;
   }
 
   /**

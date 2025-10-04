@@ -1069,7 +1069,26 @@ expect(1).toBe(1);
 expect(1).toBe(3);
     fixture.press(Key.ArrowLeft).withMetaKey().once();
 expect(5).toBe(5);
+
+
   }, "should demonstrate interleaved success and failure expects");
+
+});
+
+// DSL regression tests
+runner.describe('DSL regression tests', () => {
+  let fixture;
+
+  runner.beforeEach(() => {
+    fixture = FixtureFactory.forTest();
+  });
+
+  runner.it('should should handle pressing semicolon', () => {
+expect(fixture).toHaveLines(';');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 1 });
+expect(SecondEdge).toEqual({ row: 0, col: 1 });
+  }, "should handle pressing semicolon");
 
 });
 
