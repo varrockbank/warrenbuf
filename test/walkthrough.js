@@ -190,7 +190,7 @@ class Walkthrough {
           content = `<span class="error-marker">✗</span>${content}`;
         } else if (isStep) {
           className += ' step-line';
-          content = `<span class="step-marker">${stepNum + 1}</span>${content}`;
+          content = `${content}<span class="step-marker">${stepNum + 1}</span>`;
         }
 
         return `<div class="${className}" data-step="${stepNum !== undefined ? stepNum : ''}">${content}</div>`;
@@ -289,17 +289,18 @@ class Walkthrough {
 
       const onclick = isStepLine ? `onclick="walkthrough.jumpToStep(${stepNum})"` : '';
 
-      let marker = '';
+      let leftMarker = '';
+      let rightMarker = '';
       if (isStepLine) {
-        marker += `<span class="step-marker">${stepNum + 1}</span>`;
+        rightMarker += `<span class="step-marker">${stepNum + 1}</span>`;
       }
       if (isFailureLine && shouldRevealExpect) {
-        marker += `<span class="error-marker">✗</span>`;
+        leftMarker += `<span class="error-marker">✗</span>`;
       } else if (isSuccessLine && shouldRevealExpect) {
-        marker += `<span class="success-marker">✓</span>`;
+        leftMarker += `<span class="success-marker">✓</span>`;
       }
 
-      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
+      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${escapeHtml(line)}${rightMarker}</div>`;
     }).join('');
 
     codeView.innerHTML = codeHtml;
@@ -352,17 +353,18 @@ class Walkthrough {
 
         const onclick = isStepLine ? `onclick="walkthrough.jumpToStep(${stepNum})"` : '';
 
-        let marker = '';
+        let leftMarker = '';
+        let rightMarker = '';
         if (isStepLine) {
-          marker += `<span class="step-marker">${stepNum + 1}</span>`;
+          rightMarker += `<span class="step-marker">${stepNum + 1}</span>`;
         }
         if (isFailureLine && shouldRevealExpect) {
-          marker += `<span class="error-marker">✗</span>`;
+          leftMarker += `<span class="error-marker">✗</span>`;
         } else if (isSuccessLine && shouldRevealExpect) {
-          marker += `<span class="success-marker">✓</span>`;
+          leftMarker += `<span class="success-marker">✓</span>`;
         }
 
-        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
+        return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${escapeHtml(line)}${rightMarker}</div>`;
       }).join('');
 
       dslCodeView.innerHTML = dslCodeHtml;
