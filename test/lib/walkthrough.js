@@ -302,7 +302,12 @@ class Walkthrough {
         rightMarker += `<span class="success-marker">✓</span>`;
       }
 
-      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${escapeHtml(line)}${rightMarker}</div>`;
+      // Apply syntax highlighting
+      const highlighted = typeof hljs !== 'undefined' && line.trim()
+        ? hljs.highlight(line, { language: 'javascript' }).value
+        : escapeHtml(line);
+
+      return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${leftMarker}${highlighted}${rightMarker}</div>`;
     }).join('');
 
     codeView.innerHTML = codeHtml;
