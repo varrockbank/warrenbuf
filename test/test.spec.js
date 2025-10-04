@@ -327,7 +327,7 @@ runner.describe('Cursor movement - varying line lengths', () => {
     fixture.type('Much longer line');
     // Assert cursor position after typing
     let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-    expect(firstEdge).toEqual({ row: 1, col: 16 }); // One past last char
+    expect(firstEdge).toEqual(null); // TEMPORARY: Intentionally failing to test walkthrough behavior
     expect(SecondEdge).toEqual({ row: 1, col: 16 });
 
     fixture.press(Key.ArrowUp).once();  // Move to "Short", col clamped to 5

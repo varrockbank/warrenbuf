@@ -49,17 +49,53 @@ class TestRunner {
           continue;
         }
 
+        // Wrap expect to capture errors but continue execution
+        let firstError = null;
+        const originalExpect = window.expect;
+        window.expect = function(actual) {
+          const matchers = originalExpect(actual);
+          const wrappedMatchers = {};
+
+          for (const key in matchers) {
+            wrappedMatchers[key] = function(...args) {
+              try {
+                return matchers[key](...args);
+              } catch (error) {
+                if (!firstError) {
+                  firstError = error;
+                }
+                // Don't throw, just record the error and continue
+              }
+            };
+          }
+
+          return wrappedMatchers;
+        };
+
         try {
           if (suite.beforeEach) suite.beforeEach();
           await test.fn();
 
-          test.status = 'pass';
+          // Restore original expect
+          window.expect = originalExpect;
+
+          if (firstError) {
+            test.status = 'fail';
+            test.error = firstError;
+            results.failed++;
+          } else {
+            test.status = 'pass';
+            results.passed++;
+          }
+
           // Capture fixture from global (set by EditorFixture constructor)
           test.fixture = window.currentTestFixture;
-          results.passed++;
         } catch (error) {
+          // Restore original expect
+          window.expect = originalExpect;
+
           test.status = 'fail';
-          test.error = error;
+          test.error = firstError || error;
           // Capture fixture even on failure for debugging
           test.fixture = window.currentTestFixture;
           results.failed++;

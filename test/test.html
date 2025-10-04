@@ -280,6 +280,17 @@
       background: #1e3a1e;
       border-left-color: #4CAF50;
     }
+    .code-line.error-line {
+      background: #3a1e1e;
+      border-left: 3px solid #f44336;
+      padding-left: 5px;
+    }
+    .error-marker {
+      display: inline-block;
+      margin-right: 8px;
+      color: #f44336;
+      font-weight: bold;
+    }
     .step-marker {
       display: inline-block;
       width: 25px;
@@ -530,13 +541,47 @@
         }
       });
 
-      // Render source with step markers
+      // Find error line if test failed
+      let errorLineIndex = -1;
+      if (test.status === 'fail' && test.error && test.error.stack) {
+        // Try to extract line number from error stack
+        // Look for patterns like "at <anonymous>:5:10" or similar
+        const stackLines = test.error.stack.split('\n');
+        for (const stackLine of stackLines) {
+          // Match patterns like ":lineNum:" in the stack trace
+          const match = stackLine.match(/:(\d+):/);
+          if (match) {
+            const absoluteLine = parseInt(match[1]);
+            // The line numbers in stack traces are 1-based and refer to the function body
+            // We need to map this to our source line index
+            errorLineIndex = absoluteLine - 2; // Adjust for function wrapper
+            break;
+          }
+        }
+
+        // Fallback: look for expect() calls that might have failed
+        if (errorLineIndex === -1 || errorLineIndex < 0 || errorLineIndex >= sourceLines.length) {
+          sourceLines.forEach((line, idx) => {
+            if (line.includes('expect(') && errorLineIndex === -1) {
+              errorLineIndex = idx;
+            }
+          });
+        }
+      }
+
+      // Render source with step markers and error highlighting
       const codeHtml = sourceLines.map((line, lineIndex) => {
         const stepNum = lineToStep.get(lineIndex);
         const isStepLine = stepNum !== undefined;
-        const classes = isStepLine ? 'code-line step-line' : 'code-line';
+        const isErrorLine = lineIndex === errorLineIndex;
+
+        let classes = 'code-line';
+        if (isErrorLine) classes += ' error-line';
+        if (isStepLine) classes += ' step-line';
+
         const onclick = isStepLine ? `onclick="jumpToStep(${stepNum})"` : '';
-        const marker = isStepLine ? `<span class="step-marker">${stepNum + 1}</span>` : '';
+        const marker = isStepLine ? `<span class="step-marker">${stepNum + 1}</span>` :
+                       isErrorLine ? `<span class="error-marker">✗</span>` : '';
 
         return `<div class="${classes}" data-step="${stepNum ?? ''}" ${onclick}>${marker}${escapeHtml(line)}</div>`;
       }).join('');
