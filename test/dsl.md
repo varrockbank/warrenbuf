@@ -217,3 +217,33 @@ press right with shift
 press left 5 times with meta
 press right 5 times with shift
 ```
+
+---
+
+### v1.4.0 - Omit "press" for special keys
+
+**Syntax:** The `press` keyword can be omitted for Backspace, Enter, and arrow keys
+
+**Example:**
+```
+Backspace
+Backspace 5 times
+Enter once
+left with meta
+right 5 times with shift
+```
+
+---
+
+### v1.5.0 - Case insensitive special keys
+
+**Syntax:** Special keys (Backspace, Enter, ArrowLeft, Left, etc.) are case insensitive
+
+**Example:**
+```
+backspace
+BACKSPACE 5 times
+enter once
+LEFT with meta
+right 5 times with SHIFT
+```
