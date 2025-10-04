@@ -276,3 +276,52 @@ left with meta
 right 5 times with shift
 right with meta, shift
 ```
+
+---
+
+## v2.0.0 - JavaScript interweaving
+
+**Major change:** DSL can be interwoven with JavaScript code.
+
+**Rule:** Any line ending with `;` is interpreted as JavaScript, not DSL.
+
+**Example:**
+```
+TYPE "Hello"
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe("Hello");
+backspace 5 times
+expect(fixture.wb.Model.lines[0]).toBe("");
+```
+
+This allows complex assertions and logic to coexist with natural language DSL commands.
+
+---
+
+## v2.1.0 - Empty lines allowed
+
+**Rule:** Empty lines are allowed between statements for readability.
+
+**Example:**
+```
+TYPE "Hello"
+
+const text = fixture.wb.Model.lines[0];
+expect(text).toBe("Hello");
+
+backspace 5 times
+
+expect(fixture.wb.Model.lines[0]).toBe("");
+```
+
+---
+
+## v2.2.0 - Disambiguate semicolon
+
+**Rule:** `PRESS ;` is ambiguous (conflicts with JavaScript line ending). Semicolon must be single-quoted: `PRESS ';'`
+
+**Example:**
+```
+PRESS ';'
+PRESS ';' 3 times
+```
