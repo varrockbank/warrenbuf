@@ -986,6 +986,11 @@
         // Global walkthrough instance
         const walkthrough = new Walkthrough();
 
+        // Close walkthrough when clicking backdrop
+        document.getElementById('walkthrough-backdrop').addEventListener('click', () => {
+            walkthrough.close();
+        });
+
         // Walkthrough keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             const walkthroughPanel = document.getElementById('walkthrough-panel');
