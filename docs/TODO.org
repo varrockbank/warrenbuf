@@ -1,7 +1,7 @@
 * Unhandled bugs
 
 - At last character of last last line. Behaviors such as move next row, move next col should add new line to buffer
-- tab character messes up the rendering
+- ~~tab character messes up the rendering~~ FIXED: Added tabWidth parameter and proper tab-to-space rendering
 
 * Rendering improvements
 

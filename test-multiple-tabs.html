@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Multiple Tabs</title>
+</head>
+<body>
+    <h1>Test Multiple Tabs</h1>
+    <div id="output"></div>
+
+    <script>
+        function convertTabColumnToRenderedColumn(originalText, column, tabWidth = 4) {
+            if (!originalText) return column;
+            
+            let renderedColumn = 0;
+            for (let i = 0; i < column; i++) {
+                if (originalText[i] === '\t') {
+                    // Tab adds tabWidth spaces
+                    renderedColumn = renderedColumn + tabWidth;
+                } else {
+                    renderedColumn++;
+                }
+            }
+            
+            // If we're positioned ON a tab character, stay at the start of the tab
+            if (column < originalText.length && originalText[column] === '\t') {
+                // Stay at the current rendered column (start of tab)
+            }
+            
+            return renderedColumn;
+        }
+
+        const testText = "foo\tbar\tbaz";
+        const output = document.getElementById('output');
+        
+        output.innerHTML = `<h2>Testing: "${testText}"</h2>`;
+        output.innerHTML += `<p>Expected mapping for "foo\tbar\tbaz": 0->0, 1->1, 2->2, 3->3, 4->7, 5->8, 6->9, 7->10, 8->14, 9->15, 10->16</p>`;
+        output.innerHTML += `<p>Actual mapping:</p>`;
+        
+        for (let i = 0; i <= testText.length; i++) {
+            const rendered = convertTabColumnToRenderedColumn(testText, i);
+            const char = i < testText.length ? testText[i] : 'EOF';
+            output.innerHTML += `<div>Position ${i} ('${char}') → Rendered position ${rendered}</div>`;
+        }
+    </script>
+</body>
+</html>
