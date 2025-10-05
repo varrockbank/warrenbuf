@@ -864,6 +864,20 @@ Empty lines are preserved.</span></div>
                 // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
                 document.getElementById(`tab-${tabName}`).classList.add('active');
+
+                // Shake timer if switching to tests tab and tests were compiled since last view
+                if (tabName === 'tests') {
+                    const timingDiv = document.getElementById('test-timing');
+                    if (testsCompiledSinceLastView) {
+                        timingDiv.classList.remove('shake');
+                        void timingDiv.offsetWidth; // Force reflow
+                        timingDiv.classList.add('shake');
+                        testsCompiledSinceLastView = false;
+                    } else {
+                        // Ensure shake class is removed if we're not shaking
+                        timingDiv.classList.remove('shake');
+                    }
+                }
             });
         });
 
@@ -876,6 +890,7 @@ Empty lines are preserved.</span></div>
         const statusUpToDate = document.getElementById('status-uptodate');
 
         let lastGeneratedSource = '';
+        let testsCompiledSinceLastView = false;
 
         function updateUIState() {
             const currentSource = textarea.value;
@@ -937,7 +952,11 @@ Empty lines are preserved.</span></div>
         }
 
         // Generate button
-        generateBtn.addEventListener('click', transpileDSL);
+        generateBtn.addEventListener('click', async () => {
+            transpileDSL();
+            await runAllTests();
+            testsCompiledSinceLastView = true;
+        });
 
         // Check for changes on input
         textarea.addEventListener('input', updateUIState);
@@ -1040,11 +1059,6 @@ Empty lines are preserved.</span></div>
                     <span class="details">(Started: ${startTime.toLocaleTimeString()} • Ended: ${endTime.toLocaleTimeString()})</span>
                 `;
 
-                // Trigger shake animation on timer
-                timingDiv.classList.remove('shake');
-                void timingDiv.offsetWidth; // Force reflow
-                timingDiv.classList.add('shake');
-
                 renderResults(results);
             } catch (error) {
                 const resultsContainer = document.getElementById('test-results');
@@ -1053,17 +1067,6 @@ Empty lines are preserved.</span></div>
             }
         }
 
-        // Auto-run tests when switching to Tests tab
-        tabs.forEach(tab => {
-            const originalClickHandler = tab.onclick;
-            tab.addEventListener('click', () => {
-                const tabName = tab.getAttribute('data-tab');
-                if (tabName === 'tests' && typeof runner !== 'undefined') {
-                    // Small delay to allow tab to switch first
-                    setTimeout(runAllTests, 100);
-                }
-            });
-        });
 
         // Global walkthrough instance
         const walkthrough = new Walkthrough();
