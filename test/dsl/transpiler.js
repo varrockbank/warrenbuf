@@ -1,11 +1,12 @@
 /**
  * DSL Transpiler - Converts natural language test DSL to JavaScript
  *
- * Follows DSL specification v2.2.0 with:
+ * Follows DSL specification v3.1.0 with:
  * - v1.6.0 normalized forms
  * - v2.0.0 JavaScript interweaving (lines ending with `;`)
  * - v2.1.0 empty lines allowed
  * - v2.2.0 semicolon disambiguation (PRESS ';')
+ * - v3.1.0 standalone comment lines (lines starting with `//`)
  */
 
 class DSLTranspiler {
@@ -53,6 +54,11 @@ class DSLTranspiler {
     // Empty line - pass through
     if (trimmed === '') {
       return '';
+    }
+
+    // JavaScript comment line (starts with //) - pass through
+    if (trimmed.startsWith('//')) {
+      return line;
     }
 
     // JavaScript line (ends with semicolon) - pass through

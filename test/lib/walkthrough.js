@@ -228,8 +228,8 @@ class Walkthrough {
 
     this.walkthroughHarness = FixtureFactory.forWalkthrough(editorNode);
 
-    // Copy steps from test fixture to walkthrough fixture
-    this.walkthroughHarness.walkthrough.steps = this.steps;
+    // Disable step recording for walkthrough replay
+    this.walkthroughHarness.walkthrough.recordStep = () => {};
 
     // Expose to window for console debugging
     window.__walkthroughFixture = this.walkthroughHarness;
@@ -415,7 +415,7 @@ class Walkthrough {
     `;
 
     this.walkthroughHarness = FixtureFactory.forWalkthrough(editorNode);
-    this.walkthroughHarness.walkthrough.steps = this.steps;
+    this.walkthroughHarness.walkthrough.recordStep = () => {};
     window.__walkthroughFixture = this.walkthroughHarness;
 
     this.currentStep--;
@@ -481,7 +481,7 @@ class Walkthrough {
     `;
 
     this.walkthroughHarness = FixtureFactory.forWalkthrough(editorNode);
-    this.walkthroughHarness.walkthrough.steps = this.steps;
+    this.walkthroughHarness.walkthrough.recordStep = () => {};
     window.__walkthroughFixture = this.walkthroughHarness;
 
     this.currentStep = targetStep + 1;

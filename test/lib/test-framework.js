@@ -127,7 +127,7 @@ function dispatchKey(node, key, modifiers = {}) {
   const event = new KeyboardEvent('keydown', {
     key,
     code: key.length === 1 ? `Key${key.toUpperCase()}` : key,
-    bubbles: true,
+    bubbles: false,  // Don't bubble - only for test/walkthrough simulation
     cancelable: true,
     metaKey: modifiers.meta || false,
     ctrlKey: modifiers.ctrl || false,
