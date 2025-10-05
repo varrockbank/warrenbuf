@@ -9,7 +9,7 @@ function WarrenBuf(node,
     colorSecondary = "#212026",
     gutterSize = 2,
     gutterPadding = 1,
-    tabWidth = 4) {
+    tabStop = 8) {
   this.version = "2.2.5-alpha.1";
 
   const $e = node.querySelector('.wb-lines');
@@ -449,14 +449,32 @@ function WarrenBuf(node,
     lineCount: -1
   };
 
-  // Function to render tabs as spaces for display
+  // Function to render tabs as spaces for display using proper tab alignment
   function renderTabAwareText(text) {
     if (!text) return text;
-    return text.replace(/\t/g, ' '.repeat(tabWidth));
+    
+    let result = '';
+    let column = 0;
+    
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\t') {
+        // Tab aligns to next tabWidth boundary
+        const nextTabStop = Math.ceil((column + 1) / tabStop) * tabStop;
+        const spacesNeeded = nextTabStop - column;
+        result += ' '.repeat(spacesNeeded);
+        column = nextTabStop;
+      } else {
+        result += text[i];
+        column++;
+      }
+    }
+    
+    return result;
   }
 
   // Function to convert column position from original text (with tabs) to rendered text (with spaces)
-  // For "foo\tbar" with tabWidth=4, the mapping should be: 0->0, 1->1, 2->2, 3->3, 4->7, 5->8
+  // Uses proper tab alignment - tabs jump to the next tabStop boundary
+  // For "foo\tbar" with tabStop=8, the mapping should be: 0->0, 1->1, 2->2, 3->8, 4->9, 5->10
   // For selections ending on tabs, we need to extend to the end of the tab's visual space
   function convertTabColumnToRenderedColumn(originalText, column, extendToEndOfTab = false) {
     if (!originalText) return column;
@@ -464,9 +482,9 @@ function WarrenBuf(node,
     let renderedColumn = 0;
     for (let i = 0; i < column; i++) {
       if (originalText[i] === '\t') {
-        // Tab adds tabWidth spaces
-        // For "foo\tbar" at position 3, renderedColumn goes from 3 to 3+4=7
-        renderedColumn = renderedColumn + tabWidth;
+        // Tab aligns to next tabStop boundary
+        // For "foo\tbar" at position 3, renderedColumn goes from 3 to 8 (next boundary)
+        renderedColumn = Math.ceil((renderedColumn + 1) / tabStop) * tabStop;
       } else {
         renderedColumn++;
       }
@@ -475,7 +493,7 @@ function WarrenBuf(node,
     // If we're positioned ON a tab character and extending to end of tab
     if (extendToEndOfTab && column < originalText.length && originalText[column] === '\t') {
       // Extend to the end of the tab's visual space
-      renderedColumn = renderedColumn + tabWidth - 1;
+      renderedColumn = Math.ceil((renderedColumn + 1) / tabStop) * tabStop - 1;
     }
     
     return renderedColumn;

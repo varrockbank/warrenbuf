@@ -125,7 +125,7 @@
                 </div>
             </div>
         </blockquote>
-        <div class="expected">Expected: Moving right from 'o' should skip over the tab and land on 'b' in 2 moves. For "foo	bar	baz", cursor should move: f→o→o→(tab)→b→a→r→(tab)→b→a→z</div>
+        <div class="expected">Expected: Moving right from 'o' should skip over the tab and land on 'b' in 2 moves. For "foo	bar	baz" with tabStop=8, cursor should move: f→o→o→(tab)→b→a→r→(tab)→b→a→z</div>
     </div>
     
     <div class="test-section">
@@ -171,7 +171,7 @@
                 </div>
             </div>
         </blockquote>
-        <div class="expected">Expected: Tab width variations should align at 4-space boundaries, selections should work correctly with tabs</div>
+        <div class="expected">Expected: Tab stop variations should align at 8-space boundaries, selections should work correctly with tabs</div>
     </div>
     
     <div class="test-section">
@@ -183,7 +183,7 @@
                 <li>Check cursor positioning when moving through tabs</li>
                 <li>Try selecting text that includes tabs</li>
                 <li>Look for any off-by-one errors in alignment or cursor positioning</li>
-                <li>Test the tab width variations - they should align at 4-space boundaries</li>
+                <li>Test the tab stop variations - they should align at 8-space boundaries</li>
             </ol>
         </div>
     </div>
@@ -192,10 +192,10 @@
     <script>
         // Initialize editors for testing
         document.addEventListener('DOMContentLoaded', function() {
-            // Create WarrenBuf instances with custom tab width
-            const editor1 = new WarrenBuf(document.getElementById('editor1'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 4);
-            const editor2 = new WarrenBuf(document.getElementById('editor2'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 4);
-            const editor3 = new WarrenBuf(document.getElementById('editor3'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 4);
+            // Create WarrenBuf instances with custom tab stop
+            const editor1 = new WarrenBuf(document.getElementById('editor1'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
+            const editor2 = new WarrenBuf(document.getElementById('editor2'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
+            const editor3 = new WarrenBuf(document.getElementById('editor3'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
             
             // Set test content with tabs - simple test case
             editor1.Model.text = `Simple test:
@@ -220,7 +220,7 @@ Empty line with tab:
 Normal line
 	Another indented line`;
 
-            editor3.Model.text = `Tab width variations (should align at 4-space boundaries):
+            editor3.Model.text = `Tab stop variations (should align at 8-space boundaries):
 a	b	c	d
 ab	cd	ef	gh
 abc	def	ghi	jkl
