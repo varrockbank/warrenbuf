@@ -1507,19 +1507,25 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
             selection.addRange(range);
         }
 
-        // Handle input events for contenteditable with syntax highlighting
-        let highlightTimeout;
+        // Handle input events for contenteditable
         editor.addEventListener('input', () => {
             updateUIState();
             updateLineNumbers();
+        });
 
-            // Apply syntax highlighting with a delay to avoid interfering with typing
-            clearTimeout(highlightTimeout);
-            highlightTimeout = setTimeout(() => {
-                const cursorPos = getCursorPosition();
-                setEditorContent(getEditorContent());
-                setCursorPosition(cursorPos);
-            }, 500);
+        // Apply syntax highlighting when user stops editing
+        editor.addEventListener('blur', () => {
+            const cursorPos = getCursorPosition();
+            setEditorContent(getEditorContent());
+            setCursorPosition(cursorPos);
+        });
+
+        // Also apply highlighting on focus to ensure it's always highlighted when switching back
+        editor.addEventListener('focus', () => {
+            // Don't move cursor, just ensure highlighting is applied
+            const cursorPos = getCursorPosition();
+            setEditorContent(getEditorContent());
+            setCursorPosition(cursorPos);
         });
 
         // Load DSL when page loads
