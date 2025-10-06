@@ -864,6 +864,26 @@
             border-bottom-color: #4EC9B0;
         }
 
+        .walkthrough-compile-warning {
+            background-color: #3a2e1e;
+            border-bottom: 2px solid #daa520;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .walkthrough-compile-warning .warning-icon {
+            font-size: 1rem;
+            color: #daa520;
+        }
+
+        .walkthrough-compile-warning #walkthrough-compile-warning-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #daa520;
+        }
+
         @media (max-width: 1300px) {
             .walkthrough-panel.active {
                 width: calc(100vw - 100px);
@@ -1020,6 +1040,10 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         </div>
         <div class="walkthrough-body">
             <div class="walkthrough-left">
+                <div id="walkthrough-compile-warning" class="walkthrough-compile-warning" style="display: none;">
+                    <span class="warning-icon">⚠</span>
+                    <span id="walkthrough-compile-warning-text">Compiled with errors</span>
+                </div>
                 <div style="background: #2d2d30; border-bottom: 1px solid #3e3e3e; display: flex; align-items: center;">
                     <button class="walkthrough-code-tab active" data-code-tab="js">Generated JavaScript</button>
                     <button class="walkthrough-code-tab" data-code-tab="dsl">Source DSL</button>
