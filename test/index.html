@@ -289,23 +289,65 @@
             outline: none;
         }
 
-        .dsl-editor {
+        .dsl-editor-container {
             flex: 1;
+            position: relative;
             background-color: #1e1e1e;
-            color: #d4d4d4;
+            overflow: hidden;
+        }
+
+        .dsl-editor-textarea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             padding: 1rem;
+            margin: 0;
+            border: none;
+            background: transparent;
+            color: transparent;
             font-family: inherit;
             font-size: 14px;
             line-height: 1.5;
-            overflow: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            resize: none;
             outline: none;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+            overflow-y: auto;
+            z-index: 2;
+            caret-color: #d4d4d4;
         }
 
-        .dsl-editor:empty:before {
-            content: attr(data-placeholder);
+        .dsl-editor-textarea::selection {
+            background: rgba(237, 173, 16, 0.3);
+        }
+
+        .dsl-editor-textarea::placeholder {
             color: #858585;
+        }
+
+        .dsl-editor-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            margin: 0;
+            border: none;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            z-index: 1;
+            pointer-events: none;
         }
 
         /* DSL Syntax Highlighting */
@@ -1061,7 +1103,10 @@
                 <div class="pane-content">
                     <div class="editor-wrapper">
                         <div class="line-numbers" id="dsl-line-numbers">1</div>
-                        <div id="dsl-content" class="dsl-editor" contenteditable="true" spellcheck="false" data-placeholder="Loading DSL content..."></div>
+                        <div class="dsl-editor-container">
+                            <div id="dsl-highlight" class="dsl-editor-highlight"></div>
+                            <textarea id="dsl-content" class="dsl-editor-textarea" spellcheck="false" placeholder="Loading DSL content..."></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1278,7 +1323,8 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         // Source tab logic
         const transpiler = new DSLTranspiler();
         const generator = new SpecGenerator(transpiler);
-        const editor = document.getElementById('dsl-content');
+        const textarea = document.getElementById('dsl-content');
+        const highlightDiv = document.getElementById('dsl-highlight');
         const outputDiv = document.getElementById('js-output');
         const generateBtn = document.getElementById('generate-btn');
         const statusUpToDate = document.getElementById('status-uptodate');
@@ -1288,14 +1334,20 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         let lastCompileHadErrors = false;
         let lastCompileErrors = [];
 
-        // Helper functions for contenteditable
+        // Helper functions for overlay editor
         function getEditorContent() {
-            return editor.textContent || '';
+            return textarea.value || '';
         }
 
         function setEditorContent(text) {
+            textarea.value = text;
+            updateHighlighting();
+        }
+
+        function updateHighlighting() {
+            const text = textarea.value;
             const highlighted = highlightDSL(text);
-            editor.innerHTML = highlighted || '';
+            highlightDiv.innerHTML = highlighted || '';
         }
 
         function updateUIState() {
@@ -1449,83 +1501,19 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
             lineNumbersDiv.innerHTML = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
         }
 
-        // Sync scroll between editor and line numbers
-        editor.addEventListener('scroll', () => {
+        // Sync scroll between textarea, highlight div, and line numbers
+        textarea.addEventListener('scroll', () => {
             const lineNumbersDiv = document.getElementById('dsl-line-numbers');
-            lineNumbersDiv.scrollTop = editor.scrollTop;
+            lineNumbersDiv.scrollTop = textarea.scrollTop;
+            highlightDiv.scrollTop = textarea.scrollTop;
+            highlightDiv.scrollLeft = textarea.scrollLeft;
         });
 
-        // Get cursor position as character offset from start
-        function getCursorPosition() {
-            const selection = window.getSelection();
-            if (selection.rangeCount === 0) return 0;
-
-            const range = selection.getRangeAt(0);
-            const preCaretRange = range.cloneRange();
-            preCaretRange.selectNodeContents(editor);
-            preCaretRange.setEnd(range.endContainer, range.endOffset);
-            return preCaretRange.toString().length;
-        }
-
-        // Set cursor position by character offset from start
-        function setCursorPosition(offset) {
-            const selection = window.getSelection();
-            const range = document.createRange();
-
-            let charCount = 0;
-            let found = false;
-
-            function traverseNodes(node) {
-                if (found) return;
-
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const nextCharCount = charCount + node.length;
-                    if (offset <= nextCharCount) {
-                        range.setStart(node, offset - charCount);
-                        range.collapse(true);
-                        found = true;
-                        return;
-                    }
-                    charCount = nextCharCount;
-                } else {
-                    for (let i = 0; i < node.childNodes.length; i++) {
-                        traverseNodes(node.childNodes[i]);
-                        if (found) return;
-                    }
-                }
-            }
-
-            traverseNodes(editor);
-
-            if (!found && editor.childNodes.length > 0) {
-                // Place at end
-                range.selectNodeContents(editor);
-                range.collapse(false);
-            }
-
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-
-        // Handle input events for contenteditable
-        editor.addEventListener('input', () => {
+        // Handle input events - update highlighting in real-time
+        textarea.addEventListener('input', () => {
             updateUIState();
             updateLineNumbers();
-        });
-
-        // Apply syntax highlighting when user stops editing
-        editor.addEventListener('blur', () => {
-            const cursorPos = getCursorPosition();
-            setEditorContent(getEditorContent());
-            setCursorPosition(cursorPos);
-        });
-
-        // Also apply highlighting on focus to ensure it's always highlighted when switching back
-        editor.addEventListener('focus', () => {
-            // Don't move cursor, just ensure highlighting is applied
-            const cursorPos = getCursorPosition();
-            setEditorContent(getEditorContent());
-            setCursorPosition(cursorPos);
+            updateHighlighting();
         });
 
         // Load DSL when page loads
