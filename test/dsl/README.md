@@ -348,6 +348,19 @@ expect cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);
 expect cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
 ```
 
+#### expect selection at
+```
+expect selection at <startRow>,<startCol>-<endRow>,<endCol>  →  expect(fixture).toHaveSelectionAt(startRow, startCol, endRow, endCol);
+```
+
+Verifies that there is an active selection with the specified start and end coordinates.
+
+Examples:
+```
+expect selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
+expect selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
+```
+
 #### Special Keys
 ```
 backspace                   →  fixture.press(Key.Backspace).once();

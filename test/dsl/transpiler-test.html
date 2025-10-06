@@ -242,6 +242,35 @@ expect(fixture).toHaveCursorAt(0, 5);`
         name: 'expect cursor at with non-numeric col (should fail)',
         input: 'expect cursor at 0,abc',
         expectedError: 'Invalid expect cursor at command: expect cursor at 0,abc'
+      },
+      {
+        name: 'expect selection at command',
+        input: 'expect selection at 1,2-4,5',
+        expected: 'expect(fixture).toHaveSelectionAt(1, 2, 4, 5);'
+      },
+      {
+        name: 'expect selection at with spaces',
+        input: 'expect selection at 0, 1 - 2, 3',
+        expected: 'expect(fixture).toHaveSelectionAt(0, 1, 2, 3);'
+      },
+      {
+        name: 'expect selection at in context',
+        input: `TYPE "Hello World"
+left 5 times with shift
+expect selection at 0,6-0,11`,
+        expected: `fixture.type('Hello World');
+fixture.press(Key.ArrowLeft).withShiftKey().times(5);
+expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
+      },
+      {
+        name: 'expect selection at with invalid format (should fail)',
+        input: 'expect selection at 1,2',
+        expectedError: 'Invalid expect selection at command: expect selection at 1,2'
+      },
+      {
+        name: 'expect selection at with non-numeric values (should fail)',
+        input: 'expect selection at a,b-c,d',
+        expectedError: 'Invalid expect selection at command: expect selection at a,b-c,d'
       }
     ];
 

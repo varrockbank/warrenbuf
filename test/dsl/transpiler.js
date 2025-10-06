@@ -91,6 +91,11 @@ class DSLTranspiler {
       return this.transpileExpectCursorAt(cmd);
     }
 
+    // expect selection at command
+    if (cmd.startsWith('expect selection at ')) {
+      return this.transpileExpectSelectionAt(cmd);
+    }
+
     // Special key commands (backspace, enter, arrow keys)
     return this.transpileSpecialKey(cmd);
   }
@@ -163,6 +168,23 @@ class DSLTranspiler {
     const row = match[1];
     const col = match[2];
     return `expect(fixture).toHaveCursorAt(${row}, ${col});`;
+  }
+
+  /**
+   * Transpile expect selection at command
+   * Example: expect selection at 1,2-4,5 → expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
+   */
+  transpileExpectSelectionAt(cmd) {
+    const match = cmd.match(/^expect selection at (\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)$/);
+    if (!match) {
+      throw new Error(`Invalid expect selection at command: ${cmd}`);
+    }
+
+    const startRow = match[1];
+    const startCol = match[2];
+    const endRow = match[3];
+    const endCol = match[4];
+    return `expect(fixture).toHaveSelectionAt(${startRow}, ${startCol}, ${endRow}, ${endCol});`;
   }
 
   /**
