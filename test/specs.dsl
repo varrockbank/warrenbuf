@@ -4,17 +4,13 @@
 ### Insert single character 'a'
 PRESS a
 expect(fixture).toHaveLines('a');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 1 });
-expect(SecondEdge).toEqual({ row: 0, col: 1 });
+expect cursor at 0,1
 
 ## should insert word 'Hello'
 ### Insert 'Hello'
 TYPE "Hello"
 expect(fixture).toHaveLines('Hello');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 
 ## should insert phrase with spaces
 ### Insert 'Hello World' with spaces
@@ -53,9 +49,7 @@ TYPE "Hello"
 left 2 times
 backspace
 expect(fixture).toHaveLines('Helo');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 2 });
-expect(SecondEdge).toEqual({ row: 0, col: 2 });
+expect cursor at 0,2
 
 ## should delete multiple characters from middle
 ### Delete 2 chars from middle
@@ -63,18 +57,14 @@ TYPE "Hello World"
 left 6 times
 backspace 2 times
 expect(fixture).toHaveLines('Hel World');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 3 });
-expect(SecondEdge).toEqual({ row: 0, col: 3 });
+expect cursor at 0,3
 
 ## should stop at line start when backspacing
 ### Backspace beyond line start
 TYPE "Hi"
 backspace 5 times
 expect(fixture).toHaveLines('');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 
 
 # Enter Key
@@ -109,17 +99,13 @@ enter
 TYPE "Second line"
 enter
 expect(fixture).toHaveLines('First line', 'Second line', '');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 2, col: 0 });
-expect(SecondEdge).toEqual({ row: 2, col: 0 });
+expect cursor at 2,0
 
 ## should create multiple empty lines
 ### Create multiple empty lines from empty document
 enter 5 times
 expect(fixture).toHaveLines('', '', '', '', '', '');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 5, col: 0 });
-expect(SecondEdge).toEqual({ row: 5, col: 0 });
+expect cursor at 5,0
 
 
 # Complex Sequences
@@ -156,9 +142,7 @@ TYPE "World"
 left with meta
 backspace
 expect(fixture).toHaveLines('HelloWorld');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 
 ## should edit at end of middle line
 ### Edit at end of middle line
@@ -226,9 +210,7 @@ enter
 TYPE "Line 2"
 up
 expect(fixture.wb.Selection.isSelection).toBe(false);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 6 });
-expect(SecondEdge).toEqual({ row: 0, col: 6 });
+expect cursor at 0,6
 
 ## should select upward with Shift+ArrowUp
 ### Select upward with Shift+ArrowUp
@@ -276,23 +258,17 @@ TYPE "Short"
 enter
 TYPE "Much longer line"
 up
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 
 ## should restore original column when moving back
 ### Should restore original column when moving back
 TYPE "Short"
 enter
 TYPE "Much longer line"
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 1, col: 16 });
-expect(SecondEdge).toEqual({ row: 1, col: 16 });
+expect cursor at 1,16
 up
 down
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 1, col: 16 });
-expect(SecondEdge).toEqual({ row: 1, col: 16 });
+expect cursor at 1,16
 
 ## should clamp to shorter line end
 ### Clamp to shorter line end
@@ -300,9 +276,7 @@ TYPE "A"
 enter
 TYPE "Very long line here"
 up
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 1 });
-expect(SecondEdge).toEqual({ row: 0, col: 1 });
+expect cursor at 0,1
 
 ## should navigate multiple lines with varying lengths
 ### Multiple lines with varying lengths
@@ -313,9 +287,7 @@ enter
 TYPE "Line three is longest"
 up
 up
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 8 });
-expect(SecondEdge).toEqual({ row: 0, col: 8 });
+expect cursor at 0,8
 
 ## should move from middle of long line to end of short line
 ### Move from middle of long line to end of short line
@@ -325,9 +297,7 @@ TYPE "This is a much longer line"
 left with meta
 right 10 times
 up
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 
 ## should navigate from medium line to short and long lines
 ### Navigate from medium line to short and long lines
@@ -340,14 +310,10 @@ up
 left with meta
 right 8 times
 up
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 down
 down
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 2, col: 8 });
-expect(SecondEdge).toEqual({ row: 2, col: 8 });
+expect cursor at 2,8
 
 ## should navigate from medium line to short and long lines with natural typing
 ### Navigate from medium line to short and long lines (natural typing)
@@ -359,14 +325,10 @@ TYPE "Longest!!!"
 up
 right with meta
 up
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 down
 down
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 2, col: 8 });
-expect(SecondEdge).toEqual({ row: 2, col: 8 });
+expect cursor at 2,8
 
 
 # Meta+Arrow navigation
@@ -375,31 +337,23 @@ expect(SecondEdge).toEqual({ row: 2, col: 8 });
 ### Meta+Right moves to end of line
 TYPE "Hello World"
 left with meta
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 right with meta
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 11 });
-expect(SecondEdge).toEqual({ row: 0, col: 11 });
+expect cursor at 0,11
 
 ## should move to start of line with Meta+Left from middle
 ### Meta+Left from middle of line
 TYPE "Hello World"
 left 3 times
 left with meta
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 
 ## should move to end of line with Meta+Right from middle
 ### Meta+Right from middle of line
 TYPE "Hello World"
 left 3 times
 right with meta
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 11 });
-expect(SecondEdge).toEqual({ row: 0, col: 11 });
+expect cursor at 0,11
 
 ## should use Meta+Left and Meta+Right on second line
 ### Meta+Left/Right on second line
@@ -407,13 +361,9 @@ TYPE "First line"
 enter
 TYPE "Second line here"
 left with meta
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 1, col: 0 });
-expect(SecondEdge).toEqual({ row: 1, col: 0 });
+expect cursor at 1,0
 right with meta
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 1, col: 16 });
-expect(SecondEdge).toEqual({ row: 1, col: 16 });
+expect cursor at 1,16
 
 ## should use Meta+Right after moving between lines
 ### Meta+Right after moving between lines
@@ -422,9 +372,7 @@ enter
 TYPE "Much longer line"
 up
 right with meta
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 5 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect cursor at 0,5
 
 
 # Shift+Meta+Arrow selection
@@ -904,14 +852,10 @@ expect(5).toBe(5);
 ### PRESS ';' should produce ';'
 PRESS ';'
 expect(fixture).toHaveLines(';');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 1 });
-expect(SecondEdge).toEqual({ row: 0, col: 1 });
+expect cursor at 0,1
 
 ## should handle pressing semicolon multiple times
 ### PRESS ';' 3 times should produce ';;;'
 PRESS ';' 3 times
 expect(fixture).toHaveLines(';;;');
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 3 });
-expect(SecondEdge).toEqual({ row: 0, col: 3 });
+expect cursor at 0,3
