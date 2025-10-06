@@ -86,6 +86,11 @@ class DSLTranspiler {
       return this.transpilePRESS(cmd);
     }
 
+    // expect cursor at command
+    if (cmd.startsWith('expect cursor at ')) {
+      return this.transpileExpectCursorAt(cmd);
+    }
+
     // Special key commands (backspace, enter, arrow keys)
     return this.transpileSpecialKey(cmd);
   }
@@ -143,6 +148,21 @@ class DSLTranspiler {
     } else {
       return `fixture.press('${escaped}').once();`;
     }
+  }
+
+  /**
+   * Transpile expect cursor at command
+   * Example: expect cursor at 0,1 → expect(fixture).toHaveCursorAt(0, 1);
+   */
+  transpileExpectCursorAt(cmd) {
+    const match = cmd.match(/^expect cursor at (\d+),\s*(\d+)$/);
+    if (!match) {
+      throw new Error(`Invalid expect cursor at command: ${cmd}`);
+    }
+
+    const row = match[1];
+    const col = match[2];
+    return `expect(fixture).toHaveCursorAt(${row}, ${col});`;
   }
 
   /**

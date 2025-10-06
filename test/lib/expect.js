@@ -13,6 +13,25 @@ function expect(actual) {
             throw new Error(`Expected line ${i} to be "${expected}", got "${actual.wb.Model.lines[i]}"`);
           }
         });
+      },
+      toHaveCursorAt(row, col) {
+        const [firstEdge, secondEdge] = actual.wb.Selection.ordered;
+        const isSelectionByReference = firstEdge !== secondEdge;
+
+        // Check consistency between reference check and isSelection property
+        if (isSelectionByReference !== actual.wb.Selection.isSelection) {
+          throw new Error(`REGRESSION: Selection.isSelection (${actual.wb.Selection.isSelection}) is inconsistent with reference check (${isSelectionByReference})`);
+        }
+
+        // Check it's a cursor (firstEdge === secondEdge by reference)
+        if (isSelectionByReference) {
+          throw new Error(`Expected cursor but found selection`);
+        }
+
+        // Check coordinates
+        if (firstEdge.row !== row || firstEdge.col !== col) {
+          throw new Error(`Expected cursor at {row: ${row}, col: ${col}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}}`);
+        }
       }
     };
   }

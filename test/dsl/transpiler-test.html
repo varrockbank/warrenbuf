@@ -215,6 +215,23 @@ expect(fixture.wb.Selection.isSelection).toBe(true);
 fixture.type('X');
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('XWorld');`
+      },
+      {
+        name: 'expect cursor at command',
+        input: 'expect cursor at 0,1',
+        expected: 'expect(fixture).toHaveCursorAt(0, 1);'
+      },
+      {
+        name: 'expect cursor at with spaces',
+        input: 'expect cursor at 2, 5',
+        expected: 'expect(fixture).toHaveCursorAt(2, 5);'
+      },
+      {
+        name: 'expect cursor at in context',
+        input: `TYPE "Hello"
+expect cursor at 0,5`,
+        expected: `fixture.type('Hello');
+expect(fixture).toHaveCursorAt(0, 5);`
       }
     ];
 
