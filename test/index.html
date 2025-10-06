@@ -492,6 +492,16 @@
             border-left: 3px solid #757575;
             opacity: 0.6;
         }
+        .test-case.has-compile-error {
+            border: 2px solid #daa520;
+            border-left: 3px solid #daa520;
+        }
+        .test-case.pass.has-compile-error {
+            border-left-color: #4CAF50;
+        }
+        .test-case.fail.has-compile-error {
+            border-left-color: #f44336;
+        }
         .test-icon {
             margin-right: 12px;
             font-weight: bold;
@@ -499,6 +509,11 @@
         .test-icon.pass { color: #4CAF50; }
         .test-icon.fail { color: #f44336; }
         .test-icon.skipped { color: #757575; }
+        .compile-error-icon {
+            color: #daa520;
+            font-weight: bold;
+            margin-left: 4px;
+        }
         .test-message {
             flex: 1;
         }
@@ -1246,6 +1261,16 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
             const resultsContainer = document.getElementById('test-results');
             resultsContainer.innerHTML = '';
 
+            // Build set of tests with compilation errors
+            const testsWithCompileErrors = new Set();
+            if (lastCompileErrors && lastCompileErrors.length > 0) {
+                lastCompileErrors.forEach(err => {
+                    if (err.suite && err.test) {
+                        testsWithCompileErrors.add(`${err.suite}:${err.test}`);
+                    }
+                });
+            }
+
             runner.suites.forEach(suite => {
                 const suiteDiv = document.createElement('div');
                 suiteDiv.className = 'test-suite';
@@ -1270,15 +1295,18 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
                 suite.results.forEach((test, testIndex) => {
                     const testDiv = document.createElement('div');
-                    testDiv.className = `test-case ${test.status}`;
+                    const hasCompileError = testsWithCompileErrors.has(`${suite.name}:${test.name}`);
+                    const compileErrorClass = hasCompileError ? ' has-compile-error' : '';
+                    testDiv.className = `test-case ${test.status}${compileErrorClass}`;
 
                     const icon = test.status === 'pass' ? '✓' : test.status === 'fail' ? '✗' : '○';
+                    const compileErrorIcon = hasCompileError ? '<span class="compile-error-icon">⚠</span>' : '';
                     const walkthroughBtn = test.fixture && test.fixture.walkthrough
                         ? `<button class="walkthrough-btn" onclick="walkthrough.open('${suite.name}', ${testIndex})">Walkthrough</button>`
                         : '';
 
                     testDiv.innerHTML = `
-                        <span class="test-icon ${test.status}">${icon}</span>
+                        <span class="test-icon ${test.status}">${icon}${compileErrorIcon}</span>
                         <div class="test-message">
                             ${test.name}
                             ${test.description ? `<div class="test-description">${test.description}</div>` : ''}
