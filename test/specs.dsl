@@ -229,15 +229,11 @@ TYPE "Hello World"
 left with meta
 right 5 times with shift
 expect(fixture.wb.Selection.isForwardSelection).toBe(true);
-let [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect selection at 0,0-0,5
 right with meta
 left 5 times with shift
 expect(fixture.wb.Selection.isForwardSelection).toBe(false);
-[firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 6 });
-expect(SecondEdge).toEqual({ row: 0, col: 11 });
+expect selection at 0,6-0,11
 
 
 # Cursor movement - varying line lengths
