@@ -15,6 +15,62 @@
 
 ## Version History
 
+### v4.1.0 - EXPECT selection at
+
+**Syntax:** `EXPECT selection at <startRow>,<startCol>-<endRow>,<endCol>`
+
+Verifies that there is an active selection with the specified start and end coordinates.
+
+**Features:**
+- Case-insensitive (accepts `EXPECT`, `Expect`, or `expect`)
+- Normalized form uses uppercase: `EXPECT selection at`
+- Implicitly verifies a selection exists (no need for separate isSelection check)
+
+**Example:**
+```
+TYPE "Hello World"
+left with meta
+right 5 times with shift
+EXPECT selection at 0,0-0,5
+```
+
+**Transpiles to:**
+```javascript
+fixture.type('Hello World');
+fixture.press(Key.ArrowLeft).withMetaKey().once();
+fixture.press(Key.ArrowRight).withShiftKey().times(5);
+expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
+```
+
+---
+
+### v4.0.0 - EXPECT cursor at
+
+**Syntax:** `EXPECT cursor at <row>,<col>`
+
+Verifies that the selection is a cursor (not a selection) at the specified coordinates.
+
+**Features:**
+- Case-insensitive (accepts `EXPECT`, `Expect`, or `expect`)
+- Normalized form uses uppercase: `EXPECT cursor at`
+- Implicitly verifies it's a cursor, not a selection (no need for separate isSelection check)
+
+**Example:**
+```
+TYPE "Hello"
+left 2 times
+EXPECT cursor at 0,3
+```
+
+**Transpiles to:**
+```javascript
+fixture.type('Hello');
+fixture.press(Key.ArrowLeft).times(2);
+expect(fixture).toHaveCursorAt(0, 3);
+```
+
+---
+
 ### v3.1.0 - JavaScript inline comment limitation
 
 **Limitation:** JavaScript inline comments (`//`) after statements are not supported.
@@ -280,13 +336,15 @@ A transpiler that converts natural language test DSL to JavaScript code.
 
 ### Overview
 
-The transpiler implements the DSL specification v3.1.0:
+The transpiler implements the DSL specification v4.1.0:
 - v1.6.0 normalized forms
 - v2.0.0 JavaScript interweaving (lines ending with `;`)
 - v2.1.0 empty lines allowed
 - v2.2.0 semicolon disambiguation
 - v3.0.0 toolchain definition
 - v3.1.0 inline comment limitation
+- v4.0.0 EXPECT cursor at command
+- v4.1.0 EXPECT selection at command
 
 ### Usage
 
