@@ -7,7 +7,7 @@ It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with tex
 - Outliner mode
 - Block Selection
 
-*Try It* 👉 [[https://varrockbank.github.io/warrenbuf/][Live Demo]] (Tree-sitter disabled in demo) 
+*Try It* 👉 [[https://varrockbank.github.io/warrenbuf/][Live Demo]] (Tree-sitter disabled in demo) | *Tests* [[https://varrockbank.github.io/warrenbuf/test/][Interactive Playground]] 
 
 [1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and interations don't slow down thanks to V8. Compare with editors based on binding the entire sourcetext to DOM, typically as facades over <textarea>, that becomes unresponsive by ~O(100,000) lines./
 
