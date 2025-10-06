@@ -282,6 +282,54 @@
             padding: 1rem;
         }
 
+        #compile-errors {
+            background-color: #3a1e1e;
+            border: 2px solid #f44336;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #compile-errors .error-header {
+            font-weight: bold;
+            color: #f44336;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #compile-errors .error-item {
+            background-color: #2d2d30;
+            border-left: 3px solid #f44336;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 2px;
+        }
+
+        #compile-errors .error-location {
+            font-size: 0.85rem;
+            color: #4EC9B0;
+            margin-bottom: 0.25rem;
+        }
+
+        #compile-errors .error-code {
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            padding: 0.25rem 0.5rem;
+            border-radius: 2px;
+            margin: 0.25rem 0;
+            color: #f48771;
+        }
+
+        #compile-errors .error-message {
+            font-size: 0.9rem;
+            color: #d4d4d4;
+            margin-top: 0.25rem;
+        }
+
         /* Test runner styles */
         .test-suite {
             margin-bottom: 20px;
@@ -753,6 +801,7 @@
                     </div>
                 </div>
                 <div class="pane-content">
+                    <div id="compile-errors" style="display: none;"></div>
                     <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
                 </div>
             </div>
@@ -919,19 +968,47 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
         function transpileDSL() {
             const dslSource = textarea.value;
+            const errorsPanel = document.getElementById('compile-errors');
 
             try {
-                const jsOutput = generator.generate(dslSource);
+                const result = generator.generate(dslSource);
+                const jsOutput = result.code;
+                const errors = result.errors;
+
+                // Display generated JavaScript
                 const highlighted = hljs.highlight(jsOutput, { language: 'javascript' }).value;
                 outputDiv.innerHTML = highlighted;
                 outputDiv.style.color = '';
                 outputDiv.dataset.plainJs = jsOutput; // Store plain JavaScript for eval
+
+                // Display compile errors if any
+                if (errors && errors.length > 0) {
+                    let errorHtml = '<div class="error-header">⚠ Compile Errors (' + errors.length + ')</div>';
+                    errors.forEach(err => {
+                        const locationInfo = err.suite
+                            ? `Suite: ${err.suite}${err.test ? ' → Test: ' + err.test : ''}`
+                            : 'Line ' + err.line;
+                        errorHtml += `
+                            <div class="error-item">
+                                <div class="error-location">${locationInfo} (line ${err.line})</div>
+                                <div class="error-code">${err.code}</div>
+                                <div class="error-message">${err.message}</div>
+                            </div>
+                        `;
+                    });
+                    errorsPanel.innerHTML = errorHtml;
+                    errorsPanel.style.display = 'block';
+                } else {
+                    errorsPanel.style.display = 'none';
+                }
+
                 lastGeneratedSource = dslSource;
                 updateUIState();
             } catch (error) {
                 outputDiv.textContent = `Error: ${error.message}`;
                 outputDiv.style.color = '#f48771';
                 delete outputDiv.dataset.plainJs;
+                errorsPanel.style.display = 'none';
                 lastGeneratedSource = dslSource;
                 updateUIState();
             }
