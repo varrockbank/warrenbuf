@@ -464,6 +464,20 @@ function WarrenBuf(node,
     }
     $e.appendChild(fragmentSelections);
   }
+  // Calculate visual column position accounting for tab characters
+  function getVisualColumn(line, col) {
+    let visualCol = 0;
+    for (let i = 0; i < Math.min(col, line.length); i++) {
+      if (line[i] === '\t') {
+        // Move to next tab stop (multiple of indentation)
+        visualCol = Math.floor(visualCol / indentation) * indentation + indentation;
+      } else {
+        visualCol++;
+      }
+    }
+    return visualCol;
+  }
+
   function render(renderLineContainers = false) {
     if (lastRender.lineCount !== Model.lastIndex + 1 ) {
       $lineCounter.textContent = `${lastRender.lineCount = Model.lastIndex + 1}L, originally: ${Model.originalLineCount}L ${Model.byteCount} bytes`;
@@ -568,7 +582,8 @@ function WarrenBuf(node,
       if (i < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
         const content = Viewport.lines[i];
         if(content.length > 0 ) {
-          $selections[i].style.width = content.length+'ch';
+          const visualLength = getVisualColumn(content, content.length);
+          $selections[i].style.width = visualLength+'ch';
         } else {
           // For empty line, we still render 1 character selection
           $selections[i].style.width = '1ch';
@@ -577,18 +592,23 @@ function WarrenBuf(node,
     }
 
     // Render the leading and heading selection line
-    $selections[firstEdge.row].style.left = firstEdge.col+'ch';
+    const firstLine = Viewport.lines[firstEdge.row] || '';
+    const firstVisualCol = getVisualColumn(firstLine, firstEdge.col);
+    $selections[firstEdge.row].style.left = firstVisualCol+'ch';
+
     if (secondEdge.row === firstEdge.row) {
-      $selections[firstEdge.row].style.width = secondEdge.col - firstEdge.col + 1 +'ch';
+      const secondVisualCol = getVisualColumn(firstLine, secondEdge.col);
+      $selections[firstEdge.row].style.width = secondVisualCol - firstVisualCol + 1 +'ch';
       $selections[firstEdge.row].style.visibility = 'visible';
     } else {
       if(firstEdge.row < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
         const text = Viewport.lines[firstEdge.row];
+        const lineVisualLength = getVisualColumn(text, text.length);
 
         // There is edge case where text.length - firstEdge.col is 0. Namely, if the selection started
         // on the last cursor position, menaing the cursor is between the last char and new line.
         // We want to render 1 char to represent this new line.
-        $selections[firstEdge.row].style.width = Math.max(1, text.length - firstEdge.col)+'ch';
+        $selections[firstEdge.row].style.width = Math.max(1, lineVisualLength - firstVisualCol)+'ch';
         $selections[firstEdge.row].style.visibility = 'visible';
       }
       if(secondEdge.row < Viewport.lines.length) {
@@ -596,7 +616,8 @@ function WarrenBuf(node,
         if(secondEdge.col >= text.length) {
           console.warn(`secondEdge's column ${secondEdge.col} is too far beyond the text with length: `, text.length);
         }
-        $selections[secondEdge.row].style.width = Math.min(secondEdge.col + 1, text.length)+'ch';
+        const secondVisualCol = getVisualColumn(text, secondEdge.col);
+        $selections[secondEdge.row].style.width = Math.min(secondVisualCol + 1, getVisualColumn(text, text.length))+'ch';
         $selections[secondEdge.row].style.visibility = 'visible';
       }
     }

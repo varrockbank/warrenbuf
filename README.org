@@ -64,7 +64,7 @@ The API is on the editor instance. There are three main constructs:
 
 Extensibility is currently achieved by the MVC APIs. 
 
-iOS support is currently provided as an extension which maps iOS events to keyboard events. see: index.html for example. 
+iOS support is currently provided as an extension which maps iOS events to keyboard events. see: index.html 
 
 Tree-sitter support is still experimental. Integration is tightly coupled until the right abstraction is solidified. Likely, the WarrenBuf core will be agnostic to custom rendering and simply ask for a callback to generate HTML. At that point Tree-sitter can be made an extension.
 
