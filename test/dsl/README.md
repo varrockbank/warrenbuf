@@ -335,30 +335,30 @@ PRESS " "    →  fixture.press(' ').once();
 PRESS ';'    →  fixture.press(';').once();
 ```
 
-#### expect cursor at
+#### EXPECT cursor at
 ```
-expect cursor at <row>,<col>  →  expect(fixture).toHaveCursorAt(row, col);
-```
-
-Verifies that the selection is a cursor (not a selection) at the specified coordinates.
-
-Examples:
-```
-expect cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);
-expect cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
+EXPECT cursor at <row>,<col>  →  expect(fixture).toHaveCursorAt(row, col);
 ```
 
-#### expect selection at
-```
-expect selection at <startRow>,<startCol>-<endRow>,<endCol>  →  expect(fixture).toHaveSelectionAt(startRow, startCol, endRow, endCol);
-```
-
-Verifies that there is an active selection with the specified start and end coordinates.
+Verifies that the selection is a cursor (not a selection) at the specified coordinates. Case-insensitive.
 
 Examples:
 ```
-expect selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
-expect selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
+EXPECT cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);
+EXPECT cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
+```
+
+#### EXPECT selection at
+```
+EXPECT selection at <startRow>,<startCol>-<endRow>,<endCol>  →  expect(fixture).toHaveSelectionAt(startRow, startCol, endRow, endCol);
+```
+
+Verifies that there is an active selection with the specified start and end coordinates. Case-insensitive.
+
+Examples:
+```
+EXPECT selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
+EXPECT selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
 ```
 
 #### Special Keys

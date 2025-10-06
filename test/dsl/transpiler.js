@@ -86,13 +86,13 @@ class DSLTranspiler {
       return this.transpilePRESS(cmd);
     }
 
-    // expect cursor at command
-    if (cmd.startsWith('expect cursor at ')) {
+    // EXPECT cursor at command (case-insensitive)
+    if (cmd.toLowerCase().startsWith('expect cursor at ')) {
       return this.transpileExpectCursorAt(cmd);
     }
 
-    // expect selection at command
-    if (cmd.startsWith('expect selection at ')) {
+    // EXPECT selection at command (case-insensitive)
+    if (cmd.toLowerCase().startsWith('expect selection at ')) {
       return this.transpileExpectSelectionAt(cmd);
     }
 
@@ -156,13 +156,13 @@ class DSLTranspiler {
   }
 
   /**
-   * Transpile expect cursor at command
-   * Example: expect cursor at 0,1 → expect(fixture).toHaveCursorAt(0, 1);
+   * Transpile EXPECT cursor at command
+   * Example: EXPECT cursor at 0,1 → expect(fixture).toHaveCursorAt(0, 1);
    */
   transpileExpectCursorAt(cmd) {
-    const match = cmd.match(/^expect cursor at (\d+),\s*(\d+)$/);
+    const match = cmd.match(/^expect cursor at (\d+),\s*(\d+)$/i);
     if (!match) {
-      throw new Error(`Invalid expect cursor at command: ${cmd}`);
+      throw new Error(`Invalid EXPECT cursor at command: ${cmd}`);
     }
 
     const row = match[1];
@@ -171,13 +171,13 @@ class DSLTranspiler {
   }
 
   /**
-   * Transpile expect selection at command
-   * Example: expect selection at 1,2-4,5 → expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
+   * Transpile EXPECT selection at command
+   * Example: EXPECT selection at 1,2-4,5 → expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
    */
   transpileExpectSelectionAt(cmd) {
-    const match = cmd.match(/^expect selection at (\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)$/);
+    const match = cmd.match(/^expect selection at (\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)$/i);
     if (!match) {
-      throw new Error(`Invalid expect selection at command: ${cmd}`);
+      throw new Error(`Invalid EXPECT selection at command: ${cmd}`);
     }
 
     const startRow = match[1];
