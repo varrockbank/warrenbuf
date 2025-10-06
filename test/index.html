@@ -869,7 +869,7 @@
         <main>
             <div id="test-error-warning" class="test-error-banner" style="display: none;">
                 <span class="warning-icon">⚠</span>
-                <span id="test-error-text">Tests were compiled with errors and lines omitted</span>
+                <span id="test-error-text">Compilation errors. Some tests may have lines omitted</span>
                 <button id="test-error-details-btn" class="error-details-btn">Details</button>
             </div>
             <div class="summary">
@@ -884,6 +884,10 @@
                 <div class="summary-item">
                     <div class="summary-number" style="color: #f44336" id="failed-tests">0</div>
                     <div class="summary-label">Failed</div>
+                </div>
+                <div class="summary-item" id="compile-errors-summary" style="display: none;">
+                    <div class="summary-number" style="color: #daa520" id="compile-error-tests">0</div>
+                    <div class="summary-label">Compile Errors</div>
                 </div>
                 <div class="summary-item">
                     <div class="summary-number" style="color: #757575" id="skipped-tests">0</div>
@@ -1085,6 +1089,7 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         let lastGeneratedSource = '';
         let testsCompiledSinceLastView = false;
         let lastCompileHadErrors = false;
+        let lastCompileErrors = [];
 
         function updateUIState() {
             const currentSource = textarea.value;
@@ -1125,6 +1130,7 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 // Handle compile errors
                 if (errors && errors.length > 0) {
                     lastCompileHadErrors = true;
+                    lastCompileErrors = errors;
 
                     // Add yellow border to JS output
                     outputDiv.classList.add('has-errors');
@@ -1153,6 +1159,7 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 } else {
                     // No errors - clear styling
                     lastCompileHadErrors = false;
+                    lastCompileErrors = [];
                     outputDiv.classList.remove('has-errors');
                     errorWarning.style.display = 'none';
                     errorsModalContent.innerHTML = '';
@@ -1162,6 +1169,7 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 updateUIState();
             } catch (error) {
                 lastCompileHadErrors = false;
+                lastCompileErrors = [];
                 outputDiv.textContent = `Error: ${error.message}`;
                 outputDiv.style.color = '#f48771';
                 delete outputDiv.dataset.plainJs;
@@ -1329,9 +1337,24 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
                 // Show/hide test error warning based on compile status
                 const testErrorWarning = document.getElementById('test-error-warning');
-                if (lastCompileHadErrors) {
+                const compileErrorsSummary = document.getElementById('compile-errors-summary');
+                const compileErrorTestsCount = document.getElementById('compile-error-tests');
+
+                if (lastCompileHadErrors && lastCompileErrors.length > 0) {
+                    // Count unique tests with errors (not total error count)
+                    const testsWithErrors = new Set();
+                    lastCompileErrors.forEach(err => {
+                        if (err.suite && err.test) {
+                            testsWithErrors.add(`${err.suite}:${err.test}`);
+                        }
+                    });
+
+                    const uniqueTestCount = testsWithErrors.size;
+                    compileErrorTestsCount.textContent = uniqueTestCount;
+                    compileErrorsSummary.style.display = 'flex';
                     testErrorWarning.style.display = 'flex';
                 } else {
+                    compileErrorsSummary.style.display = 'none';
                     testErrorWarning.style.display = 'none';
                 }
             } catch (error) {
