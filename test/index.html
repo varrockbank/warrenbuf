@@ -1427,13 +1427,14 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     let errorHtml = '';
                     errors.forEach(err => {
                         const locationInfo = err.suite
-                            ? `Suite: ${err.suite}${err.test ? ' → Test: ' + err.test : ''}`
+                            ? `Line ${err.line} @ Suite: "${err.suite}"${err.test ? ' → Test: "' + err.test + '"' : ''}`
                             : 'Line ' + err.line;
                         errorHtml += `
                             <div class="error-item">
-                                <div class="error-location">${locationInfo} (line ${err.line})</div>
+                                <div class="error-location">${locationInfo}</div>
                                 <div class="error-code">${err.code}</div>
-                                <div class="error-message">${err.message}</div>
+                                <div class="error-message">Omitted because it caused error:</div>
+                                <div class="error-code">${err.message}</div>
                             </div>
                         `;
                     });
