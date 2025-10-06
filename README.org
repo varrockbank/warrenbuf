@@ -1,105 +1,116 @@
-WarrenBuf is an overpowered plaintext buffer for the web, managing billions^{[1]} of lines without slowdown. At its core is a rendering engine that sidesteps the DOM bottleneck.  
-It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with text editor features including:
+WarrenBuf is an overpowered plaintext buffer for the web, managing billions^{[1]} of lines without bottleneck. It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with editor features.
 
-- Multicursor
-- Line gutter
-- Status line
-- Outliner mode
-- Block Selection
+[[resources/preview.png]]
 
-*Try It* 👉 [[https://varrockbank.github.io/warrenbuf/][Live Demo]] (Tree-sitter disabled in demo) | *Tests* [[https://varrockbank.github.io/warrenbuf/test/][Interactive Playground]] 
+[[https://varrockbank.github.io/warrenbuf/][Live Demo]] ( Tree-sitter disabled in demo )
 
-[1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and interations don't slow down thanks to V8. Compare with editors based on binding the entire sourcetext to DOM, typically as facades over <textarea>, that becomes unresponsive by ~O(100,000) lines./
+[[https://varrockbank.github.io/warrenbuf/test/][Interactive Test Playground]] 
+
+[1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and user interaction doesn't become sluggish. Compare with libraries that dumps the entire sourcetext to <textarea> or DOM and becomes unresponsive by ~O(100,000) lines./
 
 ** Ethos
 
-*Avoid JS fatigue:* There are no build dependencies, no NPM, no compilation step.
+*Avoid JS fatigue:* no compilation, no NPM, no building. Simply vendor the VanillaJS function.
 
 *Inspired by vim:* minimal, capable, fast
 
-*Embedded:*  the features and tiny footprint uniquely positions this project to be a building block for larger apps (e.g. IDEs and other enriched plaintext environments). In fact, this is heuristic in scoping features. 
+*Embedded:*  the features and tiny footprint uniquely positions this project to be a building block for larger apps (e.g. IDEs and other enriched plaintext environments). In fact, this is heuristic in scoping features. The endstate of this warrenbuf is to be barebones and let complex editor logic be built on top of it. 
+
+** How? 
+
+At its core, WarrenBuf is a rendering engine. In fact, it started out as read-only log viewer and no editing capabilities. Its innovation is a technique loaned from game dev: clipping. i.e. render a Viewport containing only the source lines in view. There's always a small fixed set of elements to update. This sidesteps the DOM bottleneck. 
+
+Arrays are the dark horse of text editor data structures — inefficient for common editing operations since they involve shifting line numbers. This project embraces the fact that it’s web-bound, leaning on V8 for the computer-science heavy lifting. JavaScript’s array-like performance rival far more complex rope or piece-table structures while staying true to the problem domain. Consider that Monaco's robust piece table implementation is more than 10x WarrenBuf's entire footprint. 
+
+** Usage 
+
+Editor instances are instantiated by specifying a DOM node having the following template 
+
+#+begin_src html
+<blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground">
+  <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
+  <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+    <div class="💪">
+      <div class="wb-gutter"></div>
+      <div class="wb-lines 🌳 🥷"></div>
+    </div>
+    <div class="💪 wb-status 🦠">
+      <div class="wb-status-left 💪">
+        <span class="wb-linecount"></span>
+      </div>
+      <div class="wb-status-right 💪">
+        <span class="wb-coordinate"></span>
+        <span>|</span>
+        <span class="wb-indentation"></span>
+    </div>
+  </div>
+</blockquote>
+const editorInstance = new WarrenBuf(document.getElementById("playground"));
+#+end_src
+
+It was decided against WarrenBuf creating this DOM structure. 
+
+*** Model-view-controller
+
+The API is on the editor instance. There are three main constructs: 
+
+*Model* =instance.Model.lines= is the text buffer 
+
+*View* =instance.Viewport= is the subset of the text buffer to be rendered 
+
+*Controller* =instance.Selection= defines text editor operations relative to the text Selection. Cursor are just a special case of Selection.
 
 ** Extensibility 
 
-WarrenBuf is extensible in that its model-view-controller are all exposed as part of its API. Writing an extension is 
-simply a matter of composing API calls or even overriding them, which is easy enough in JavaScript. 
+Extensibility is currently achieved by the MVC APIs. 
 
-The following capabilities are provided as extensions:
+iOS support is currently provided as an extension which maps iOS events to keyboard events. see: index.html for example. 
 
-- syntax highlighting w/ tree-sitter
-- iOS integration 
+Tree-sitter support is still experimental. Integration is tightly coupled until the right abstraction is solidified. Likely, the WarrenBuf core will be agnostic to custom rendering and simply ask for a callback to generate HTML. At that point Tree-sitter can be made an extension.
 
-For tree-sitter, clients must vendor Tree-sitter and provide their own parser. 
+** Distributable
 
-** Distribution
-
-There is no build process however these are the steps I use to minify WarrenBuf for distribution.
-
-*Recommended (no installation):*
-#+begin_src sh
-npx terser warrenbuf.js -o dist/warrenbuf.min.js -c -m
-#+end_src
-
-*Alternative (using globally installed terser):*
-#+begin_src sh
-npm install -g terser
-terser warrenbuf.js -o dist/warrenbuf.min.js -c -m
-#+end_src
-
-** Git Hooks
-
-A pre-commit hook automatically minifies warrenbuf.js, ensuring dist/warrenbuf.min.js stays in sync.
-
-*Option 1: Manual installation*
-
-The hooks/ directory is version controlled. Create a symlink to enable the hook:
+There is no build process needed to vendor WarrenBuf global function. However, the minified distributable is created with Terser. This is done by a pre-commit hook ensuring dist/warrenbuf.min.js is updated in sync. Symlink to git: 
 
 #+begin_src sh
 ln -s ../../hooks/pre-commit .git/hooks/pre-commit
 #+end_src
 
-*Option 2: Automated installation*
-
-Run the provided setup script to install hooks automatically:
-
-#+begin_src sh
-./scripts/setup-hooks.sh
-#+end_src
-
-The setup script creates the symlink and backs up any existing pre-commit hook.
-
-*Testing the hook before committing*
-
-To run the pre-commit hook manually without creating a commit:
+To test the hook manually without creating a commit:
 
 #+begin_src sh
 ./hooks/pre-commit
 #+end_src
 
-** Model-View-Controller 
+** Why? 
 
-At its core, WarrenBuf is a rendering engine. Each instances manages a text buffer, aka the Model. Then a viewport which is slice into the model, 
-aka the View. Finally, there is a notion of a text Selection *ON* which text editor operations are overlaid, aka the Controller.  
+This section discusses why Warrenbuf exists and its competitive advantage.
 
-** <textarea>-based libraries as an engine
+Monaco is bloated. Ace is great but 10x larger and still not barebones enough. Libraries in the same weigh class as WarrenBuf are not suitable for performant plaintext editor experiences on top of.
 
-Other "text editor" libraries in the same weight class achieve a small footprint by being clever codegolf hacks of =<textarea>=. This means not defining delete, insert, new line or any other text operation. It's a double edged sword with the benefit of requiring little sourcecode. The major drawback is that they are glorified CSS for =<textarea>= and lacking in functionality. =<textarea>= is single-cursor, idiosyncratic w/ browser dependency and low-capacity. These solutions are lipstick on a pig and is a non-starter for anything beyond a toy.
+*** =<textarea>=
 
-see: "Other pitfalls with <textarea>"
+"<textarea>" is semantically meaning HTML but its purpose is for editing small snippets of monospace/"preformatted" text. The fundamental feature of a text editor is editing non-trivial sized documents. Heck, it's so important that we don't even think of this as a "feature". Editors that can't do so are effectively useless. =<textarea>= is DOM bound and several thousand lines is enough for it to be sluggish. 
 
-** Monaco as an engine
+Beyond small file sizes, there are other hard-coded behaviors of =<textarea>= that is not conducive to creating customizable editor experience. For example, defining the behavior of cursor/selections or line numbers beyond what W3C and browser implementers have decided. =<textarea>= has been here since the beginning of time and browser idiosyncracies are one of many idiosyncracies. 
+
+It's possibe to override one or two of =<textarea>='s default behavior but now you're re-implementing a new textarea with all of the old baggage. i.e. the second system effect. Testing for consistency in browser support also complexifies things. 
+
+In brief, =<textarea>= is idiosyncratic, inflexible and low-capacity. 
+
+*** <textarea>-based libraries
+
+Libraries in the same weight class as WarrenBuf achieve a small footprint by being clever codegolf hacks of =<textarea>=. This means they are restrictive in their functionalities they add. These solutions put lipstick on a pig and is a non-starter for anything beyond a toy.
+
+Granted, these libraries are focused on the WYSIWYG case rather than plaintext editing.
+
+*** Monaco
 
 Monaco, the web counterpart of VSCode, is a powerhouse but with a 10000x larger footprint. It doesn't fit in a floppy disk much less the initial 14KB TCP window.
 
 It is overkill in the vast majority of cases that involve a custom editor experience. see: "Rant on Monaco-based apps"
 
-** The web platform
-
-The DOM is slow. Other text editor libraries mount the entire source text to the DOM. 10^5 elements can be enough to make the browser tab unresponsive. WarrenBuf loans the technique of "clipping" from graphics programming to render only the segment of the world that are in view. aside: occlusion culling extends this idea.
-
-V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some combination in between to achieve performance. These data structures are hard to get right and their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches the problem domain of indexed lines of text. Arrays are infeasible because text editor operations including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays. V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers. For once the web platform is a development luxury where we can have cake and eat it too. WarrenBuf reaps the simplicity of arrays without sacrificing performance.
-
-** C++ buffer management via WebAssembly
+*** C++ buffer management via WebAssembly
 
 Early experiments involved a delegating buffer management to a WASM module written in C++. It's the anthropic principle that WarrenBuf uses VanillaJS V8+ Arrays today.
 
@@ -107,7 +118,13 @@ There is overhead to the JS<->WASM boundary crossing. It was significant but jus
 
 The WASM toolchain still felt like "death by a thousand cuts". All things considered, it is more pleasant to work with VanillaJS.
 
-** Surgical DOM rendering
+*** Leveraging the web platform
+
+The DOM is slow. Other text editor libraries mount the entire source text to the DOM. 10^5 elements can be enough to make the browser tab unresponsive. WarrenBuf loans the technique of "clipping" from graphics programming to render only the segment of the world that are in view. aside: occlusion culling extends this idea.
+
+V8 is brilliant. Premier text editors use ropes, gap buffers, piece tables, and some combination in between to achieve performance. These data structures are hard to get right and their sourcecode is necessarily complex. A naive array implementation is intuitive as it matches the problem domain of indexed lines of text. Arrays are infeasible because text editor operations including line deletes and additions involve O(n) shifts. JavaScript Arrays are not actual arrays. V8 handles splices, the generalization of shift, instantaneously for even the largest of buffers. For once the web platform is a development luxury where we can have cake and eat it too. WarrenBuf reaps the simplicity of arrays without sacrificing performance.
+
+*** Surgical DOM rendering
 
 WarrenBuf couples buffer state with surgical DOM updates. The endstate of the project is towards updating only the DIFFed DOM segments. This is idealistic because redundancy in cheap DOM updates may be preferable to the overhead of corner-case management having too many branching pathways.
 
@@ -117,38 +134,32 @@ Correctness is prioritized over performance micro-optimizations. Currently, ther
 
 One optimization pattern currently deployed is (re)using document fragments for batch inserts. This minimizes DOM mutations/operations.
 
-** VSCode Buffer Management
+*** VSCode's Buffer Management
 
-In problem domain investigations circa 2022, local VSCode would choke on 10^7 ~LOC 50MB files. It would be unresponsive for up to a minute, or even exceed the timeout, until the file was loaded into memory.
+In 2022, VSCode would choke on 10^7 LoC (50MB) files, becoming unresponsive for up to a minute while loading them into memory.
 
-VSCode had already adopted a Piece Table (combined with a balanced tree). see: https://code.visualstudio.com/blogs/2018/03/23/text-buffer-reimplementation.
+VSCode had already adopted a Piece Table combined with a balanced tree (see: https://code.visualstudio.com/blogs/2018/03/23/text-buffer-reimplementation).
 
-Now in September 2025, VSCode seemed to have fixed the bottleneck by being contextually aware of large files, short-circuiting attempts at preprocessing, and default to plaintext editing. The issue may be in VSCode's syntax highlighting rather than buffer management. =vim= proves that it's feasible to have syntax highlighting on much larger files.
+By September 2025, VSCode appears to have fixed this bottleneck by detecting large files, short-circuiting preprocessing, and defaulting to plaintext editing. The issue may have been in syntax highlighting rather than buffer management—=vim= proves it's feasible to syntax highlight much larger files.
 
-VSCode's text buffer implementation is available here: https://github.com/microsoft/vscode-textbuffer/tree/main. ~50KB is acceptable although this is 50x WarrenBuf's footprint.
+VSCode's text buffer implementation is available at https://github.com/microsoft/vscode-textbuffer/tree/main. At ~50KB it's acceptable, though 50x WarrenBuf's footprint.
 
-Monaco, the web version of VSCode, follows the same implementation and therefore have similar performance characteristics.
+Monaco, the web version of VSCode, follows the same implementation and has similar performance characteristics.
 
 *** Rant on Monaco-based apps
 
-VSCode provides an impressive professional-enterprise-looking product out-of-the-box without any custom code required. VSCode-based apps don't even bother to hide by reskinning themselves. It's a disservice to the likes of Dota, a mod of Warcraft III, to deem these as VSCode mods. These apps aren't modifying anything and simply brought their own basic editor config/dotfile file. In effect, they ARE VSCode paired to a custom backend datasource. Perhaps there is a business opportunity to provide VSCode-as-a-service where tenants bring their own config and data. This would cache the non-trivial VSCode bundle once across tenant apps instead of a heavy download for each app. Perhaps this central hub doesn't exist because it would reveal that tenants have very little value add on the application front. Most VSCode-base apps appear lazy and lack love, if not contempt, towards crafting software. It's disrespectful to the end users who are punished each time they load a bloated VSCode without irrelevant "features" tree-shaked away.
+VSCode provides an impressive, professional-looking product out-of-the-box without custom code. Most VSCode-based apps don't even bother reskinning themselves. It's a disservice to Dota (a mod of Warcraft III) to call these "VSCode mods"—they aren't modifying anything, just providing their own config file. In effect, they ARE VSCode paired with a custom backend.
+
+Perhaps there's a business opportunity for VSCode-as-a-service where tenants bring their own config and data. This would cache the VSCode bundle once across apps instead of requiring a heavy download for each. Perhaps this doesn't exist because it would reveal how little value most tenants add on the frontend.
+
+Most VSCode-based apps appear lazy and careless toward software craftsmanship. It's disrespectful to end users who suffer loading a bloated editor with irrelevant "features" that weren't tree-shaken away.
 
 *** Ace Editor
 
-The Ace Editor was a standout among editor libraries. Per their README (as of September 2025): "Handles huge documents (at last check, 4,000,000 lines is the upper limit)". In my prior tests on a ~32GB ram M1 Mac, Ace could handle 8 million LoC. This is orders of magnitude better than peers in this space.
+Ace Editor stands out. Per their README (September 2025): "Handles huge documents (at last check, 4,000,000 lines is the upper limit)". This is orders magnitude better than the microlibraries in WarrenBuf's weight class. 
 
-It's a respectable library to develop an editor experience on top of. I'd recommend it.
+It's a respectable library for building editor experiences. I'd recommend it.
 
-The codebase is equally praiseworthy. Ace unavoidably has legacy bits and debt for compatibility reasons. Ace has other bells and whistles that, unless they can be tree-shaked, is bloated compared to WarrenBuf. WarrenBuf has the privilege of starting from a clean slate in 2025.
+The codebase is also praiseworthy. Unavoidably, Ace carries legacy and compatibility baggage. It includes bells and whistles that, unless tree-shakeable, make it bloated compared to WarrenBuf. WarrenBuf enjoys the privilege of starting from a clean slate in 2025.
 
-Ace instantiates a hidden =<textarea>= around the user's cursor that binds to the keyboard input. Note that this is not the same as having a textarea for the entire source text. Otherwise Ace would be subject to the same bottlenecks as other editor libraries. Performance issues with =<textarea>= are less pronounced with Ace.
-
-An argument in favor of =<textarea>= is that it's semantically meaningful. However, the hand-off to the text editor library is a blackbox with respect to HTML, especially if the textarea is an arbitrary region as is the case with Ace.
-
-*** More pitfalls of <textarea>
-
-=<textarea>= is archaic. It has browser and other idiosyncrasies. Defensive programming, i.e. exhaustive regression testing, is more effortful than building an independent text editor from scratch, free to parity behavior among canonical editors including Vim, VSCode, Intellij, Emacs, etc.
-
-One caveat with Ace's "culled" textarea is that a large selection requires an even larger textarea. The DOM bottleneck is back in play. WarrenBuf avoids this problem by having virtual cursors.
-
-Overriding =<textarea>='s default event handler is possible but defeats the point of implementing complexity by relying on =<textarea>=. The second-system effect means there are now n+1 competing standards. In fact, Ace retrofitted multi-cursor support alongside its =<textarea>='s cursor. WarrenBuf has a single cursor implementation and avoids this complexity.
+Note that Ace instantiates a hidden =<textarea>= around the user's cursor to bind keyboard input. This isn't the same as a textarea for the entire source text—otherwise Ace would suffer the same bottlenecks as other editor libraries. Performance issues with =<textarea>= are less pronounced in Ace's approach. One caveat with Ace's "culled" textarea: large selections require proportionally large textareas, reintroducing the DOM bottleneck. WarrenBuf avoids this with virtual cursors.
