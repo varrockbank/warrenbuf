@@ -232,6 +232,16 @@ expect(fixture).toHaveLines('XWorld');`
 expect cursor at 0,5`,
         expected: `fixture.type('Hello');
 expect(fixture).toHaveCursorAt(0, 5);`
+      },
+      {
+        name: 'expect cursor at with non-numeric row (should fail)',
+        input: 'expect cursor at foobar,1',
+        expectedError: 'Invalid expect cursor at command: expect cursor at foobar,1'
+      },
+      {
+        name: 'expect cursor at with non-numeric col (should fail)',
+        input: 'expect cursor at 0,abc',
+        expectedError: 'Invalid expect cursor at command: expect cursor at 0,abc'
       }
     ];
 
@@ -244,10 +254,20 @@ expect(fixture).toHaveCursorAt(0, 5);`
       let output, passed, error;
       try {
         output = transpiler.transpile(test.input);
-        passed = output === test.expected;
+        if (test.expectedError) {
+          // Expected an error but didn't get one
+          passed = false;
+        } else {
+          passed = output === test.expected;
+        }
       } catch (e) {
-        passed = false;
         error = e.message;
+        if (test.expectedError) {
+          // Expected an error
+          passed = error === test.expectedError;
+        } else {
+          passed = false;
+        }
       }
 
       div.innerHTML = `
@@ -255,7 +275,7 @@ expect(fixture).toHaveCursorAt(0, 5);`
         <div><strong>Input:</strong></div>
         <pre>${test.input || '(empty)'}</pre>
         <div><strong>Expected:</strong></div>
-        <pre>${test.expected || '(empty)'}</pre>
+        <pre>${test.expectedError ? `Error: ${test.expectedError}` : test.expected || '(empty)'}</pre>
         <div><strong>Output:</strong></div>
         <pre>${error ? `Error: ${error}` : output || '(empty)'}</pre>
       `;
