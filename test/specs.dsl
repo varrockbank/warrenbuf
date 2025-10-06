@@ -915,3 +915,318 @@ expect(fixture).toHaveLines(';;;');
 const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
 expect(firstEdge).toEqual({ row: 0, col: 3 });
 expect(SecondEdge).toEqual({ row: 0, col: 3 });
+
+
+# Tabstop rendering
+
+## should insert tab at start of line
+### Tab at beginning moves cursor by tabstop width
+PRESS '\t'
+expect(fixture).toHaveLines('\t');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 1 });
+expect(SecondEdge).toEqual({ row: 0, col: 1 });
+
+## should insert multiple tabs at start
+### Multiple tabs at start of line
+PRESS '\t' 3 times
+expect(fixture).toHaveLines('\t\t\t');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 3 });
+expect(SecondEdge).toEqual({ row: 0, col: 3 });
+
+## should insert tab after text
+### Tab after text moves to next tab stop
+TYPE "abc"
+PRESS '\t'
+expect(fixture).toHaveLines('abc\t');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 4 });
+expect(SecondEdge).toEqual({ row: 0, col: 4 });
+
+## should handle tab in middle of line
+### Tab in middle: text + tab + more text
+TYPE "Hello"
+PRESS '\t'
+TYPE "World"
+expect(fixture).toHaveLines('Hello\tWorld');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 11 });
+expect(SecondEdge).toEqual({ row: 0, col: 11 });
+
+## should handle multiple tabs between text
+### Multiple tabs between words
+TYPE "A"
+PRESS '\t' 2 times
+TYPE "B"
+expect(fixture).toHaveLines('A\t\tB');
+const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
+expect(firstEdge).toEqual({ row: 0, col: 4 });
+expect(SecondEdge).toEqual({ row: 0, col: 4 });
+
+## should handle tab at different positions
+### Tab stops align to multiples of tabstop
+TYPE "x"
+PRESS '\t'
+TYPE "y"
+enter
+TYPE "xx"
+PRESS '\t'
+TYPE "y"
+enter
+TYPE "xxxxxxx"
+PRESS '\t'
+TYPE "y"
+enter
+TYPE "xxxxxxxx"
+PRESS '\t'
+TYPE "y"
+expect(fixture).toHaveLines('x\ty', 'xx\ty', 'xxxxxxx\ty', 'xxxxxxxx\ty');
+
+
+# Tabstop navigation
+
+## should move cursor left over tab
+### ArrowLeft moves through tab as single character
+TYPE "ab"
+PRESS '\t'
+TYPE "cd"
+left
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 4 });
+expect(end).toEqual({ row: 0, col: 4 });
+left
+const [start2, end2] = fixture.wb.Selection.ordered;
+expect(start2).toEqual({ row: 0, col: 3 });
+expect(end2).toEqual({ row: 0, col: 3 });
+
+## should move cursor right over tab
+### ArrowRight moves through tab as single character
+TYPE "ab"
+PRESS '\t'
+TYPE "cd"
+left with meta
+right 2 times
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 2 });
+expect(end).toEqual({ row: 0, col: 2 });
+right
+const [start2, end2] = fixture.wb.Selection.ordered;
+expect(start2).toEqual({ row: 0, col: 3 });
+expect(end2).toEqual({ row: 0, col: 3 });
+
+## should navigate to line start with tabs
+### Meta+Left works with tabs at start
+PRESS '\t' 2 times
+TYPE "text"
+left with meta
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 0 });
+
+## should navigate to line end with tabs
+### Meta+Right works with tabs
+PRESS '\t'
+TYPE "text"
+left with meta
+right with meta
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 5 });
+expect(end).toEqual({ row: 0, col: 5 });
+
+
+# Tabstop editing
+
+## should delete tab with backspace
+### Backspace deletes tab character
+PRESS '\t'
+TYPE "text"
+left with meta
+right
+backspace
+expect(fixture).toHaveLines('text');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 0 });
+
+## should delete multiple tabs
+### Backspace deletes multiple tabs
+PRESS '\t' 3 times
+backspace 3 times
+expect(fixture).toHaveLines('');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 0 });
+
+## should delete text and tab
+### Delete text then tab
+TYPE "Hello"
+PRESS '\t'
+TYPE "World"
+backspace 5 times
+backspace
+expect(fixture).toHaveLines('Hello');
+
+## should select and delete tab
+### Select tab and delete
+TYPE "a"
+PRESS '\t'
+TYPE "b"
+left 2 times
+right with shift
+backspace
+expect(fixture).toHaveLines('ab');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 1 });
+expect(end).toEqual({ row: 0, col: 1 });
+
+## should select across tab and delete
+### Select text including tab
+TYPE "abc"
+PRESS '\t'
+TYPE "def"
+left with meta
+right 3 times with shift
+backspace
+expect(fixture).toHaveLines('def');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 0 });
+
+## should replace tab with text
+### Replace selected tab with typed text
+TYPE "a"
+PRESS '\t'
+TYPE "b"
+left 2 times
+right with shift
+TYPE "X"
+expect(fixture).toHaveLines('aXb');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 2 });
+expect(end).toEqual({ row: 0, col: 2 });
+
+
+# Tabstop multi-line
+
+## should handle tabs on multiple lines
+### Tabs on different lines
+PRESS '\t'
+TYPE "Line 1"
+enter
+PRESS '\t' 2 times
+TYPE "Line 2"
+enter
+TYPE "Line 3"
+expect(fixture).toHaveLines('\tLine 1', '\t\tLine 2', 'Line 3');
+
+## should navigate up through line with tab
+### ArrowUp with tabs preserves column
+TYPE "Text"
+enter
+PRESS '\t'
+TYPE "More"
+up
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 4 });
+expect(end).toEqual({ row: 0, col: 4 });
+
+## should navigate down through line with tab
+### ArrowDown works with tabs
+PRESS '\t'
+TYPE "First"
+enter
+TYPE "Second"
+up
+down
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 1, col: 6 });
+expect(end).toEqual({ row: 1, col: 6 });
+
+## should handle cursor clamping with tabs
+### Cursor clamps to line end when tab line is shorter
+TYPE "Short"
+enter
+PRESS '\t'
+TYPE "x"
+up
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 5 });
+expect(end).toEqual({ row: 0, col: 5 });
+
+## should delete tab across line boundary
+### Delete newline before tab-indented line
+TYPE "Line 1"
+enter
+PRESS '\t'
+TYPE "Line 2"
+left with meta
+backspace
+expect(fixture).toHaveLines('Line 1\tLine 2');
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 6 });
+expect(end).toEqual({ row: 0, col: 6 });
+
+
+# Tabstop selection
+
+## should select tab with shift+arrow
+### Shift+Right selects tab
+TYPE "a"
+PRESS '\t'
+TYPE "b"
+left 2 times
+right with shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 1 });
+expect(end).toEqual({ row: 0, col: 2 });
+
+## should select backward over tab
+### Shift+Left selects tab backward
+TYPE "a"
+PRESS '\t'
+TYPE "b"
+left with shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 2 });
+expect(end).toEqual({ row: 0, col: 3 });
+
+## should select from start to tab
+### Select from line start including tab
+PRESS '\t'
+TYPE "text"
+left with meta
+right with meta, shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 5 });
+
+## should select multiple tabs
+### Select multiple consecutive tabs
+PRESS '\t' 3 times
+TYPE "x"
+left with meta
+right 3 times with shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 0, col: 3 });
+
+## should select across tab-indented lines
+### Multi-line selection with tabs
+PRESS '\t'
+TYPE "Line 1"
+enter
+PRESS '\t' 2 times
+TYPE "Line 2"
+up
+left with meta
+down with shift
+right with meta, shift
+expect(fixture.wb.Selection.isSelection).toBe(true);
+const [start, end] = fixture.wb.Selection.ordered;
+expect(start).toEqual({ row: 0, col: 0 });
+expect(end).toEqual({ row: 1, col: 8 });

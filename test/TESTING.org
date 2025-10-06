@@ -198,3 +198,19 @@ runner.xit('should do something later', () => {
 3. ArrowDown to another long line → cursor restores to col 14 (using maxCol)
 
 This matches vim/VSCode behavior for vertical navigation.
+
+* Known Limitations
+
+** Tab Character Testing
+
+The current test suite has limitations when testing the visual aspects of tab characters:
+
+- Tests verify *logical coordinates* (character positions in the buffer)
+- Tests do *not* verify *visual coordinates* (rendered column positions on screen)
+- Tab characters occupy 1 position logically but render with variable width visually
+
+For example, a tab at column 0 renders as 8 spaces (assuming tabstop=8), but the cursor position is still col 1 (logically one character past the tab).
+
+This means tests check that cursor/selection positions are correct in the underlying data model, but do not verify that the visual rendering (CSS positioning, selection highlighting) aligns correctly with the tab stops.
+
+Visual verification currently requires manual inspection using the interactive walkthrough feature.
