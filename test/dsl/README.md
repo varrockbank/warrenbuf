@@ -15,6 +15,35 @@
 
 ## Version History
 
+### v4.2.0 - Full case-insensitivity for EXPECT commands
+
+**Enhancement:** The entire EXPECT command is now fully case-insensitive, not just the `EXPECT` keyword.
+
+**Previously (v4.0.0-v4.1.0):** Only the `EXPECT` keyword was case-insensitive.
+
+**Now:** The entire command including `selection at` and `cursor at` can be written in any case.
+
+**Valid variations:**
+```
+EXPECT cursor at 0,5
+expect cursor at 0,5
+Expect Cursor At 0,5
+EXPECT CURSOR AT 0,5
+
+EXPECT selection at 0,0-0,5
+expect selection at 0,0-0,5
+Expect Selection At 0,0-0,5
+EXPECT SELECTION AT 0,0-0,5
+```
+
+**Normalized form:** Still uses uppercase for consistency:
+```
+EXPECT cursor at 0,5
+EXPECT selection at 0,0-0,5
+```
+
+---
+
 ### v4.1.0 - EXPECT selection at
 
 **Syntax:** `EXPECT selection at <startRow>,<startCol>-<endRow>,<endCol>`
@@ -22,9 +51,9 @@
 Verifies that there is an active selection with the specified start and end coordinates.
 
 **Features:**
-- Case-insensitive (accepts `EXPECT`, `Expect`, or `expect`)
 - Normalized form uses uppercase: `EXPECT selection at`
 - Implicitly verifies a selection exists (no need for separate isSelection check)
+- Case-insensitive keyword `EXPECT` (full case-insensitivity added in v4.2.0)
 
 **Example:**
 ```
@@ -51,9 +80,9 @@ expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
 Verifies that the selection is a cursor (not a selection) at the specified coordinates.
 
 **Features:**
-- Case-insensitive (accepts `EXPECT`, `Expect`, or `expect`)
 - Normalized form uses uppercase: `EXPECT cursor at`
 - Implicitly verifies it's a cursor, not a selection (no need for separate isSelection check)
+- Case-insensitive keyword `EXPECT` (full case-insensitivity added in v4.2.0)
 
 **Example:**
 ```
@@ -336,7 +365,7 @@ A transpiler that converts natural language test DSL to JavaScript code.
 
 ### Overview
 
-The transpiler implements the DSL specification v4.1.0:
+The transpiler implements the DSL specification v4.2.0:
 - v1.6.0 normalized forms
 - v2.0.0 JavaScript interweaving (lines ending with `;`)
 - v2.1.0 empty lines allowed
@@ -345,6 +374,7 @@ The transpiler implements the DSL specification v4.1.0:
 - v3.1.0 inline comment limitation
 - v4.0.0 EXPECT cursor at command
 - v4.1.0 EXPECT selection at command
+- v4.2.0 full case-insensitivity for EXPECT commands
 
 ### Usage
 
@@ -398,12 +428,13 @@ PRESS ';'    →  fixture.press(';').once();
 EXPECT cursor at <row>,<col>  →  expect(fixture).toHaveCursorAt(row, col);
 ```
 
-Verifies that the selection is a cursor (not a selection) at the specified coordinates. Case-insensitive.
+Verifies that the selection is a cursor (not a selection) at the specified coordinates. Fully case-insensitive (v4.2.0).
 
 Examples:
 ```
 EXPECT cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);
 EXPECT cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
+expect cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);  // also valid
 ```
 
 #### EXPECT selection at
@@ -411,12 +442,13 @@ EXPECT cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
 EXPECT selection at <startRow>,<startCol>-<endRow>,<endCol>  →  expect(fixture).toHaveSelectionAt(startRow, startCol, endRow, endCol);
 ```
 
-Verifies that there is an active selection with the specified start and end coordinates. Case-insensitive.
+Verifies that there is an active selection with the specified start and end coordinates. Fully case-insensitive (v4.2.0).
 
 Examples:
 ```
 EXPECT selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
 EXPECT selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
+expect selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);  // also valid
 ```
 
 #### Special Keys
