@@ -282,52 +282,143 @@
             padding: 1rem;
         }
 
-        #compile-errors {
-            background-color: #3a1e1e;
-            border: 2px solid #f44336;
-            border-radius: 4px;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        #compile-errors .error-header {
-            font-weight: bold;
-            color: #f44336;
-            margin-bottom: 0.5rem;
+        /* Error warning in header */
+        #error-warning {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        #compile-errors .error-item {
+        .error-warning-text {
+            font-size: 0.85rem;
+            color: #daa520;
+            font-weight: 600;
+        }
+
+        .error-details-btn {
+            background-color: #daa520;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 3px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .error-details-btn:hover {
+            background-color: #c99000;
+        }
+
+        /* Yellow border for JS output when errors exist */
+        #js-output.has-errors {
+            border: 3px solid #daa520;
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .compile-errors-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: #1e1e1e;
+            border: 2px solid #f44336;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .compile-errors-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            background: #2d2d30;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f44336;
+            font-weight: bold;
+            color: #f44336;
+        }
+
+        .modal-close {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .modal-close:hover {
+            background: #d32f2f;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .error-item {
             background-color: #2d2d30;
             border-left: 3px solid #f44336;
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            border-radius: 2px;
+            padding: 0.75rem;
+            margin: 0.75rem 0;
+            border-radius: 3px;
         }
 
-        #compile-errors .error-location {
-            font-size: 0.85rem;
+        .error-location {
+            font-size: 0.9rem;
             color: #4EC9B0;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
-        #compile-errors .error-code {
+        .error-code {
             font-family: 'Courier New', monospace;
             background-color: #1e1e1e;
-            padding: 0.25rem 0.5rem;
-            border-radius: 2px;
-            margin: 0.25rem 0;
+            padding: 0.5rem;
+            border-radius: 3px;
+            margin: 0.5rem 0;
             color: #f48771;
+            border: 1px solid #3e3e42;
         }
 
-        #compile-errors .error-message {
+        .error-message {
             font-size: 0.9rem;
             color: #d4d4d4;
-            margin-top: 0.25rem;
+            margin-top: 0.5rem;
         }
 
         /* Test runner styles */
@@ -801,13 +892,16 @@
                     </div>
                 </div>
                 <div class="pane-content">
-                    <div id="compile-errors" style="display: none;"></div>
                     <textarea id="dsl-content" placeholder="Loading DSL content..."></textarea>
                 </div>
             </div>
             <div class="pane">
                 <div class="pane-header">
                     <span>Generated JavaScript</span>
+                    <div id="error-warning" style="display: none;">
+                        <span class="error-warning-text"></span>
+                        <button id="error-details-btn" class="error-details-btn">Details</button>
+                    </div>
                 </div>
                 <div class="pane-content">
                     <div id="js-output"></div>
@@ -847,6 +941,16 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 // This is a comment            <span style="color: #4CAF50;">→</span>  // This is a comment
 (empty line)                    <span style="color: #4CAF50;">→</span>  (empty line)</div>
         </main>
+    </div>
+
+    <!-- Compile Errors Modal -->
+    <div id="compile-errors-backdrop" class="modal-backdrop"></div>
+    <div id="compile-errors-modal" class="compile-errors-modal">
+        <div class="modal-header">
+            <span>Compile Errors</span>
+            <button class="modal-close" onclick="closeCompileErrorsModal()">Close</button>
+        </div>
+        <div class="modal-body" id="compile-errors-content"></div>
     </div>
 
     <!-- Walkthrough backdrop -->
@@ -968,7 +1072,9 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
         function transpileDSL() {
             const dslSource = textarea.value;
-            const errorsPanel = document.getElementById('compile-errors');
+            const errorWarning = document.getElementById('error-warning');
+            const errorWarningText = document.querySelector('.error-warning-text');
+            const errorsModalContent = document.getElementById('compile-errors-content');
 
             try {
                 const result = generator.generate(dslSource);
@@ -981,9 +1087,19 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 outputDiv.style.color = '';
                 outputDiv.dataset.plainJs = jsOutput; // Store plain JavaScript for eval
 
-                // Display compile errors if any
+                // Handle compile errors
                 if (errors && errors.length > 0) {
-                    let errorHtml = '<div class="error-header">⚠ Compile Errors (' + errors.length + ')</div>';
+                    // Add yellow border to JS output
+                    outputDiv.classList.add('has-errors');
+
+                    // Show warning in header
+                    const errorCount = errors.length;
+                    const errorText = errorCount === 1 ? '1 error' : `${errorCount} errors`;
+                    errorWarningText.textContent = `⚠ Compiled with ${errorText}`;
+                    errorWarning.style.display = 'flex';
+
+                    // Populate modal content
+                    let errorHtml = '';
                     errors.forEach(err => {
                         const locationInfo = err.suite
                             ? `Suite: ${err.suite}${err.test ? ' → Test: ' + err.test : ''}`
@@ -996,10 +1112,12 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                             </div>
                         `;
                     });
-                    errorsPanel.innerHTML = errorHtml;
-                    errorsPanel.style.display = 'block';
+                    errorsModalContent.innerHTML = errorHtml;
                 } else {
-                    errorsPanel.style.display = 'none';
+                    // No errors - clear styling
+                    outputDiv.classList.remove('has-errors');
+                    errorWarning.style.display = 'none';
+                    errorsModalContent.innerHTML = '';
                 }
 
                 lastGeneratedSource = dslSource;
@@ -1008,11 +1126,36 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 outputDiv.textContent = `Error: ${error.message}`;
                 outputDiv.style.color = '#f48771';
                 delete outputDiv.dataset.plainJs;
-                errorsPanel.style.display = 'none';
+                outputDiv.classList.remove('has-errors');
+                errorWarning.style.display = 'none';
                 lastGeneratedSource = dslSource;
                 updateUIState();
             }
         }
+
+        function openCompileErrorsModal() {
+            document.getElementById('compile-errors-backdrop').classList.add('active');
+            document.getElementById('compile-errors-modal').classList.add('active');
+        }
+
+        function closeCompileErrorsModal() {
+            document.getElementById('compile-errors-backdrop').classList.remove('active');
+            document.getElementById('compile-errors-modal').classList.remove('active');
+        }
+
+        // Event listeners
+        document.getElementById('error-details-btn').addEventListener('click', openCompileErrorsModal);
+        document.getElementById('compile-errors-backdrop').addEventListener('click', closeCompileErrorsModal);
+
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('compile-errors-modal');
+                if (modal.classList.contains('active')) {
+                    closeCompileErrorsModal();
+                }
+            }
+        });
 
         async function loadDSL() {
             try {
