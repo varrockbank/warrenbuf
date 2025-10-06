@@ -32,6 +32,26 @@ function expect(actual) {
         if (firstEdge.row !== row || firstEdge.col !== col) {
           throw new Error(`Expected cursor at {row: ${row}, col: ${col}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}}`);
         }
+      },
+      toHaveSelectionAt(startRow, startCol, endRow, endCol) {
+        const [firstEdge, secondEdge] = actual.wb.Selection.ordered;
+        const isSelectionByReference = firstEdge !== secondEdge;
+
+        // Check consistency between reference check and isSelection property
+        if (isSelectionByReference !== actual.wb.Selection.isSelection) {
+          throw new Error(`REGRESSION: Selection.isSelection (${actual.wb.Selection.isSelection}) is inconsistent with reference check (${isSelectionByReference})`);
+        }
+
+        // Check it's a selection (firstEdge !== secondEdge by reference)
+        if (!isSelectionByReference) {
+          throw new Error(`Expected selection but found cursor`);
+        }
+
+        // Check coordinates
+        if (firstEdge.row !== startRow || firstEdge.col !== startCol ||
+            secondEdge.row !== endRow || secondEdge.col !== endCol) {
+          throw new Error(`Expected selection at {row: ${startRow}, col: ${startCol}} to {row: ${endRow}, col: ${endCol}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}} to {row: ${secondEdge.row}, col: ${secondEdge.col}}`);
+        }
       }
     };
   }
