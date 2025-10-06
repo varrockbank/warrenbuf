@@ -789,8 +789,10 @@
 <span style="color: #64B5F6;">left</span> <span style="color: #9575CD;">3 times</span> <span style="color: #F48FB1;">with meta</span>          <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.ArrowLeft</span>).<span style="color: #F48FB1;">withMetaKey()</span>.<span style="color: #9575CD;">once()</span>;
 <span style="color: #64B5F6;">right</span> <span style="color: #F48FB1;">with meta, shift</span>          <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.ArrowRight</span>).<span style="color: #F48FB1;">withMetaKey()</span>.<span style="color: #F48FB1;">withShiftKey()</span>.<span style="color: #9575CD;">once()</span>;
 
-<span style="opacity: 0.7;">Lines ending with `;` or starting with `//` are passed through as JavaScript.
-Empty lines are preserved.</span></div>
+<span style="opacity: 0.7;">JavaScript pass-through for lines ending with ";", starting with "//" and empty lines:</span>
+expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect(3+5).toBe(8);
+// This is a comment            <span style="color: #4CAF50;">→</span>  // This is a comment
+(empty line)                    <span style="color: #4CAF50;">→</span>  (empty line)</div>
         </main>
     </div>
 
