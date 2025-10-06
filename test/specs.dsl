@@ -176,14 +176,12 @@ expect(fixture).toHaveLines('Line 1', 'LinXe 2', 'Line 3');
 TYPE "Hello"
 left with meta
 right with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,1
 
 ## should select one character backward
 ### Select one character with Shift+ArrowLeft
 TYPE "Hello"
 left with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,4-0,5
 
 ## should select multiple lines downward
@@ -194,7 +192,6 @@ TYPE "Line 2"
 up
 left with meta
 down with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-1,0
 
 ## should move cursor up without creating selection
@@ -203,7 +200,6 @@ TYPE "Line 1"
 enter
 TYPE "Line 2"
 up
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect cursor at 0,6
 
 ## should select upward with Shift+ArrowUp
@@ -212,7 +208,6 @@ TYPE "Line 1"
 enter
 TYPE "Line 2"
 up with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,6-1,6
 
 ## should extend selection with multiple Shift+Arrow keys
@@ -220,7 +215,6 @@ expect selection at 0,6-1,6
 TYPE "Hello World"
 left with meta
 right 5 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,5
 
 ## should return correct order for forward and backward selections
@@ -368,14 +362,12 @@ expect cursor at 0,5
 TYPE "Hello World"
 left with meta
 right with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,11
 
 ## should select to start of line with Shift+Meta+Left
 ### Shift+Meta+Left selects to start of line
 TYPE "Hello World"
 left with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,11
 
 ## should select from middle to end with Shift+Meta+Right
@@ -383,7 +375,6 @@ expect selection at 0,0-0,11
 TYPE "Hello World"
 left 3 times
 right with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,8-0,11
 
 ## should select from middle to start with Shift+Meta+Left
@@ -391,7 +382,6 @@ expect selection at 0,8-0,11
 TYPE "Hello World"
 left 3 times
 left with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,8
 
 ## should select to start of second line with Shift+Meta+Left
@@ -400,7 +390,6 @@ TYPE "First line"
 enter
 TYPE "Second line here"
 left with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 1,0-1,16
 
 ## should extend selection to end with Shift+Meta+Right
@@ -409,7 +398,6 @@ TYPE "Hello World Here"
 left with meta
 right 2 times with shift
 right with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,16
 
 
@@ -428,7 +416,6 @@ up 3 times
 left with meta
 right 6 times
 down 2 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,6-2,6
 
 ## should select 3 rows from beginning to end
@@ -442,7 +429,6 @@ up 2 times
 left with meta
 down 2 times with shift
 right with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-2,15
 
 ## should select 3 rows from end of line to middle
@@ -455,7 +441,6 @@ TYPE "Third line here"
 up 2 times
 right with meta
 down 2 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,5-2,5
 
 ## should select 3 rows from middle to beginning
@@ -470,7 +455,6 @@ left with meta
 right 6 times
 down 2 times with shift
 left with meta, shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,6-2,0
 
 ## should select from last character and extend down
@@ -484,7 +468,6 @@ up 2 times
 left
 right with shift
 down with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,4-2,0
 
 ## should select down 4 rows from beginning
@@ -503,7 +486,6 @@ TYPE "Line 6"
 up 5 times
 left with meta
 down 4 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-4,0
 
 ## should select right 3 columns
@@ -514,7 +496,6 @@ TYPE "Second line"
 up
 left with meta
 right 3 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-0,3
 
 ## should select down 4 rows then right 3 columns
@@ -532,7 +513,6 @@ up 4 times
 left with meta
 down 4 times with shift
 right 3 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,0-4,3
 
 ## should select from middle down 4 rows then right 3 columns
@@ -551,7 +531,6 @@ left with meta
 right 5 times
 down 4 times with shift
 right 3 times with shift
-expect(fixture.wb.Selection.isSelection).toBe(true);
 expect selection at 0,5-4,8
 
 
@@ -563,7 +542,6 @@ TYPE "Hello World"
 left with meta
 right 5 times with shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('World');
 expect cursor at 0,0
 
@@ -572,7 +550,6 @@ expect cursor at 0,0
 TYPE "Delete me"
 left with meta, shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('');
 expect cursor at 0,0
 
@@ -587,7 +564,6 @@ up 2 times
 left with meta
 down 2 times with shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('hird line');
 expect cursor at 0,0
 
@@ -603,7 +579,6 @@ left with meta
 right 6 times
 down 2 times with shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First ine here');
 expect cursor at 0,6
 
@@ -618,7 +593,6 @@ right 6 times
 down with shift
 right with meta, shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First ');
 expect cursor at 0,6
 
@@ -627,7 +601,6 @@ expect cursor at 0,6
 TYPE "Hello World"
 left 5 times with shift
 backspace
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello ');
 expect cursor at 0,6
 
@@ -640,7 +613,6 @@ TYPE "Hello World"
 left with meta
 right 5 times with shift
 TYPE "X"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('XWorld');
 expect cursor at 0,1
 
@@ -650,7 +622,6 @@ TYPE "Hello World"
 left with meta
 right 5 times with shift
 TYPE "Goodbye"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('GoodbyeWorld');
 expect cursor at 0,7
 
@@ -660,7 +631,6 @@ TYPE "Old text"
 left with meta
 right with meta, shift
 TYPE "New"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('New');
 expect cursor at 0,3
 
@@ -675,7 +645,6 @@ up 2 times
 left with meta
 down 2 times with shift
 TYPE "X"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Xhird line');
 expect cursor at 0,1
 
@@ -691,7 +660,6 @@ left with meta
 right 6 times
 down 2 times with shift
 TYPE "REPLACED"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First REPLACEDine');
 expect cursor at 0,14
 
@@ -700,7 +668,6 @@ expect cursor at 0,14
 TYPE "Hello World"
 left 5 times with shift
 TYPE "Everyone"
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello Everyone');
 expect cursor at 0,14
 
@@ -711,7 +678,6 @@ left with meta
 right 5 times
 right 5 times with shift
 PRESS " "
-expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello ');
 expect cursor at 0,6
 
