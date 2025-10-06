@@ -405,9 +405,7 @@ enter
 TYPE "Second line here"
 left with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 1, col: 0 });
-expect(end).toEqual({ row: 1, col: 16 });
+expect selection at 1,0-1,16
 
 ## should extend selection to end with Shift+Meta+Right
 ### Extend selection to end with Shift+Meta+Right
@@ -416,9 +414,7 @@ left with meta
 right 2 times with shift
 right with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 16 });
+expect selection at 0,0-0,16
 
 
 # Multi-line selections
@@ -464,9 +460,7 @@ up 2 times
 right with meta
 down 2 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 5 });
-expect(end).toEqual({ row: 2, col: 5 });
+expect selection at 0,5-2,5
 
 ## should select 3 rows from middle to beginning
 ### Select 3 rows: middle to beginning
@@ -481,9 +475,7 @@ right 6 times
 down 2 times with shift
 left with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 2, col: 0 });
+expect selection at 0,6-2,0
 
 ## should select from last character and extend down
 ### Select from last character and extend down
@@ -497,9 +489,7 @@ left
 right with shift
 down with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 4 });
-expect(end).toEqual({ row: 2, col: 0 });
+expect selection at 0,4-2,0
 
 ## should select down 4 rows from beginning
 ### Select down 4 rows from beginning
@@ -518,9 +508,7 @@ up 5 times
 left with meta
 down 4 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 4, col: 0 });
+expect selection at 0,0-4,0
 
 ## should select right 3 columns
 ### Select right 3 columns
@@ -581,9 +569,7 @@ right 5 times with shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('World');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 
 ## should delete entire line
 ### Delete entire line
@@ -592,9 +578,7 @@ left with meta, shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 
 ## should delete two full lines plus first character
 ### Delete two full lines plus first character
@@ -609,9 +593,7 @@ down 2 times with shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('hird line');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 0 });
+expect cursor at 0,0
 
 ## should delete partial multi-line selection
 ### Delete partial multi-line selection
@@ -627,9 +609,7 @@ down 2 times with shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First ine here');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 0, col: 6 });
+expect cursor at 0,6
 
 ## should delete from middle to end across lines
 ### Delete from middle to end across lines
@@ -644,9 +624,7 @@ right with meta, shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First ');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 0, col: 6 });
+expect cursor at 0,6
 
 ## should delete backward selection
 ### Delete backward selection
@@ -655,9 +633,7 @@ left 5 times with shift
 backspace
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello ');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 0, col: 6 });
+expect cursor at 0,6
 
 
 # Replacing selections
@@ -670,9 +646,7 @@ right 5 times with shift
 TYPE "X"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('XWorld');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 1 });
-expect(end).toEqual({ row: 0, col: 1 });
+expect cursor at 0,1
 
 ## should replace partial text with word
 ### Replace 'Hello ' with 'Goodbye'
@@ -682,9 +656,7 @@ right 5 times with shift
 TYPE "Goodbye"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('GoodbyeWorld');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 7 });
-expect(end).toEqual({ row: 0, col: 7 });
+expect cursor at 0,7
 
 ## should replace entire line
 ### Replace entire line
@@ -694,9 +666,7 @@ right with meta, shift
 TYPE "New"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('New');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 3 });
-expect(end).toEqual({ row: 0, col: 3 });
+expect cursor at 0,3
 
 ## should replace multi-line selection with single character
 ### Replace multi-line selection with 'X'
@@ -711,9 +681,7 @@ down 2 times with shift
 TYPE "X"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Xhird line');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 1 });
-expect(end).toEqual({ row: 0, col: 1 });
+expect cursor at 0,1
 
 ## should replace partial multi-line with text
 ### Replace partial multi-line with text
@@ -729,9 +697,7 @@ down 2 times with shift
 TYPE "REPLACED"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('First REPLACEDine');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 14 });
-expect(end).toEqual({ row: 0, col: 14 });
+expect cursor at 0,14
 
 ## should replace backward selection
 ### Replace backward selection
@@ -740,9 +706,7 @@ left 5 times with shift
 TYPE "Everyone"
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello Everyone');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 14 });
-expect(end).toEqual({ row: 0, col: 14 });
+expect cursor at 0,14
 
 ## should replace selection with space
 ### Replace 'World' with space
@@ -753,9 +717,7 @@ right 5 times with shift
 PRESS " "
 expect(fixture.wb.Selection.isSelection).toBe(false);
 expect(fixture).toHaveLines('Hello ');
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 0, col: 6 });
+expect cursor at 0,6
 
 
 # Regression: Selection.ordered and isForwardSelection
@@ -780,9 +742,7 @@ enter
 TYPE "bar"
 left 3 times with shift
 up with shift
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({row: 0, col: 0});
-expect(end).toEqual({row: 1, col: 3});
+expect selection at 0,0-1,3
 
 ## should use head.row not tail.row when moving head down
 ### Clamps using head.row when head moves to shorter line
@@ -795,9 +755,7 @@ up 2 times
 left with meta
 right 5 times with shift
 down with shift
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({row: 2, col: 0});
+expect selection at 0,0-2,0
 
 
 # Walkthrough feature - regression tests
