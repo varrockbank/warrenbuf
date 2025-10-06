@@ -335,6 +335,19 @@ PRESS " "    →  fixture.press(' ').once();
 PRESS ';'    →  fixture.press(';').once();
 ```
 
+#### expect cursor at
+```
+expect cursor at <row>,<col>  →  expect(fixture).toHaveCursorAt(row, col);
+```
+
+Verifies that the selection is a cursor (not a selection) at the specified coordinates.
+
+Examples:
+```
+expect cursor at 0,5     →  expect(fixture).toHaveCursorAt(0, 5);
+expect cursor at 2, 10   →  expect(fixture).toHaveCursorAt(2, 10);
+```
+
 #### Special Keys
 ```
 backspace                   →  fixture.press(Key.Backspace).once();
