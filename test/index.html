@@ -1249,6 +1249,7 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 // Use placeholder approach to avoid nested replacements
                 let text = escapeHtml(line);
                 const strings = [];
+                const quantifiers = [];
 
                 // Extract strings and replace with placeholders
                 text = text.replace(/"([^"]*)"/g, (match, content) => {
@@ -1257,7 +1258,19 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     return `__STRING${index}__`;
                 });
 
-                // Now do all other replacements on text without strings
+                // Extract quantifiers and replace with placeholders (before numbers get highlighted)
+                text = text.replace(/\b(once)\b/g, (match) => {
+                    const index = quantifiers.length;
+                    quantifiers.push(`<span class="dsl-quantifier">${match}</span>`);
+                    return `__QUANT${index}__`;
+                });
+                text = text.replace(/\b(\d+\s+times?)\b/g, (match) => {
+                    const index = quantifiers.length;
+                    quantifiers.push(`<span class="dsl-quantifier">${match}</span>`);
+                    return `__QUANT${index}__`;
+                });
+
+                // Now do all other replacements on text without strings or quantifiers
                 // Keywords: TYPE, PRESS, EXPECT, at
                 text = text.replace(/\b(TYPE|PRESS|EXPECT|at)\b/g, '<span class="dsl-keyword">$1</span>');
 
@@ -1267,11 +1280,13 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 // Modifiers: with, shift, meta
                 text = text.replace(/\b(with|shift|meta)\b/g, '<span class="dsl-modifier">$1</span>');
 
-                // Quantifiers: once, time, times
-                text = text.replace(/\b(once|time|times)\b/g, '<span class="dsl-quantifier">$1</span>');
-
-                // Numbers
+                // Numbers (standalone, not part of quantifiers)
                 text = text.replace(/\b(\d+)\b/g, '<span class="dsl-number">$1</span>');
+
+                // Restore quantifiers from placeholders
+                text = text.replace(/__QUANT(\d+)__/g, (match, index) => {
+                    return quantifiers[parseInt(index)];
+                });
 
                 // Restore strings from placeholders
                 text = text.replace(/__STRING(\d+)__/g, (match, index) => {
