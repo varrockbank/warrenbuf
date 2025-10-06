@@ -6,6 +6,7 @@ function WarrenBuf(node,
     editorPaddingPX = 4 ,
     indentation = 4,
     tabstop = 8,
+    showWhitespace = true,
     colorPrimary = "#B2B2B2",
     colorSecondary = "#212026",
     gutterSize = 2,
@@ -479,6 +480,33 @@ function WarrenBuf(node,
     return visualCol;
   }
 
+  // Render whitespace with visual indicators (vim-style)
+  function renderWhitespace(text) {
+    if (!showWhitespace) return text;
+
+    let result = '';
+    let visualCol = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\t') {
+        // Calculate how many positions until next tab stop
+        const nextTabStop = Math.floor(visualCol / tabstop) * tabstop + tabstop;
+        const fillCount = nextTabStop - visualCol;
+        // Show > followed by dashes to fill tab width
+        result += '<span class="wb-whitespace">' + '>' + '-'.repeat(Math.max(0, fillCount - 1)) + '</span>';
+        visualCol = nextTabStop;
+      } else if (text[i] === ' ') {
+        result += '<span class="wb-whitespace">.</span>';
+        visualCol++;
+      } else {
+        result += text[i];
+        visualCol++;
+      }
+    }
+
+    return result;
+  }
+
   function render(renderLineContainers = false) {
     if (lastRender.lineCount !== Model.lastIndex + 1 ) {
       $lineCounter.textContent = `${lastRender.lineCount = Model.lastIndex + 1}L, originally: ${Model.originalLineCount}L ${Model.byteCount} bytes`;
@@ -515,7 +543,7 @@ function WarrenBuf(node,
 
     // Update contents of line containers
     for(let i = 0; i < Viewport.size; i++)
-      $e.children[i].textContent = Viewport.lines[i] || null;
+      $e.children[i].innerHTML = renderWhitespace(Viewport.lines[i] || '');
 
     if(Model.treeSitterTree && Model.treeSitterCaptures) {
       // The point of tree sitter is to incremental restructuring of the tree.
@@ -531,7 +559,8 @@ function WarrenBuf(node,
       let minJ = 0;
       for(let i = 0; i < Viewport.size; i++) {
         $e.children[i].innerHTML = "";
-        $e.children[i].textContent = Viewport.lines[i] || null;
+        const line = Viewport.lines[i] || '';
+        $e.children[i].innerHTML = renderWhitespace(line);
         // TODO: terribly inefficient loop. Just grab the elements that are relevant
         for(let j = minJ; j < Model.treeSitterCaptures.length; j++) {
           const capture = Model.treeSitterCaptures[j]
@@ -540,9 +569,8 @@ function WarrenBuf(node,
             const startCol = startPosition.column;
             const endCol = startCol + capture.node.text.length;
 
-            const line = $e.children[i].textContent;
-            const left = line.slice(0, startCol);
-            const right = line.slice(endCol);
+            const left = renderWhitespace(line.slice(0, startCol));
+            const right = renderWhitespace(line.slice(endCol));
 
             // console.log("original string: ", line);
             // console.log("  left: ", left);
@@ -555,10 +583,10 @@ function WarrenBuf(node,
               if(left.length > 8) {
                 const leftA = left.slice(0, left.length - 9);
                 const leftB = left.slice(left.length - 9);
-                $e.children[i].innerHTML = `${leftA}<span class="highlight-function">${leftB}</span><span class="highlight-function-name">${capture.node.text}</span>${right}`;
+                $e.children[i].innerHTML = `${leftA}<span class="highlight-function">${leftB}</span><span class="highlight-function-name">${renderWhitespace(capture.node.text)}</span>${right}`;
               }
             } else if (capture.name === "string") {
-              $e.children[i].innerHTML = `${left}<span class="highlight-string">${capture.node.text}</span>${right}`;
+              $e.children[i].innerHTML = `${left}<span class="highlight-string">${renderWhitespace(capture.node.text)}</span>${right}`;
             }
             // console.log("after: ", $e.children[i].textContent);
 
