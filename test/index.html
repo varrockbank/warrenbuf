@@ -1056,9 +1056,9 @@
                     <div class="summary-number" style="color: #f44336" id="failed-tests">0</div>
                     <div class="summary-label">Failed</div>
                 </div>
-                <div class="summary-item" id="compile-errors-summary" style="display: none;">
+                <div class="summary-item" id="compile-errors-summary">
                     <div class="summary-number" style="color: #daa520" id="compile-error-tests">0</div>
-                    <div class="summary-label">Compile Errors</div>
+                    <div class="summary-label">with compile errors</div>
                 </div>
                 <div class="summary-item">
                     <div class="summary-number" style="color: #757575" id="skipped-tests">0</div>
@@ -1668,10 +1668,9 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
                     const uniqueTestCount = testsWithErrors.size;
                     compileErrorTestsCount.textContent = uniqueTestCount;
-                    compileErrorsSummary.style.display = 'flex';
                     testErrorWarning.style.display = 'flex';
                 } else {
-                    compileErrorsSummary.style.display = 'none';
+                    compileErrorTestsCount.textContent = '0';
                     testErrorWarning.style.display = 'none';
                 }
             } catch (error) {
