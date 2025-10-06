@@ -1236,6 +1236,11 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     return '';
                 }
 
+                // Comment lines starting with #, ##, ###, etc.
+                if (line.trim().startsWith('#')) {
+                    return `<span class="dsl-comment">${escapeHtml(line)}</span>`;
+                }
+
                 // JavaScript pass-through (ends with ; or starts with //)
                 if (line.trim().endsWith(';') || line.trim().startsWith('//')) {
                     return `<span class="dsl-javascript">${escapeHtml(line)}</span>`;
