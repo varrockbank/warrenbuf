@@ -5,6 +5,7 @@ function WarrenBuf(node,
     lineHeight = 24,
     editorPaddingPX = 4 ,
     indentation = 4,
+    tabstop = 8,
     colorPrimary = "#B2B2B2",
     colorSecondary = "#212026",
     gutterSize = 2,
@@ -469,8 +470,8 @@ function WarrenBuf(node,
     let visualCol = 0;
     for (let i = 0; i < Math.min(col, line.length); i++) {
       if (line[i] === '\t') {
-        // Move to next tab stop (multiple of indentation)
-        visualCol = Math.floor(visualCol / indentation) * indentation + indentation;
+        // Move to next tab stop (multiple of tabstop)
+        visualCol = Math.floor(visualCol / tabstop) * tabstop + tabstop;
       } else {
         visualCol++;
       }
