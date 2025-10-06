@@ -1,0 +1,31 @@
+Basic tab test:
+Hello	World	Test
+	Indented line
+		Double indented
+
+Mixed content:
+function test() {
+	if (condition) {
+		console.log("Hello	World");
+	}
+}
+
+Alignment test:
+Name	Age	City
+John	25	New York
+Alice	30	San Francisco
+Bob	22	Chicago
+
+Edge cases:
+	Start with tab
+End with tab	
+	Middle	tab
+Empty line with tab:	
+Normal line
+	Another indented line
+
+Tab width variations (should align at 4-space boundaries):
+a	b	c	d
+ab	cd	ef	gh
+abc	def	ghi	jkl
+abcd	efgh	ijkl	mnop

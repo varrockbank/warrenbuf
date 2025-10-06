@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Multiple Tabs</title>
+</head>
+<body>
+    <h1>Test Multiple Tabs</h1>
+    <div id="output"></div>
+
+    <script>
+        function convertTabColumnToRenderedColumn(originalText, column, tabStop = 8) {
+            if (!originalText) return column;
+            
+            let renderedColumn = 0;
+            for (let i = 0; i < column; i++) {
+                if (originalText[i] === '\t') {
+                    // Tab aligns to next tabWidth boundary
+                    renderedColumn = Math.ceil((renderedColumn + 1) / tabStop) * tabStop;
+                } else {
+                    renderedColumn++;
+                }
+            }
+            
+            return renderedColumn;
+        }
+
+        const testText = "foo\tbar\tbaz";
+        const output = document.getElementById('output');
+        
+        output.innerHTML = `<h2>Testing: "${testText}"</h2>`;
+        output.innerHTML += `<p>Expected mapping for "foo\tbar\tbaz" (tabStop=8): 0->0, 1->1, 2->2, 3->8, 4->9, 5->10, 6->11, 7->16, 8->17, 9->18, 10->19</p>`;
+        output.innerHTML += `<p>Actual mapping:</p>`;
+        
+        for (let i = 0; i <= testText.length; i++) {
+            const rendered = convertTabColumnToRenderedColumn(testText, i);
+            const char = i < testText.length ? testText[i] : 'EOF';
+            output.innerHTML += `<div>Position ${i} ('${char}') → Rendered position ${rendered}</div>`;
+        }
+    </script>
+</body>
+</html>

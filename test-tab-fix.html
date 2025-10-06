@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WarrenBuf Tab Fix Test</title>
+    <style>
+        /************* "Atomic CSS" classes for Boxes *************/
+        .💪 { display: flex }                                 /* Flex like muscles.   */
+        .🥷 { overflow: hidden }
+        .🪜 { flex-flow: column }
+        .🌳 { flex: 1 }                                       /* Grow like a tree.    */
+        .🦠 { justify-content: space-between }                /* Stay spread apart.   */
+
+        body {
+            background-color: #494460;
+            color: white;
+            margin: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /*** Classes for WarrenBuf ***/
+        .wb {
+            background-color: #282C34;
+            color: #B2B2B2;
+            position: relative;
+            outline: none;
+            font-family: monospace;
+            border: 1px solid black;
+        }
+        .no-select {
+            user-select: none;       /* Standard */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* IE/Edge (old) */
+        }
+        /* Bridge must be selectable but invisible & offscreen */
+        .wb-clipboard-bridge {
+            position: fixed;      /* out of normal flow so it won't jump layout */
+            left: 0;
+            top: 1px;
+            width: 0;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none; /* avoid clicks */
+        }
+
+        .wb .wb-lines>pre::before {
+            content: "\200B";
+        }
+        .wb .wb-lines pre {
+            margin: 0;
+            overflow: hidden;
+        }
+        .wb .wb-selection {
+            left: 0ch;
+            top: 0ch;
+            background-color: #EDAD10;
+            position: absolute;
+            mix-blend-mode: difference;        /* inverts underlying pixels */
+        }
+        .wb .wb-status span {
+            padding-right: 4px;
+        }
+        .wb .wb-lines pre .highlight-function {
+            color: orange;
+        }
+        .wb .wb-lines pre .highlight-function-name {
+            color: cadetblue ;
+        }
+        .wb .wb-lines pre .highlight-string {
+            color: green;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: #2d2d30;
+        }
+        
+        .test-title {
+            color: #569cd6;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .test-description {
+            color: #ce9178;
+            margin-bottom: 10px;
+        }
+        
+        .expected {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        
+        .actual {
+            color: #f44747;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>WarrenBuf Tab Character Fix Test</h1>
+    
+    <div class="test-section">
+        <div class="test-title">Test 1: Tab Cursor Movement Fix</div>
+        <div class="test-description">Test: Position cursor on 'o' in "foo	bar", then press right arrow twice. Should land on 'b'. Also test "foo	bar	baz" with multiple tabs.</div>
+        <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="editor1">
+            <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+            <div class="💪">
+                <div class="wb-gutter"></div>
+                <div class="wb-lines 🌳 🥷"></div>
+            </div>
+            <div class="💪 wb-status 🦠">
+                <div class="wb-status-left 💪">
+                    <span class="wb-linecount"></span>
+                </div>
+                <div class="wb-status-right 💪">
+                    <span class="wb-coordinate"></span>
+                    <span>|</span>
+                    <span class="wb-indentation"></span>
+                </div>
+            </div>
+        </blockquote>
+        <div class="expected">Expected: Moving right from 'o' should skip over the tab and land on 'b' in 2 moves. For "foo	bar	baz" with tabStop=8, cursor should move: f→o→o→(tab)→b→a→r→(tab)→b→a→z</div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">Test 2: Alignment & Edge Cases</div>
+        <div class="test-description">Compare with VIM: Table alignment, tabs at start/end/middle of lines, empty lines with tabs.</div>
+        <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="editor2">
+            <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+            <div class="💪">
+                <div class="wb-gutter"></div>
+                <div class="wb-lines 🌳 🥷"></div>
+            </div>
+            <div class="💪 wb-status 🦠">
+                <div class="wb-status-left 💪">
+                    <span class="wb-linecount"></span>
+                </div>
+                <div class="wb-status-right 💪">
+                    <span class="wb-coordinate"></span>
+                    <span>|</span>
+                    <span class="wb-indentation"></span>
+                </div>
+            </div>
+        </blockquote>
+        <div class="expected">Expected: Table columns should align properly, edge cases should match VIM behavior</div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">Test 3: Tab Width Variations & Selection</div>
+        <div class="test-description">Compare with VIM: Different content lengths to test 4-space tab alignment. Try selecting text with tabs.</div>
+        <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="editor3">
+            <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+            <div class="💪">
+                <div class="wb-gutter"></div>
+                <div class="wb-lines 🌳 🥷"></div>
+            </div>
+            <div class="💪 wb-status 🦠">
+                <div class="wb-status-left 💪">
+                    <span class="wb-linecount"></span>
+                </div>
+                <div class="wb-status-right 💪">
+                    <span class="wb-coordinate"></span>
+                    <span>|</span>
+                    <span class="wb-indentation"></span>
+                </div>
+            </div>
+        </blockquote>
+        <div class="expected">Expected: Tab stop variations should align at 8-space boundaries, selections should work correctly with tabs</div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">Instructions</div>
+        <div class="test-description">
+            <ol>
+                <li>Open <code>tab-test.txt</code> in VIM to see reference behavior</li>
+                <li>Compare the three editors below with VIM's rendering</li>
+                <li>Check cursor positioning when moving through tabs</li>
+                <li>Try selecting text that includes tabs</li>
+                <li>Look for any off-by-one errors in alignment or cursor positioning</li>
+                <li>Test the tab stop variations - they should align at 8-space boundaries</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="warrenbuf.js"></script>
+    <script>
+        // Initialize editors for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create WarrenBuf instances with custom tab stop
+            const editor1 = new WarrenBuf(document.getElementById('editor1'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
+            const editor2 = new WarrenBuf(document.getElementById('editor2'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
+            const editor3 = new WarrenBuf(document.getElementById('editor3'), null, null, 10, 20, 4, 4, "#B2B2B2", "#212026", 2, 1, 8);
+            
+            // Set test content with tabs - simple test case
+            editor1.Model.text = `Simple test:
+foo	bar
+Test cursor movement from 'o' to 'b' - should take 2 right arrows
+
+Multiple tabs test:
+foo	bar	baz
+Test cursor movement through multiple tabs`;
+
+            editor2.Model.text = `Alignment test:
+Name	Age	City
+John	25	New York
+Alice	30	San Francisco
+Bob	22	Chicago
+
+Edge cases:
+	Start with tab
+End with tab	
+	Middle	tab
+Empty line with tab:	
+Normal line
+	Another indented line`;
+
+            editor3.Model.text = `Tab stop variations (should align at 8-space boundaries):
+a	b	c	d
+ab	cd	ef	gh
+abc	def	ghi	jkl
+abcd	efgh	ijkl	mnop
+
+Select this text with tabs to test selection behavior`;
+            
+            // Focus the first editor
+            document.getElementById('editor1').focus();
+            
+            console.log('Tab fix test initialized. Try typing tabs and selecting text.');
+            console.log('Editor 1:', editor1);
+            console.log('Editor 2:', editor2);
+            console.log('Editor 3:', editor3);
+        });
+    </script>
+</body>
+</html>

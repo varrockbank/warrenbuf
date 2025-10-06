@@ -8,7 +8,8 @@ function WarrenBuf(node,
     colorPrimary = "#B2B2B2",
     colorSecondary = "#212026",
     gutterSize = 2,
-    gutterPadding = 1) {
+    gutterPadding = 1,
+    tabStop = 8) {
   this.version = "2.2.5-alpha.1";
 
   const $e = node.querySelector('.wb-lines');
@@ -448,6 +449,56 @@ function WarrenBuf(node,
     lineCount: -1
   };
 
+  // Function to render tabs as spaces for display using proper tab alignment
+  function renderTabAwareText(text) {
+    if (!text) return text;
+    
+    let result = '';
+    let column = 0;
+    
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\t') {
+        // Tab aligns to next tabWidth boundary
+        const nextTabStop = Math.ceil((column + 1) / tabStop) * tabStop;
+        const spacesNeeded = nextTabStop - column;
+        result += ' '.repeat(spacesNeeded);
+        column = nextTabStop;
+      } else {
+        result += text[i];
+        column++;
+      }
+    }
+    
+    return result;
+  }
+
+  // Function to convert column position from original text (with tabs) to rendered text (with spaces)
+  // Uses proper tab alignment - tabs jump to the next tabStop boundary
+  // For "foo\tbar" with tabStop=8, the mapping should be: 0->0, 1->1, 2->2, 3->8, 4->9, 5->10
+  // For selections ending on tabs, we need to extend to the end of the tab's visual space
+  function convertTabColumnToRenderedColumn(originalText, column, extendToEndOfTab = false) {
+    if (!originalText) return column;
+    
+    let renderedColumn = 0;
+    for (let i = 0; i < column; i++) {
+      if (originalText[i] === '\t') {
+        // Tab aligns to next tabStop boundary
+        // For "foo\tbar" at position 3, renderedColumn goes from 3 to 8 (next boundary)
+        renderedColumn = Math.ceil((renderedColumn + 1) / tabStop) * tabStop;
+      } else {
+        renderedColumn++;
+      }
+    }
+    
+    // If we're positioned ON a tab character and extending to end of tab
+    if (extendToEndOfTab && column < originalText.length && originalText[column] === '\t') {
+      // Extend to the end of the tab's visual space
+      renderedColumn = Math.ceil((renderedColumn + 1) / tabStop) * tabStop - 1;
+    }
+    
+    return renderedColumn;
+  }
+
   function populateSelections() {
     for (let i = 0; i < Viewport.size; i++) {
       const sel = document.createElement("div");
@@ -500,7 +551,7 @@ function WarrenBuf(node,
 
     // Update contents of line containers
     for(let i = 0; i < Viewport.size; i++)
-      $e.children[i].textContent = Viewport.lines[i] || null;
+      $e.children[i].textContent = renderTabAwareText(Viewport.lines[i] || null);
 
     if(Model.treeSitterTree && Model.treeSitterCaptures) {
       // The point of tree sitter is to incremental restructuring of the tree.
@@ -516,18 +567,21 @@ function WarrenBuf(node,
       let minJ = 0;
       for(let i = 0; i < Viewport.size; i++) {
         $e.children[i].innerHTML = "";
-        $e.children[i].textContent = Viewport.lines[i] || null;
+        $e.children[i].textContent = renderTabAwareText(Viewport.lines[i] || null);
         // TODO: terribly inefficient loop. Just grab the elements that are relevant
         for(let j = minJ; j < Model.treeSitterCaptures.length; j++) {
           const capture = Model.treeSitterCaptures[j]
           const startPosition = capture.node.startPosition;
           if(startPosition.row === Viewport.start + i) {
-            const startCol = startPosition.column;
-            const endCol = startCol + capture.node.text.length;
+            const originalLine = Viewport.lines[i] || '';
+            const renderedLine = renderTabAwareText(originalLine);
+            
+            // Convert column positions from original text to rendered text
+            const startCol = convertTabColumnToRenderedColumn(originalLine, startPosition.column);
+            const endCol = convertTabColumnToRenderedColumn(originalLine, startPosition.column + capture.node.text.length, true);
 
-            const line = $e.children[i].textContent;
-            const left = line.slice(0, startCol);
-            const right = line.slice(endCol);
+            const left = renderedLine.slice(0, startCol);
+            const right = renderedLine.slice(endCol);
 
             // console.log("original string: ", line);
             // console.log("  left: ", left);
@@ -568,7 +622,8 @@ function WarrenBuf(node,
       if (i < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
         const content = Viewport.lines[i];
         if(content.length > 0 ) {
-          $selections[i].style.width = content.length+'ch';
+          const renderedLength = renderTabAwareText(content).length;
+          $selections[i].style.width = renderedLength+'ch';
         } else {
           // For empty line, we still render 1 character selection
           $selections[i].style.width = '1ch';
@@ -577,26 +632,34 @@ function WarrenBuf(node,
     }
 
     // Render the leading and heading selection line
-    $selections[firstEdge.row].style.left = firstEdge.col+'ch';
+    const firstEdgeRenderedCol = convertTabColumnToRenderedColumn(Viewport.lines[firstEdge.row] || '', firstEdge.col);
+    $selections[firstEdge.row].style.left = firstEdgeRenderedCol+'ch';
+    
     if (secondEdge.row === firstEdge.row) {
-      $selections[firstEdge.row].style.width = secondEdge.col - firstEdge.col + 1 +'ch';
+      const secondEdgeRenderedCol = convertTabColumnToRenderedColumn(Viewport.lines[secondEdge.row] || '', secondEdge.col, head !== tail);
+      $selections[firstEdge.row].style.width = (secondEdgeRenderedCol - firstEdgeRenderedCol + 1)+'ch';
       $selections[firstEdge.row].style.visibility = 'visible';
     } else {
       if(firstEdge.row < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
         const text = Viewport.lines[firstEdge.row];
+        const renderedText = renderTabAwareText(text);
+        const renderedCol = convertTabColumnToRenderedColumn(text, firstEdge.col);
 
         // There is edge case where text.length - firstEdge.col is 0. Namely, if the selection started
         // on the last cursor position, menaing the cursor is between the last char and new line.
         // We want to render 1 char to represent this new line.
-        $selections[firstEdge.row].style.width = Math.max(1, text.length - firstEdge.col)+'ch';
+        $selections[firstEdge.row].style.width = Math.max(1, renderedText.length - renderedCol)+'ch';
         $selections[firstEdge.row].style.visibility = 'visible';
       }
       if(secondEdge.row < Viewport.lines.length) {
         const text = Viewport.lines[secondEdge.row];
+        const renderedText = renderTabAwareText(text);
+        const renderedCol = convertTabColumnToRenderedColumn(text, secondEdge.col, head !== tail);
+        
         if(secondEdge.col >= text.length) {
           console.warn(`secondEdge's column ${secondEdge.col} is too far beyond the text with length: `, text.length);
         }
-        $selections[secondEdge.row].style.width = Math.min(secondEdge.col + 1, text.length)+'ch';
+        $selections[secondEdge.row].style.width = Math.min(renderedCol + 1, renderedText.length)+'ch';
         $selections[secondEdge.row].style.visibility = 'visible';
       }
     }
