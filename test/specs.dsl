@@ -177,18 +177,14 @@ TYPE "Hello"
 left with meta
 right with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 1 });
+expect selection at 0,0-0,1
 
 ## should select one character backward
 ### Select one character with Shift+ArrowLeft
 TYPE "Hello"
 left with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 4 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect selection at 0,4-0,5
 
 ## should select multiple lines downward
 ### Select multiple lines with Shift+ArrowDown
@@ -199,9 +195,7 @@ up
 left with meta
 down with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 1, col: 0 });
+expect selection at 0,0-1,0
 
 ## should move cursor up without creating selection
 ### Move cursor up without selection
@@ -219,9 +213,7 @@ enter
 TYPE "Line 2"
 up with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 6 });
-expect(SecondEdge).toEqual({ row: 1, col: 6 });
+expect selection at 0,6-1,6
 
 ## should extend selection with multiple Shift+Arrow keys
 ### Extend selection with multiple Shift+Arrow
@@ -229,9 +221,7 @@ TYPE "Hello World"
 left with meta
 right 5 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [firstEdge, SecondEdge] = fixture.wb.Selection.ordered;
-expect(firstEdge).toEqual({ row: 0, col: 0 });
-expect(SecondEdge).toEqual({ row: 0, col: 5 });
+expect selection at 0,0-0,5
 
 ## should return correct order for forward and backward selections
 ### Regression: Selection.ordered returns correct order for forward/backward selections
@@ -383,18 +373,14 @@ TYPE "Hello World"
 left with meta
 right with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 11 });
+expect selection at 0,0-0,11
 
 ## should select to start of line with Shift+Meta+Left
 ### Shift+Meta+Left selects to start of line
 TYPE "Hello World"
 left with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 11 });
+expect selection at 0,0-0,11
 
 ## should select from middle to end with Shift+Meta+Right
 ### Shift+Meta+Right from middle selects to end
@@ -402,9 +388,7 @@ TYPE "Hello World"
 left 3 times
 right with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 8 });
-expect(end).toEqual({ row: 0, col: 11 });
+expect selection at 0,8-0,11
 
 ## should select from middle to start with Shift+Meta+Left
 ### Shift+Meta+Left from middle selects to start
@@ -412,9 +396,7 @@ TYPE "Hello World"
 left 3 times
 left with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 8 });
+expect selection at 0,0-0,8
 
 ## should select to start of second line with Shift+Meta+Left
 ### Shift+Meta+Left on second line
@@ -455,9 +437,7 @@ left with meta
 right 6 times
 down 2 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 6 });
-expect(end).toEqual({ row: 2, col: 6 });
+expect selection at 0,6-2,6
 
 ## should select 3 rows from beginning to end
 ### Select 3 rows: beginning to end
@@ -471,9 +451,7 @@ left with meta
 down 2 times with shift
 right with meta, shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 2, col: 15 });
+expect selection at 0,0-2,15
 
 ## should select 3 rows from end of line to middle
 ### Select 3 rows: end of line to middle
@@ -553,9 +531,7 @@ up
 left with meta
 right 3 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 0, col: 3 });
+expect selection at 0,0-0,3
 
 ## should select down 4 rows then right 3 columns
 ### Select down 4 rows then right 3 columns
@@ -573,9 +549,7 @@ left with meta
 down 4 times with shift
 right 3 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 0 });
-expect(end).toEqual({ row: 4, col: 3 });
+expect selection at 0,0-4,3
 
 ## should select from middle down 4 rows then right 3 columns
 ### Select from middle down 4 rows then right 3 columns
@@ -594,9 +568,7 @@ right 5 times
 down 4 times with shift
 right 3 times with shift
 expect(fixture.wb.Selection.isSelection).toBe(true);
-const [start, end] = fixture.wb.Selection.ordered;
-expect(start).toEqual({ row: 0, col: 5 });
-expect(end).toEqual({ row: 4, col: 8 });
+expect selection at 0,5-4,8
 
 
 # Deleting selections
