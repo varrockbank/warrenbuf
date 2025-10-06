@@ -1139,7 +1139,7 @@
 <span style="color: #81C784;">&lt;quantification&gt;</span>   ::= <span style="color: #9575CD;">once</span> | <span style="color: #9575CD;">N time(s)</span> <span style="opacity: 0.6;">(default: once)</span>
 <span style="color: #81C784;">&lt;modifiers&gt;</span>        ::= <span style="color: #64B5F6;">shift</span> | <span style="color: #64B5F6;">meta</span> | <span style="color: #64B5F6;">meta, shift</span>
 
-### Examples in Normalized Form <span style="color: #4CAF50;">→</span>  Transpilation
+### Examples in Normalized Form <span style="color: #4CAF50;">  →</span>  Transpilation
 <span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"Hello"</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">type</span>(<span style="color: #64B5F6;">'Hello'</span>);
 <span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">a</span> <span style="color: #9575CD;">once</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">'a'</span>).<span style="color: #9575CD;">once()</span>;
 <span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">";"</span>                         <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">';'</span>).<span style="color: #9575CD;">once()</span>;
