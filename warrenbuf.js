@@ -159,6 +159,7 @@ function WarrenBuf(node,
     makeCursor() {
       tail.row = head.row;
       tail.col = head.col;
+      maxCol = head.col;
       head = tail;
     },
     makeSelection() {
@@ -205,11 +206,21 @@ function WarrenBuf(node,
         const { index, left } = this.partitionLine(first);
         const p = this.partitionLine({ row: second.row, col: second.col + 1 });
         const {right} = p;
-        Model.splice(index, [left + s + right], second.row - first.row + 1);
 
-        head.row = first.row;
-        head.col = first.col + s.length;
+        // Capture values before mutating objects (first/second are references to head/tail)
+        const targetRow = first.row;
+        const targetCol = first.col + s.length;
+        const linesToDelete = second.row - first.row + 1;
+
+        // Update both head and tail to the insertion point BEFORE splicing
+        // This prevents render() inside Model.splice from accessing stale coordinates
+        tail.row = targetRow;
+        tail.col = targetCol;
+        head.row = targetRow;
+        head.col = targetCol;
         this.makeCursor();
+
+        Model.splice(index, [left + s + right], linesToDelete);
       } else {
         const { index, left, right } = this.partitionLine(tail);
         Model.lines[index] = left + s + right;
