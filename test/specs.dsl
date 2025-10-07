@@ -767,3 +767,31 @@ up 9 times
 EXPECT viewport at 2, 11 
 up
 EXPECT viewport at 1, 10
+
+## Should extend selection when scrolling 
+EXPECT viewport at 1, 10
+enter 9 times
+TYPE "foobar"
+EXPECT viewport at 1, 10
+enter
+EXPECT viewport at 2, 11 
+TYPE "YOOOO"
+enter
+EXPECT viewport at 3, 12
+TYPE "heyyy"
+up 9 times 
+EXPECT viewport at 3, 12 
+up 2 times
+EXPECT viewport at 1, 10
+up 1 times
+EXPECT viewport at 1, 10
+down 9 times 
+left with meta
+right 
+down with shift 
+EXPECT viewport at 2, 11 
+EXPECT selection at 9,1-10,1
+down with shift 
+EXPECT viewport at 3, 12
+EXPECT selection at 9,1-11,1
+
