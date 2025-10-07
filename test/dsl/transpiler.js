@@ -81,12 +81,12 @@ class DSLTranspiler {
    */
   transpileDSLCommand(cmd) {
     // TYPE command
-    if (cmd.startsWith('TYPE ')) {
+    if (cmd.toLowerCase().startsWith('type ')) {
       return this.transpileTYPE(cmd);
     }
 
     // PRESS command (for single characters)
-    if (cmd.startsWith('PRESS ')) {
+    if (cmd.toLowerCase().startsWith('press ')) {
       return this.transpilePRESS(cmd);
     }
 
@@ -114,7 +114,7 @@ class DSLTranspiler {
    * Example: TYPE "Hello World" → fixture.type('Hello World');
    */
   transpileTYPE(cmd) {
-    const match = cmd.match(/^TYPE\s+"(.*)"/);
+    const match = cmd.match(/^TYPE\s+"(.*)"/i);
     if (!match) {
       throw new Error(`Invalid TYPE command: ${cmd}`);
     }
@@ -134,9 +134,9 @@ class DSLTranspiler {
    */
   transpilePRESS(cmd) {
     // Match: PRESS 'char' [quantification] or PRESS "char" [quantification] or PRESS char [quantification]
-    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'(?:\s+(\d+)\s+times?|\s+once)?$/);
-    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"(?:\s+(\d+)\s+times?|\s+once)?$/);
-    const matchUnquoted = cmd.match(/^PRESS\s+(.)(?:\s+(\d+)\s+times?|\s+once)?$/);
+    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'(?:\s+(\d+)\s+times?|\s+once)?$/i);
+    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"(?:\s+(\d+)\s+times?|\s+once)?$/i);
+    const matchUnquoted = cmd.match(/^PRESS\s+(.)(?:\s+(\d+)\s+times?|\s+once)?$/i);
 
     let char;
     let quantification;

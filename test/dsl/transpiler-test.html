@@ -271,6 +271,26 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'EXPECT selection at with non-numeric values (should fail)',
         input: 'EXPECT selection at a,b-c,d',
         expectedError: 'Invalid EXPECT selection at command: expect selection at a,b-c,d'
+      },
+       {
+        name: 'type command should be case insensitive',
+        input: 'tYpe "foobar"',
+        expected: "fixture.type('foobar');",
+      },
+      {
+        name: 'type command should preserve case sensitivity of string',
+        input: 'tYpe "fooBar"',
+        expected: "fixture.type('fooBar');",
+      },
+     {
+        name: 'press command should be case insensitive',
+        input: 'press a',
+        expected: "fixture.press('a').once();",
+      },
+      {
+        name: 'type command should preserve case sensitivity of character',
+        input: 'press B',
+        expected: "fixture.press('B').once();",
       }
     ];
 

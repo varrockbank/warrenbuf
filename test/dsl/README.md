@@ -15,6 +15,8 @@
 
 ## Version History
 
+### v5.1.0 - make PRESS and TYPE case insensitive
+
 ### v5.0.0 - expect viewport at <first_line>, <last_line>
 
 **Syntax:** `EXPECT viewport at <first_line>, <last_line>` (both 1-indexed)
