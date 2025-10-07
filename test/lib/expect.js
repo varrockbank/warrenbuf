@@ -52,7 +52,17 @@ function expect(actual) {
             secondEdge.row !== endRow || secondEdge.col !== endCol) {
           throw new Error(`Expected selection at {row: ${startRow}, col: ${startCol}} to {row: ${endRow}, col: ${endCol}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}} to {row: ${secondEdge.row}, col: ${secondEdge.col}}`);
         }
-      }
+      },
+      toHaveViewportAt(firstLine, lastLine) {
+        const actualViewportStartLine = actual.wb.Viewport.start + 1;
+        if(actualViewportStartLine != firstLine) {
+          throw new Error(`Expected first viewport line to be ${firstLine} but was ${actualViewportStartLine}`);
+        }
+        const actualViewportEndLine = actual.wb.Viewport.start + actual.wb.Viewport.size;
+        if(actualViewportEndLine != lastLine) {
+          throw new Error(`Expected last viewport line to be ${lastLine} but was ${actualViewportEndLine}`);
+        }
+      },
     };
   }
 

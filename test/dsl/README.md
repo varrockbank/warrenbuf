@@ -17,13 +17,13 @@
 
 ### v5.0.0 - expect viewport at <first_line>, <last_line>
 
-**Syntax:** `viewport at <first_line>, <last_line>` (both 1-indexed)
+**Syntax:** `EXPECT viewport at <first_line>, <last_line>` (both 1-indexed)
 
 Verifies that the viewport shows the specified range of lines. The viewport uses 1-indexed line numbers (user-facing), which are converted to 0-indexed (implementation) automatically.
 
 **Example:**
 ```
-viewport at 1, 10
+EXPECT viewport at 1, 10
 ```
 
 This expects:
@@ -32,13 +32,13 @@ This expects:
 
 **Transpiles to:**
 ```javascript
-expect(fixture.wb.Viewport.start).toBe(0);
-expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(9);
+expect(fixture).toHaveViewportAt(1, 10);
 ```
 
 **Another example:**
+
 ```
-viewport at 5, 30
+EXPECT viewport at 5, 30
 ```
 
 This expects:
@@ -47,8 +47,7 @@ This expects:
 
 **Transpiles to:**
 ```javascript
-expect(fixture.wb.Viewport.start).toBe(4);
-expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(29);
+expect(fixture).toHaveViewportAt(5, 30)
 ```
 
 ---

@@ -755,15 +755,15 @@ EXPECT cursor at 0,3
 # Viewport tests
 
 ## Should have initial viewport at lines 1-10
-viewport at 1, 10
+EXPECT viewport at 1, 10
 
 ## Should scroll viewport
-viewport at 1, 10
+EXPECT viewport at 1, 10
 enter 9 times
-viewport at 1, 10
+EXPECT viewport at 1, 10
 enter
-viewport at 2, 11 
+EXPECT viewport at 2, 11 
 up 9 times 
-viewport at 2, 11 
+EXPECT viewport at 2, 11 
 up
-viewport at 1, 10
+EXPECT viewport at 1, 10

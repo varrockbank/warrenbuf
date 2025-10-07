@@ -90,8 +90,8 @@ class DSLTranspiler {
       return this.transpilePRESS(cmd);
     }
 
-    // viewport at command (case-insensitive)
-    if (cmd.toLowerCase().startsWith('viewport at ')) {
+    // EXPECT viewport at command (case-insensitive)
+    if (cmd.toLowerCase().startsWith('expect viewport at ')) {
       return this.transpileViewportAt(cmd);
     }
 
@@ -202,18 +202,15 @@ class DSLTranspiler {
    * Syntax: viewport at <first_line>, <last_line> (both 1-indexed)
    */
   transpileViewportAt(cmd) {
-    const match = cmd.match(/^viewport at (\d+),\s*(\d+)$/i);
+    const match = cmd.match(/^expect viewport at (\d+),\s*(\d+)$/i);
     if (!match) {
-      throw new Error(`Invalid viewport at command: ${cmd}`);
+      throw new Error(`Invalid EXPECT viewport at command: ${cmd}`);
     }
 
-    const expectedFirstLine = parseInt(match[1]);
-    const expectedLastLine = parseInt(match[2]);
+    const firstLine = parseInt(match[1]);
+    const lastLine = parseInt(match[2]);
 
-    return [
-      `expect(fixture.wb.Viewport.start + 1 ).toBe(${expectedFirstLine});`,
-      `expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size).toBe(${expectedLastLine});`,
-    ].join("\n");
+    return `expect(fixture).toHaveViewportAt(${firstLine}, ${lastLine});`;
   }
 
   /**
