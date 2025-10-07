@@ -4,7 +4,9 @@ WarrenBuf uses a native browser-based test suite with no dependencies on Jest or
 
 * Running Tests
 
-Open ~test.html~ in your browser. Tests run automatically on page load.
+Open ~index.html~ in your browser. Tests run automatically on page load.
+
+Specs can be ad-hocly modified under the ~source~ tab and tests re-ran after compilation.
 
 * Interactive Walkthrough
 
@@ -26,11 +28,17 @@ The walkthrough replays the exact same actions recorded during the test run, pro
 
 * Directory Structure
 
-- *test.html* - Test runner UI with results display and interactive walkthrough panel
-- *test-framework.js* - Domain-agnostic test library with ~describe~, ~it~, ~xit~, ~expect~
-- *harness.js* - Test harness providing (1) literate DSL for user actions and (2) step recording for walkthrough replay
-- *expect.js* - Assertion matchers with special support for EditorTestHarness
-- *test.spec.js* - All test definitions
+- *specs.dsl* - All test definition
+- *index.html* - Test runner. Loads specs from specs.dsl
+
+index.html uses scripts from *lib/* 
+
+- *lib/test-framework.js* - Domain-agnostic test library with ~describe~, ~it~, ~xit~, ~expect~
+- *lib/harness.js* - Test harness providing (1) literate DSL for user actions and (2) step recording for walkthrough replay
+- *lib/expect.js* - Assertion matchers with special support for EditorTestHarness
+- *lib/walkthrough.js* - Implements the test walkthrough UI
+- *lib/vs2015.min.css*, *lib/highlight.min.js* - syntax highlighting for UI 
+- *dsl/transpiler.js* - Transpiles DSL to JavaScript
 
 * Writing Tests
 
@@ -49,8 +57,21 @@ runner.describe('Feature Name', () => {
     fixture.press(Key.Enter).once();
 
     expect(fixture.wb.Model.lines[0]).toBe('Hello');
+    expect(fixture).toHaveCursorAt(1, 2);
   }, "Optional description");
 });
+#+end_src
+
+The corresponding DSL is 
+
+#+begin_src javascript
+# Feature name
+## should do someting 
+### Optional description
+TYPE "HELLO"
+enter
+expect(fixture).toHaveLines('a');
+EXPECT cursor at 1,2 
 #+end_src
 
 ** Test Isolation
@@ -150,51 +171,3 @@ runner.xit('should do something later', () => {
   // This test won't run
 }, "Description");
 #+end_src
-
-* Test Suites
-
-** Basic Typing
-- Single character insertion
-- Multiple character insertion
-- Typing with spaces
-
-** Backspace
-- Delete single/multiple characters
-- Delete all characters
-
-** Enter Key
-- Create new lines
-- Split lines at cursor
-
-** Complex Sequences
-- Mixed operations (type, delete, retype)
-- Multi-line editing
-- Delete across line boundaries
-
-** Selection
-- Shift+Arrow navigation
-- Multi-line selection
-- Forward/backward selection
-
-** Cursor Movement - Varying Line Lengths
-- Column preservation with maxCol
-- Clamping to shorter lines
-- Restoring column position
-
-* Understanding the Cursor Model
-
-- Cursor position is a *fencepost* - it sits between characters
-- ~row~ and ~col~ are viewport-relative (not absolute line numbers)
-- After typing "Hello", cursor is at col 5 (one past the last 'o')
-- Lines are implicitly delimited by ~\n~ (not stored in Model.lines)
-- To delete a newline, cursor must be at the start of the next line
-
-** maxCol Behavior
-
-~maxCol~ preserves the intended column when moving vertically:
-
-1. Type "Long line here" → cursor at col 14, maxCol = 14
-2. ArrowDown to shorter line "Hi" → cursor clamped to col 2
-3. ArrowDown to another long line → cursor restores to col 14 (using maxCol)
-
-This matches vim/VSCode behavior for vertical navigation.

@@ -4,13 +4,6 @@
 
 **Goal:** Describe all test specs in a high-level natural language-like DSL without all the syntactical artifacts of a programming language.
 
-### User Prompt
-> "Earlier in the test walkthrough, you derived a natural language summary of the corresponding spec code. I was thinking in the same lines of having a DSL and specifying the spec in plaintext"
->
-> "Yes. Let's walk through some examples of the declarative specs first."
->
-> "Let's name each of your examples as 'Proposals'. Dump them out to a file test/dsl.org. I want us to iterate on the DSL together and capture the evolution of the DSL. Also DSL.org, add a short intro that I want to describe all the test specs in a high-level natural language like DSL without all the syntical artifacts of a programming language. Include this prompt in the dsl.org"
-
 ---
 
 ## Version History
@@ -785,3 +778,13 @@ press Enter
 type "Second"
 expect lines ["First", "Second"]
 ```
+
+---
+
+### User Prompt
+> "Earlier in the test walkthrough, you derived a natural language summary of the corresponding spec code. I was thinking in the same lines of having a DSL and specifying the spec in plaintext"
+>
+> "Yes. Let's walk through some examples of the declarative specs first."
+>
+> "Let's name each of your examples as 'Proposals'. Dump them out to a file test/dsl.org. I want us to iterate on the DSL together and capture the evolution of the DSL. Also DSL.org, add a short intro that I want to describe all the test specs in a high-level natural language like DSL without all the syntical artifacts of a programming language. Include this prompt in the dsl.org"
+
