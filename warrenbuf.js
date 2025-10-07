@@ -204,23 +204,15 @@ function WarrenBuf(node,
         // Sort tail and head by order of appearance ( depends on chirality )
         const [first, second] = this.ordered;
         const { index, left } = this.partitionLine(first);
-        const p = this.partitionLine({ row: second.row, col: second.col + 1 });
-        const {right} = p;
+        const {right} = this.partitionLine({ row: second.row, col: second.col + 1 });
 
         // Capture values before mutating objects (first/second are references to head/tail)
-        const targetRow = first.row;
-        const targetCol = first.col + s.length;
-        const linesToDelete = second.row - first.row + 1;
+        first.col += s.length; // position cursor past the newly insert string
 
-        // Update both head and tail to the insertion point BEFORE splicing
-        // This prevents render() inside Model.splice from accessing stale coordinates
-        tail.row = targetRow;
-        tail.col = targetCol;
-        head.row = targetRow;
-        head.col = targetCol;
+        head = first;
+        Model.splice(index, [left + s + right], second.row - first.row + 1);
         this.makeCursor();
 
-        Model.splice(index, [left + s + right], linesToDelete);
       } else {
         const { index, left, right } = this.partitionLine(tail);
         Model.lines[index] = left + s + right;
@@ -332,9 +324,7 @@ function WarrenBuf(node,
       const [first, second] = this.ordered;
 
       for(let i = first.row; i <= second.row; i++) {
-          console.log("Before: " + Model.lines[i]);
           Model.lines[i] = " ".repeat(indentation) + Model.lines[i];
-          console.log("After: " + Model.lines[i]);
       }
       first.col += indentation;
       second.col += indentation;
