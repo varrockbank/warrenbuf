@@ -15,6 +15,44 @@
 
 ## Version History
 
+### v5.0.0 - expect viewport at <first_line>, <last_line>
+
+**Syntax:** `viewport at <first_line>, <last_line>` (both 1-indexed)
+
+Verifies that the viewport shows the specified range of lines. The viewport uses 1-indexed line numbers (user-facing), which are converted to 0-indexed (implementation) automatically.
+
+**Example:**
+```
+viewport at 1, 10
+```
+
+This expects:
+- User sees lines 1-10 (1-indexed)
+- Implementation: start=0 (0-indexed), start+size-1=9
+
+**Transpiles to:**
+```javascript
+expect(fixture.wb.Viewport.start).toBe(0);
+expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(9);
+```
+
+**Another example:**
+```
+viewport at 5, 30
+```
+
+This expects:
+- User sees lines 5-30 (1-indexed)
+- Implementation: start=4 (0-indexed), start+size-1=29
+
+**Transpiles to:**
+```javascript
+expect(fixture.wb.Viewport.start).toBe(4);
+expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(29);
+```
+
+---
+
 ### v4.2.0 - Full case-insensitivity for EXPECT commands
 
 **Enhancement:** The entire EXPECT command is now fully case-insensitive, not just the `EXPECT` keyword.
@@ -365,7 +403,7 @@ A transpiler that converts natural language test DSL to JavaScript code.
 
 ### Overview
 
-The transpiler implements the DSL specification v4.2.0:
+The transpiler implements the DSL specification v5.0.0:
 - v1.6.0 normalized forms
 - v2.0.0 JavaScript interweaving (lines ending with `;`)
 - v2.1.0 empty lines allowed
@@ -375,6 +413,7 @@ The transpiler implements the DSL specification v4.2.0:
 - v4.0.0 EXPECT cursor at command
 - v4.1.0 EXPECT selection at command
 - v4.2.0 full case-insensitivity for EXPECT commands
+- v5.0.0 viewport at command
 
 ### Usage
 
@@ -449,6 +488,24 @@ Examples:
 EXPECT selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
 EXPECT selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
 expect selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);  // also valid
+```
+
+#### viewport at
+```
+viewport at <first_line>, <last_line>  →  expect(fixture.wb.Viewport.start).toBe(first_line-1);
+                                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(last_line-1);
+```
+
+Verifies that the viewport shows the specified range of lines. The viewport uses 1-indexed line numbers (user-facing), which are converted to 0-indexed (implementation). Fully case-insensitive (v5.0.0).
+
+Examples:
+```
+viewport at 1, 10      →  expect(fixture.wb.Viewport.start).toBe(0);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(9);
+viewport at 5, 30      →  expect(fixture.wb.Viewport.start).toBe(4);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(29);
+VIEWPORT AT 10, 40     →  expect(fixture.wb.Viewport.start).toBe(9);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(39);
 ```
 
 #### Special Keys

@@ -1,12 +1,16 @@
 /**
  * DSL Transpiler - Converts natural language test DSL to JavaScript
  *
- * Follows DSL specification v3.1.0 with:
+ * Follows DSL specification v5.0.0 with:
  * - v1.6.0 normalized forms
  * - v2.0.0 JavaScript interweaving (lines ending with `;`)
  * - v2.1.0 empty lines allowed
  * - v2.2.0 semicolon disambiguation (PRESS ';')
  * - v3.1.0 standalone comment lines (lines starting with `//`)
+ * - v4.0.0 EXPECT cursor at
+ * - v4.1.0 EXPECT selection at
+ * - v4.2.0 full case-insensitivity for EXPECT commands
+ * - v5.0.0 viewport at command: <first_line>, <last_line> (both 1-indexed)
  */
 
 class DSLTranspiler {
@@ -84,6 +88,11 @@ class DSLTranspiler {
     // PRESS command (for single characters)
     if (cmd.startsWith('PRESS ')) {
       return this.transpilePRESS(cmd);
+    }
+
+    // viewport at command (case-insensitive)
+    if (cmd.toLowerCase().startsWith('viewport at ')) {
+      return this.transpileViewportAt(cmd);
     }
 
     // EXPECT cursor at command (case-insensitive)
@@ -185,6 +194,26 @@ class DSLTranspiler {
     const endRow = match[3];
     const endCol = match[4];
     return `expect(fixture).toHaveSelectionAt(${startRow}, ${startCol}, ${endRow}, ${endCol});`;
+  }
+
+  /**
+   * Transpile viewport at command
+   * Example: viewport at 1, 10 → expect start=0 and start+size-1=9
+   * Syntax: viewport at <first_line>, <last_line> (both 1-indexed)
+   */
+  transpileViewportAt(cmd) {
+    const match = cmd.match(/^viewport at (\d+),\s*(\d+)$/i);
+    if (!match) {
+      throw new Error(`Invalid viewport at command: ${cmd}`);
+    }
+
+    const expectedFirstLine = parseInt(match[1]);
+    const expectedLastLine = parseInt(match[2]);
+
+    return [
+      `expect(fixture.wb.Viewport.start + 1 ).toBe(${expectedFirstLine});`,
+      `expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size).toBe(${expectedLastLine});`,
+    ].join("\n");
   }
 
   /**

@@ -751,3 +751,19 @@ EXPECT cursor at 0,1
 PRESS ';' 3 times
 expect(fixture).toHaveLines(';;;');
 EXPECT cursor at 0,3
+
+# Viewport tests
+
+## Should have initial viewport at lines 1-10
+viewport at 1, 10
+
+## Should scroll viewport
+viewport at 1, 10
+enter 9 times
+viewport at 1, 10
+enter
+viewport at 2, 11 
+up 9 times 
+viewport at 2, 11 
+up
+viewport at 1, 10
