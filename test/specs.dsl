@@ -754,44 +754,44 @@ EXPECT cursor at 0,3
 
 # Viewport tests
 
-## Should have initial viewport at lines 1-10
-EXPECT viewport at 1, 10
+## Should have initial viewport at lines 1-20
+EXPECT viewport at 1, 20
 
 ## Should scroll viewport
-EXPECT viewport at 1, 10
-enter 9 times
-EXPECT viewport at 1, 10
+EXPECT viewport at 1, 20
+enter 19 times
+EXPECT viewport at 1, 20
 enter
-EXPECT viewport at 2, 11 
-up 9 times 
-EXPECT viewport at 2, 11 
+EXPECT viewport at 2, 21 
+up 19 times 
+EXPECT viewport at 2, 21 
 up
-EXPECT viewport at 1, 10
+EXPECT viewport at 1, 20
 
 ## Should extend selection when scrolling 
-EXPECT viewport at 1, 10
-enter 9 times
+EXPECT viewport at 1, 20
+enter 19 times
 TYPE "foobar"
-EXPECT viewport at 1, 10
+EXPECT viewport at 1, 20
 enter
-EXPECT viewport at 2, 11 
+EXPECT viewport at 2, 21 
 TYPE "YOOOO"
 enter
-EXPECT viewport at 3, 12
+EXPECT viewport at 3, 22
 TYPE "heyyy"
-up 9 times 
-EXPECT viewport at 3, 12 
+up 19 times 
+EXPECT viewport at 3, 22 
 up 2 times
-EXPECT viewport at 1, 10
+EXPECT viewport at 1, 20
 up 1 times
-EXPECT viewport at 1, 10
-down 9 times 
+EXPECT viewport at 1, 20
+down 19 times 
 left with meta
 right 
 down with shift 
-EXPECT viewport at 2, 11 
-EXPECT selection at 9,1-10,1
+EXPECT viewport at 2, 21 
+EXPECT selection at 19,1-20,1
 down with shift 
-EXPECT viewport at 3, 12
-EXPECT selection at 9,1-11,1
+EXPECT viewport at 3, 22
+EXPECT selection at 19,1-21,1
 
