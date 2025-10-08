@@ -223,8 +223,8 @@ class DSLTranspiler {
     }
 
     const text = match[1];
-    // Convert double-quoted string to single-quoted (escape any single quotes)
-    const escaped = text.replace(/'/g, "\\'");
+    // Convert double-quoted string to single-quoted (escape backslashes first, then single quotes)
+    const escaped = text.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     return `fixture.type('${escaped}');`;
   }
 
@@ -263,8 +263,8 @@ class DSLTranspiler {
       throw new Error(`Invalid PRESS command: ${cmd}`);
     }
 
-    // Escape single quotes for JavaScript output
-    const escaped = char.replace(/'/g, "\\'");
+    // Escape backslashes first, then single quotes for JavaScript output
+    const escaped = char.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
     // Add quantification
     if (quantification) {

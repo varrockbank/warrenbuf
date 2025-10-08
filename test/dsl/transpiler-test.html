@@ -66,6 +66,11 @@
         expected: "fixture.type('foo\\\"bar');"
       },
       {
+        name: 'TYPE with backslash',
+        input: 'TYPE "\\\\"',
+        expected: "fixture.type('\\\\');"
+      },
+      {
         name: 'PRESS single character',
         input: 'PRESS a',
         expected: "fixture.press('a').once();"
@@ -406,6 +411,21 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'PRESS single-quoted single-quote with quantification (escaped)',
         input: "PRESS '\\'' 3 times",
         expected: "fixture.press('\\'').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted backslash',
+        input: 'PRESS "\\\\"',
+        expected: "fixture.press('\\\\').once();"
+      },
+      {
+        name: 'PRESS unquoted backslash',
+        input: 'PRESS \\',
+        expected: "fixture.press('\\\\').once();"
+      },
+      {
+        name: 'PRESS double-quoted backslash with quantification',
+        input: 'PRESS "\\\\" 3 times',
+        expected: "fixture.press('\\\\').times(3);"
       },
       {
         name: 'REPEAT with unquoted comma in PRESS (should fail)',
