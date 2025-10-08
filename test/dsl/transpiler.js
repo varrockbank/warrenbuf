@@ -1,7 +1,7 @@
 /**
  * DSL Transpiler - Converts natural language test DSL to JavaScript
  *
- * Follows DSL specification v5.0.0 with:
+ * Follows DSL specification v6.0.0 with:
  * - v1.6.0 normalized forms
  * - v2.0.0 JavaScript interweaving (lines ending with `;`)
  * - v2.1.0 empty lines allowed
@@ -11,6 +11,8 @@
  * - v4.1.0 EXPECT selection at
  * - v4.2.0 full case-insensitivity for EXPECT commands
  * - v5.0.0 viewport at command: <first_line>, <last_line> (both 1-indexed)
+ * - v5.1.0 case-insensitive PRESS and TYPE commands
+ * - v6.0.0 REPEAT command: REPEAT <n> times: <command1>, <command2>, ...
  */
 
 class DSLTranspiler {
@@ -80,6 +82,11 @@ class DSLTranspiler {
    * @returns {string} JavaScript statement
    */
   transpileDSLCommand(cmd) {
+    // REPEAT command
+    if (cmd.toLowerCase().startsWith('repeat ')) {
+      return this.transpileREPEAT(cmd);
+    }
+
     // TYPE command
     if (cmd.toLowerCase().startsWith('type ')) {
       return this.transpileTYPE(cmd);
@@ -107,6 +114,45 @@ class DSLTranspiler {
 
     // Special key commands (backspace, enter, arrow keys)
     return this.transpileSpecialKey(cmd);
+  }
+
+  /**
+   * Transpile REPEAT command
+   * Example: REPEAT 3 times: PRESS a, enter, TYPE "hello"
+   * Transpiles to a for loop executing each command in sequence
+   */
+  transpileREPEAT(cmd) {
+    const match = cmd.match(/^REPEAT\s+(\d+)\s+times?:\s*(.+)$/i);
+    if (!match) {
+      throw new Error(`Invalid REPEAT command: ${cmd}`);
+    }
+
+    const times = parseInt(match[1]);
+    const commandsStr = match[2];
+
+    // Split by comma and trim each command
+    const commands = commandsStr.split(',').map(c => c.trim());
+
+    // Transpile each command
+    const transpiledCommands = commands.map(command => {
+      // Each command needs to be transpiled individually
+      // We need to handle TYPE, PRESS, and special keys
+      let transpiled;
+
+      if (command.toLowerCase().startsWith('type ')) {
+        transpiled = this.transpileTYPE(command);
+      } else if (command.toLowerCase().startsWith('press ')) {
+        transpiled = this.transpilePRESS(command);
+      } else {
+        // Assume it's a special key (enter, backspace, etc.)
+        transpiled = this.transpileSpecialKey(command);
+      }
+
+      // Add proper indentation
+      return `  ${transpiled}`;
+    }).join('\n');
+
+    return `for (let i = 0; i < ${times}; i++) {\n${transpiledCommands}\n}`;
   }
 
   /**

@@ -1152,8 +1152,9 @@
     </div>
     <div id="tab-grammar" class="tab-content">
         <main>
-            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">## DSL Grammar (v4.2.0)
-<span style="color: #81C784;">&lt;command&gt;</span>          ::= <span style="color: #81C784;">&lt;press-command&gt;</span> | <span style="color: #81C784;">&lt;type&gt;</span> | <span style="color: #81C784;">&lt;expect-cursor&gt;</span> | <span style="color: #81C784;">&lt;expect-selection&gt;</span> | <span style="color: #81C784;">&lt;expect-viewport&gt;</span>
+            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">## DSL Grammar (v6.0.0)
+<span style="color: #81C784;">&lt;command&gt;</span>          ::= <span style="color: #81C784;">&lt;repeat&gt;</span> | <span style="color: #81C784;">&lt;press-command&gt;</span> | <span style="color: #81C784;">&lt;type&gt;</span> | <span style="color: #81C784;">&lt;expect-cursor&gt;</span> | <span style="color: #81C784;">&lt;expect-selection&gt;</span> | <span style="color: #81C784;">&lt;expect-viewport&gt;</span>
+<span style="color: #81C784;">&lt;repeat&gt;</span>           ::= <span style="color: #FFB74D;">REPEAT</span> <span style="color: #9575CD;">&lt;n&gt;</span> <span style="color: #9575CD;">times</span><span style="opacity: 0.6;">:</span> <span style="color: #81C784;">&lt;type|press|special-key&gt;</span><span style="opacity: 0.6;">,</span> <span style="opacity: 0.6;">...</span>
 <span style="color: #81C784;">&lt;type&gt;</span>             ::= <span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"text"</span>
 <span style="color: #81C784;">&lt;press-command&gt;</span>    ::= <span style="color: #81C784;">&lt;press&gt;</span> <span style="color: #9575CD;">[quantification]</span> [<span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">&lt;modifiers&gt;</span>]
                      | <span style="color: #81C784;">&lt;press&gt;</span> [<span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">&lt;modifiers&gt;</span>] <span style="color: #9575CD;">[quantification]</span>
@@ -1178,6 +1179,10 @@
 <span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">cursor</span>    <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">1,5</span>           <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">expect</span>(fixture).<span style="color: #9575CD;">toHaveCursorAt</span>(<span style="color: #9575CD;">1</span>, <span style="color: #9575CD;">5</span>);
 <span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">selection</span> <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">1,2-4,5</span>       <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">expect</span>(fixture).<span style="color: #9575CD;">toHaveSelectionAt</span>(<span style="color: #9575CD;">1</span>, <span style="color: #9575CD;">2</span>, <span style="color: #9575CD;">4</span>, <span style="color: #9575CD;">5</span>);
 <span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">viewport</span>  <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">1,10</span>          <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">expect</span>(fixture).<span style="color: #9575CD;">toHaveViewportAt</span>(<span style="color: #9575CD;">1</span>, <span style="color: #9575CD;">10</span>);
+<span style="color: #FFB74D;">REPEAT</span> <span style="color: #9575CD;">3</span> <span style="color: #9575CD;">times</span><span style="opacity: 0.6;">:</span> <span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">a</span><span style="opacity: 0.6;">,</span> <span style="color: #64B5F6;">enter</span>    <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">for</span> (let i = 0; i &lt; 3; i++) {
+                                      fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">'a'</span>).<span style="color: #9575CD;">once</span>();
+                                      fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.Enter</span>).<span style="color: #9575CD;">once</span>();
+                                    }
 
 <span style="opacity: 0.7;">JavaScript pass-through for lines ending with ";", starting with "//" and empty lines:</span>
 expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect(3+5).toBe(8);
@@ -1304,8 +1309,8 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 });
 
                 // Now do all other replacements on text without strings or quantifiers
-                // Keywords: TYPE, PRESS, EXPECT, at, with
-                text = text.replace(/\b(TYPE|PRESS|EXPECT|at|with)\b/g, '<span class="dsl-keyword">$1</span>');
+                // Keywords: TYPE, PRESS, EXPECT, REPEAT, at, with
+                text = text.replace(/\b(TYPE|PRESS|EXPECT|REPEAT|at|with)\b/g, '<span class="dsl-keyword">$1</span>');
 
                 // Special keys (movement keys)
                 text = text.replace(/\b(backspace|enter|left|right|up|down)\b/g, '<span class="dsl-special-key">$1</span>');

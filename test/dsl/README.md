@@ -8,6 +8,41 @@
 
 ## Version History
 
+### v6.0.0 - REPEAT command
+
+**Syntax:** `REPEAT <n> times: <command1>, <command2>, ...`
+
+Execute a sequence of commands multiple times. Commands inside REPEAT must be TYPE, PRESS, or special keys (enter, backspace, left, right, up, down). EXPECT commands are not allowed inside REPEAT.
+
+**Example:**
+```
+REPEAT 3 times: PRESS a, enter, TYPE "hello"
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 3; i++) {
+  fixture.press('a').once();
+  fixture.press(Key.Enter).once();
+  fixture.type('hello');
+}
+```
+
+**Another example:**
+```
+REPEAT 5 times: TYPE "x", backspace
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 5; i++) {
+  fixture.type('x');
+  fixture.press(Key.Backspace).once();
+}
+```
+
+---
+
 ### v5.1.0 - make PRESS and TYPE case insensitive
 
 ### v5.0.0 - expect viewport at <first_line>, <last_line>
