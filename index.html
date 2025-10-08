@@ -86,26 +86,6 @@
 </head>
 
 <body>
-<details>
-  <summary>Diagnostics</summary>
-  <label for="viewport-start">Viewport Start: </label>
-  <input id="viewport-start" value="0"></input>
-  <label for="viewport-size">Viewport Size:</label>
-  <input id="viewport-size" value="10"></input>
-  <button id="viewport-update">Update viewport</button>
-  <button id="viewport-scroll-up-1">Scroll -1</button>
-  <button id="viewport-scroll-down-1">Scroll +1</button>
-  <hr />
-  <input id="file-input" type="file" name="myFiles">
-  total size: <span id="fileSize">0</span>
-  <div>
-    <button id="load-file">Load File</button>
-  </div>
-  <div>
-    <button id="append-file">Append File</button><br />
-    Append at Line number: <input id="append-at-line" value="1"></input>
-  </div>
-</details>
   <h2>Usage instructions</h2>
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
@@ -125,7 +105,29 @@
           </div>
       </div>
   </blockquote>
+    <details>
+    <summary>Utility for diagnosing large files and text buffers</summary>
+    <label for="viewport-start">Viewport Start: </label>
+    <input id="viewport-start" value="0"></input>
+    <label for="viewport-size">Viewport Size:</label>
+    <input id="viewport-size" value="10"></input>
+    <button id="viewport-update">Update viewport</button>
+    <button id="viewport-scroll-up-1">Scroll -1</button>
+    <button id="viewport-scroll-down-1">Scroll +1</button>
+    <hr />
+    <input id="file-input" type="file" name="myFiles">
+    total size: <span id="fileSize">0</span>
+    <div>
+      <button id="load-file">Load File</button>
+    </div>
+    <div>
+      <button id="append-file">Append File</button><br />
+      Append at Line number: <input id="append-at-line" value="1"></input>
+    </div>
+  </details>
+
   <h2>With iOS plugin</h2>
+  The following editor has the iOS plugin enabled on it.
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="notes">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
@@ -145,6 +147,7 @@
     </div>
   </blockquote>
   <h2>HackerNews frontpage</h2>
+  Example of editor with internet-sourced data.
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="hackernews">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
