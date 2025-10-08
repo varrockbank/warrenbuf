@@ -92,6 +92,7 @@
     Append at Line number: <input id="append-at-line" value="1"></input>
   </div>
 </details>
+  <h2>Usage instructions</h2>
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
@@ -110,8 +111,27 @@
           </div>
       </div>
   </blockquote>
-  <h2>This second editor has iOS support enabled</h2>
+  <h2>With iOS plugin</h2>
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="notes">
+    <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
+    <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+    <div class="💪">
+      <div class="wb-gutter"></div>
+      <div class="wb-lines 🌳 🥷"></div>
+    </div>
+    <div class="💪 wb-status 🦠">
+      <div class="wb-status-left 💪">
+        <span class="wb-linecount"></span>
+      </div>
+      <div class="wb-status-right 💪">
+        <span class="wb-coordinate"></span>
+        <span>|</span>
+        <span class="wb-indentation"></span>
+      </div>
+    </div>
+  </blockquote>
+  <h2>HackerNews frontpage</h2>
+  <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="hackernews">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
     <div class="💪">
@@ -162,6 +182,9 @@
     const notesElement = document.getElementById('notes');
     const notes = new WarrenBuf(notesElement, null, null, 20);
 
+    const hackerNewsElement = document.getElementById('hackernews');
+    const hackernews = new WarrenBuf(hackerNewsElement, null, null);
+
     // Diagnostics -- Bind UI controls to move viewport
     document.getElementById('viewport-update').addEventListener('click', () => {
       const viewportStart = parseInt(document.getElementById('viewport-start').value);
@@ -211,12 +234,43 @@
     fetch("docs/instructions.txt")
       .then(response => response.text())
       .then(source => primary.Model.text = source)
-      .catch(err => console.error("Error reading foobar.js:", err));
+      .catch(err => console.error("Error reading instructions.txt:", err));
 
     fetch("docs/devlog.txt")
       .then(response => response.text())
       .then(source => notes.Model.text = source)
-      .catch(err => console.error("Error reading foobar.js:", err));
+      .catch(err => console.error("Error reading devlog.txt:", err));
+
+    // Fetch Hacker News as plaintext
+    async function fetchHackerNewsText() {
+      const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+      const storyIds = await response.json();
+
+      // Get top 30 stories
+      const stories = await Promise.all(
+        storyIds.slice(0, 30).map(async (id) => {
+          const storyRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+          return storyRes.json();
+        })
+      );
+
+      // Format as plaintext
+      const plaintext = stories
+        .map((story, i) => {
+          const title = story.title || 'No title';
+          const url = story.url || `https://news.ycombinator.com/item?id=${story.id}`;
+          const points = story.score || 0;
+          const comments = story.descendants || 0;
+          return `${i + 1}. ${title}\n   ${url}\n   ${points} points | ${comments} comments\n`;
+        })
+        .join('\n');
+
+      return plaintext;
+    }
+
+    fetchHackerNewsText()
+      .then(text => hackernews.Model.text = text)
+      .catch(err => console.error("Error fetching Hacker News:", err));
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
       const notesEditingArea = notesElement.querySelector('.wb-lines');
