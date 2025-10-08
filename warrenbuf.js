@@ -57,31 +57,32 @@ function WarrenBuf(node,
     get ordered() { return this.isForwardSelection ? [tail, head] : [head, tail] },
     moveRow(value) {
       if (value > 0) {
-        if (head.row < (Viewport.end - Viewport.start)) {                      // Inner line, Move down
-          head.row ++;
-          if(Viewport.lines[head.row].length >= tail.col) {
-            head.col = Math.min(maxCol, Math.max(0, Viewport.lines[head.row].length));
+        // Move down
+        if (head.row < Model.lastIndex) {
+          head.row++;
+          if(Model.lines[head.row].length >= tail.col) {
+            head.col = Math.min(maxCol, Math.max(0, Model.lines[head.row].length));
           } else {
-            head.col = Math.min(tail.col, Math.max(0, Viewport.lines[head.row].length));
+            head.col = Math.min(tail.col, Math.max(0, Model.lines[head.row].length));
           }
-        } else {                                                                // Last line of viewport, scroll viewport down
-          if (Viewport.end !== Model.lastIndex) {
+          // Scroll viewport if cursor moved beyond viewport
+          if (head.row > Viewport.end) {
             Viewport.scroll(1);
-            head.col = Math.min(tail.col, Math.max(0, Viewport.lines[head.row].length));
-          } else { }                                                             // Last line of file, No-Op.
+          }
         }
       } else {
-        if (head.row === 0) {
-          // First line of viewport, scroll viewport up
-          Viewport.scroll(-1);
-          head.col = Math.min(head.col, Math.max(0, Viewport.lines[head.row].length));
-        } else {                                                                 // Inner line, move up.
+        // Move up
+        if (head.row > 0) {
           head.row--;
           // There ARE characters in the same column as the tail of the selection
-          if(Viewport.lines[head.row].length >= head.col) {
-            head.col = Math.min(maxCol, Math.max(0, Viewport.lines[head.row].length));
+          if(Model.lines[head.row].length >= head.col) {
+            head.col = Math.min(maxCol, Math.max(0, Model.lines[head.row].length));
           } else {
-            head.col = Math.min(head.col, Math.max(0, Viewport.lines[head.row].length));
+            head.col = Math.min(head.col, Math.max(0, Model.lines[head.row].length));
+          }
+          // Scroll viewport if cursor moved before viewport
+          if (head.row < Viewport.start) {
+            Viewport.scroll(-1);
           }
         }
       }
@@ -89,18 +90,18 @@ function WarrenBuf(node,
     },
     moveCol(value) {
       if (value === 1) {
-        if (head.col < Viewport.lines[head.row].length - (this.isSelection ? 1 : 0 )) {    // Move right 1 character.
+        if (head.col < Model.lines[head.row].length - (this.isSelection ? 1 : 0 )) {    // Move right 1 character.
           maxCol = ++head.col;
         } else {
-          if (head.row < (Viewport.end - Viewport.start)) {     // Move to beginning of next line.
+          if (head.row < Model.lastIndex) {     // Move to beginning of next line.
             maxCol = head.col = 0;
             head.row++;
-          } else {
-            if (Viewport.end < Model.lastIndex) {               // Scroll from last line.
-              head.col = 0;
+            // Scroll viewport if needed
+            if (head.row > Viewport.end) {
               Viewport.scroll(1);
-            } else {}                                         // End of file
+            }
           }
+          // else: End of file, no-op
         }
       } else if (value === -1) {
         if (head.col > 0) {                                   // Move left 1 character.
@@ -108,13 +109,13 @@ function WarrenBuf(node,
         } else {
           if (head.row > 0) {                                 // Move to end of previous line
             head.row--;
-            maxCol = head.col = Math.max(0, Viewport.lines[head.row].length - (this.isSelection ? 1 : 0));
-          } else {
-            if (Viewport.start !== 0) {                       // Scroll then move head to end of new current line.
+            maxCol = head.col = Math.max(0, Model.lines[head.row].length - (this.isSelection ? 1 : 0));
+            // Scroll viewport if needed
+            if (head.row < Viewport.start) {
               Viewport.scroll(-1);
-              head.col = Math.max(0, Viewport.lines[head.row].length - 1);
-            } else {}
+            }
           }
+          // else: Beginning of file, no-op
         }
       } else {
         console.warning(`Do not support moving by multiple values (${value}) yet `);
@@ -129,12 +130,10 @@ function WarrenBuf(node,
       return tail.row === head.row && tail.col < head.col || tail.row < head.row;
     },
     iosSetCursorAndRender({row, col}) {
-      const linesFromViewportStart = Model.lastIndex - Viewport.start;
-      // Case 1: linesFromViewportStart is outside viewport. case 2: linesFromViewportStart is less than viewport.
-      const lastMeaningfulViewportRow = Math.min(Viewport.size-1, linesFromViewportStart);
-      row = Math.min(row, lastMeaningfulViewportRow);
+      // Clamp row to valid Model.lines indices
+      row = Math.min(row, Model.lastIndex);
       // Cursor 1 past last character
-      let positionOfLastChar = Model.lines[Viewport.start + row].length;
+      let positionOfLastChar = Model.lines[row].length;
       this.setCursor({
         row,
         col: Math.min(col, positionOfLastChar)}
@@ -149,17 +148,18 @@ function WarrenBuf(node,
     get lines() {
       const [left, right] = this.ordered;
       if(left.row === right.row) {
-        return [Model.lines[Viewport.start + left.row].slice(left.col, right.col + 1)];
+        return [Model.lines[left.row].slice(left.col, right.col + 1)];
       } else {
-        const firstLine = Model.lines[Viewport.start + left.row].slice(left.col);
-        const lastLine = Model.lines[Viewport.start + right.row].slice(0, right.col + 1);
-        const middle = Model.lines.slice(Viewport.start + left.row + 1, Viewport.start + right.row);
+        const firstLine = Model.lines[left.row].slice(left.col);
+        const lastLine = Model.lines[right.row].slice(0, right.col + 1);
+        const middle = Model.lines.slice(left.row + 1, right.row);
         return [firstLine, ...middle, lastLine]
       }
     },
     makeCursor() {
       tail.row = head.row;
       tail.col = head.col;
+      maxCol = head.col;
       head = tail;
     },
     makeSelection() {
@@ -168,10 +168,8 @@ function WarrenBuf(node,
       head.col = tail.col;
     },
     moveCursorStartOfLine() {
-      const row = head.row;
-      const realRow = Viewport.start + row;
       let col = 0;
-      const line = Model.lines[realRow];
+      const line = Model.lines[head.row];
       for(let i = 0; i < line.length; i++) {
         if(line.charAt(i) !== ' ') {
           col = i;
@@ -182,9 +180,7 @@ function WarrenBuf(node,
       render(true);
     },
     moveCursorEndOfLine() {
-      const row = head.row;
-      const realRow = Viewport.start + row;
-      maxCol = head.col = Model.lines[realRow].length;
+      maxCol = head.col = Model.lines[head.row].length;
       render(true);
     },
     // Inserts list of string lines into the selection
@@ -208,13 +204,15 @@ function WarrenBuf(node,
         // Sort tail and head by order of appearance ( depends on chirality )
         const [first, second] = this.ordered;
         const { index, left } = this.partitionLine(first);
-        const p = this.partitionLine({ row: second.row, col: second.col + 1 });
-        const {right} = p;
-        Model.splice(index, [left + s + right], second.row - first.row + 1);
+        const {right} = this.partitionLine({ row: second.row, col: second.col + 1 });
 
-        head.row = first.row;
-        head.col = first.col + s.length;
+        // Capture values before mutating objects (first/second are references to head/tail)
+        first.col += s.length; // position cursor past the newly insert string
+
+        head = first;
+        Model.splice(index, [left + s + right], second.row - first.row + 1);
         this.makeCursor();
+
       } else {
         const { index, left, right } = this.partitionLine(tail);
         Model.lines[index] = left + s + right;
@@ -248,9 +246,9 @@ function WarrenBuf(node,
       Model.lines[index] = left;
       Model.splice(index + 1, [right]);
       head.col = 0;
-      if (tail.row < Viewport.size - 1) {
-        head.row++;
-      } else {
+      head.row++;
+      // Scroll viewport if cursor moved beyond viewport
+      if (head.row > Viewport.end) {
         Viewport.scroll(1);
       }
       render(true);
@@ -260,10 +258,13 @@ function WarrenBuf(node,
       const n = s.length;
 
       if(head.col === 0) {
-        // TODO: handle viewport scroll
         if(head.row > 0) {
           head.row--;
-          head.col = Viewport.lines[head.row].length;
+          head.col = Model.lines[head.row].length;
+          // Scroll viewport if needed
+          if (head.row < Viewport.start) {
+            Viewport.scroll(-1);
+          }
         }
       } else {
         const isSpace = ch => /\s/.test(ch);
@@ -290,10 +291,14 @@ function WarrenBuf(node,
       const n = s.length;
 
       if(head.col === n) { // Edge case: At last character of line
-        // TODO: handle viewport scroll
-        // TODO: handle last row of file
-        head.col = 0;
-        head.row++;
+        if (head.row < Model.lastIndex) {
+          head.col = 0;
+          head.row++;
+          // Scroll viewport if needed
+          if (head.row > Viewport.end) {
+            Viewport.scroll(1);
+          }
+        }
       } else {
         const isSpace = ch => /\s/.test(ch);
         const isWord = ch => /[\p{L}\p{Nd}_]/u.test(ch);
@@ -319,10 +324,7 @@ function WarrenBuf(node,
       const [first, second] = this.ordered;
 
       for(let i = first.row; i <= second.row; i++) {
-          const realRow = Viewport.start + i;
-          console.log("Before: " + Model.lines[realRow]);
-          Model.lines[realRow] = " ".repeat(indentation) + Model.lines[realRow];
-          console.log("After: " + Model.lines[realRow]);
+          Model.lines[i] = " ".repeat(indentation) + Model.lines[i];
       }
       first.col += indentation;
       second.col += indentation;
@@ -344,7 +346,7 @@ function WarrenBuf(node,
           // Cursor movement of first and second depends on spaces left and right of it .
           let indentableSpacesLeftOfCursor = 0;
           let indentableSpacesFromCursor = 0 ;
-          const s = Viewport.lines[cursor.row];
+          const s = Model.lines[cursor.row];
           let j = cursor.col;
           while (j < s.length && s.charAt(j) === ' ') j++;
           indentableSpacesFromCursor = j - cursor.col ;
@@ -352,21 +354,20 @@ function WarrenBuf(node,
           indentableSpacesLeftOfCursor = j;
           const unindentationsFirstLine = Math.min(indentation,
             indentableSpacesLeftOfCursor + indentableSpacesFromCursor);
-          Model.lines[Viewport.start + cursor.row] = Model.lines[cursor.row].slice(unindentationsFirstLine);
+          Model.lines[cursor.row] = Model.lines[cursor.row].slice(unindentationsFirstLine);
           if(indentableSpacesFromCursor < unindentationsFirstLine)
             cursor.col -= unindentationsFirstLine - indentableSpacesFromCursor;
         } else {
-          const realRow = Viewport.start + i;
-          const line = Model.lines[realRow];
+          const line = Model.lines[i];
           let maxUnindent = 0;
-          for(let i = 0; i < Math.min(indentation, line.length); i++) {
+          for(let j = 0; j < Math.min(indentation, line.length); j++) {
             if (line.charAt(0) === " ") {
               maxUnindent++;
             } else {
               break;
             }
           }
-          Model.lines[realRow] = line.slice(maxUnindent);
+          Model.lines[i] = line.slice(maxUnindent);
         }
       }
 
@@ -375,14 +376,13 @@ function WarrenBuf(node,
     // Utility to extract the text left, right, and character at the col of the
     // position for the row of the position.
     partitionLine({ row, col }) {
-      const index = Viewport.start + row;
-      const line = Model.lines[index];
+      const line = Model.lines[row];
       return {
-        index,
+        index: row,
         left: line.slice(0, col),
         right: line.slice(col),
         // In the case where the partitioning point is a selection, we exclude the character
-        // at th cursor
+        // at the cursor
         rightExclusive: line.slice(col+1)
       }
     }
@@ -561,51 +561,58 @@ function WarrenBuf(node,
     }
     const [firstEdge, secondEdge] = Selection.ordered;
 
+    // Convert Model.lines indices to viewport-relative positions
+    const firstViewportRow = firstEdge.row - Viewport.start;
+    const secondViewportRow = secondEdge.row - Viewport.start;
+
     // Render selection lines. Behavior is consistent with vim/vscode but not Intellij.
     for (let i = firstEdge.row + 1; i <= secondEdge.row - 1; i++) {
-      $selections[i].style.visibility = 'visible';
-      $selections[i].style.left = 0;
-      if (i < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
-        const content = Viewport.lines[i];
+      const viewportRow = i - Viewport.start;
+      // Only render if within viewport
+      if (viewportRow >= 0 && viewportRow < Viewport.size) {
+        $selections[viewportRow].style.visibility = 'visible';
+        $selections[viewportRow].style.left = 0;
+        const content = Model.lines[i];
         if(content.length > 0 ) {
-          $selections[i].style.width = content.length+'ch';
+          $selections[viewportRow].style.width = content.length+'ch';
         } else {
           // For empty line, we still render 1 character selection
-          $selections[i].style.width = '1ch';
+          $selections[viewportRow].style.width = '1ch';
         }
       }
     }
 
     // Render the leading and heading selection line
-    $selections[firstEdge.row].style.left = firstEdge.col+'ch';
-    if (secondEdge.row === firstEdge.row) {
-      $selections[firstEdge.row].style.width = secondEdge.col - firstEdge.col + 1 +'ch';
-      $selections[firstEdge.row].style.visibility = 'visible';
-    } else {
-      if(firstEdge.row < Viewport.lines.length) { // TODO: this can be removed if selection is constrained to source content
-        const text = Viewport.lines[firstEdge.row];
+    if (firstViewportRow >= 0 && firstViewportRow < Viewport.size) {
+      $selections[firstViewportRow].style.left = firstEdge.col+'ch';
+      if (secondEdge.row === firstEdge.row) {
+        $selections[firstViewportRow].style.width = secondEdge.col - firstEdge.col + 1 +'ch';
+        $selections[firstViewportRow].style.visibility = 'visible';
+      } else {
+        const text = Model.lines[firstEdge.row];
 
         // There is edge case where text.length - firstEdge.col is 0. Namely, if the selection started
-        // on the last cursor position, menaing the cursor is between the last char and new line.
+        // on the last cursor position, meaning the cursor is between the last char and new line.
         // We want to render 1 char to represent this new line.
-        $selections[firstEdge.row].style.width = Math.max(1, text.length - firstEdge.col)+'ch';
-        $selections[firstEdge.row].style.visibility = 'visible';
+        $selections[firstViewportRow].style.width = Math.max(1, text.length - firstEdge.col)+'ch';
+        $selections[firstViewportRow].style.visibility = 'visible';
       }
-      if(secondEdge.row < Viewport.lines.length) {
-        const text = Viewport.lines[secondEdge.row];
-        if(secondEdge.col >= text.length) {
-          console.warn(`secondEdge's column ${secondEdge.col} is too far beyond the text with length: `, text.length);
-        }
-        $selections[secondEdge.row].style.width = Math.min(secondEdge.col + 1, text.length)+'ch';
-        $selections[secondEdge.row].style.visibility = 'visible';
+    }
+
+    if (secondViewportRow >= 0 && secondViewportRow < Viewport.size && secondEdge.row !== firstEdge.row) {
+      const text = Model.lines[secondEdge.row];
+      if(secondEdge.col >= text.length) {
+        console.warn(`secondEdge's column ${secondEdge.col} is too far beyond the text with length: `, text.length);
       }
+      $selections[secondViewportRow].style.width = Math.min(secondEdge.col + 1, text.length)+'ch';
+      $selections[secondViewportRow].style.visibility = 'visible';
     }
     // * END render selection
 
     // TODO: this is infrequently changed. Render it ad-hoc in the mutator method.
     $indentation.innerHTML = `Spaces: ${indentation}`;
 
-    $statusLineCoord.innerHTML = `Ln ${Viewport.start + head.row + 1 }, Col ${tail.col + 1 }`;
+    $statusLineCoord.innerHTML = `Ln ${head.row + 1}, Col ${tail.col + 1}`;
 
     return this;
   }

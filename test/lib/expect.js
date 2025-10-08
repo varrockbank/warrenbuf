@@ -29,8 +29,8 @@ function expect(actual) {
         }
 
         // Check coordinates
-        if (firstEdge.row !== row || firstEdge.col !== col) {
-          throw new Error(`Expected cursor at {row: ${row}, col: ${col}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}}`);
+        if (firstEdge.row !== (row-1) || firstEdge.col !== (col-1)) {
+          throw new Error(`Expected cursor at {row: ${row}, col: ${col}}, got {row: ${firstEdge.row + 1}, col: ${firstEdge.col + 1}}`);
         }
       },
       toHaveSelectionAt(startRow, startCol, endRow, endCol) {
@@ -48,11 +48,21 @@ function expect(actual) {
         }
 
         // Check coordinates
-        if (firstEdge.row !== startRow || firstEdge.col !== startCol ||
-            secondEdge.row !== endRow || secondEdge.col !== endCol) {
-          throw new Error(`Expected selection at {row: ${startRow}, col: ${startCol}} to {row: ${endRow}, col: ${endCol}}, got {row: ${firstEdge.row}, col: ${firstEdge.col}} to {row: ${secondEdge.row}, col: ${secondEdge.col}}`);
+        if (firstEdge.row !== (startRow-1) || firstEdge.col !== (startCol-1) ||
+            secondEdge.row !== (endRow-1) || secondEdge.col !== (endCol-1)) {
+          throw new Error(`Expected selection at {row: ${startRow }, col: ${startCol}} to {row: ${endRow}, col: ${endCol}}, got {row: ${firstEdge.row + 1 }, col: ${firstEdge.col + 1}} to {row: ${secondEdge.row + 1}, col: ${secondEdge.col + 1 }}`);
         }
-      }
+      },
+      toHaveViewportAt(firstLine, lastLine) {
+        const actualViewportStartLine = actual.wb.Viewport.start + 1;
+        if(actualViewportStartLine != firstLine) {
+          throw new Error(`Expected first viewport line to be ${firstLine} but was ${actualViewportStartLine}`);
+        }
+        const actualViewportEndLine = actual.wb.Viewport.start + actual.wb.Viewport.size;
+        if(actualViewportEndLine != lastLine) {
+          throw new Error(`Expected last viewport line to be ${lastLine} but was ${actualViewportEndLine}`);
+        }
+      },
     };
   }
 

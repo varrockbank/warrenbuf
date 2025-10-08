@@ -97,6 +97,22 @@
             font-size: 0.9rem;
         }
 
+        .demo-link {
+            margin-left: 1rem;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .demo-link:visited {
+            color: white;
+        }
+        .demo-link:hover {
+            background-color: #007acc;
+        }
+
         .tab {
             padding: 0.75rem 1.5rem;
             cursor: pointer;
@@ -274,8 +290,18 @@
             user-select: none;
             white-space: pre;
             border-right: 1px solid #3e3e42;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             flex-shrink: 0;
+        }
+
+        .line-numbers::-webkit-scrollbar {
+            display: none;
+        }
+
+        .line-numbers {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         .editor-wrapper textarea {
@@ -318,6 +344,7 @@
             overflow-y: auto;
             z-index: 2;
             caret-color: #d4d4d4;
+            box-sizing: border-box;
         }
 
         .dsl-editor-textarea::selection {
@@ -335,6 +362,7 @@
             width: 100%;
             height: 100%;
             padding: 1rem;
+            padding-bottom: calc(1rem + 1.5em);
             margin: 0;
             border: none;
             background-color: #1e1e1e;
@@ -344,10 +372,20 @@
             line-height: 1.5;
             white-space: pre;
             overflow-wrap: normal;
-            overflow-x: hidden;
-            overflow-y: hidden;
+            overflow-x: auto;
+            overflow-y: auto;
             z-index: 1;
             pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        .dsl-editor-highlight::-webkit-scrollbar {
+            display: none;
+        }
+
+        .dsl-editor-highlight {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         /* DSL Syntax Highlighting */
@@ -379,6 +417,35 @@
         .dsl-comment {
             color: #6A9955;
             font-style: italic;
+        }
+
+        /* Grammar Syntax Highlighting */
+        .grammar-nonterminal {
+            color: #81C784;
+        }
+
+        .grammar-keyword {
+            color: #FFB74D;
+        }
+
+        .grammar-value {
+            color: #64B5F6;
+        }
+
+        .grammar-param {
+            color: #9575CD;
+        }
+
+        .grammar-punct {
+            opacity: 0.6;
+        }
+
+        .grammar-arrow {
+            color: #4CAF50;
+        }
+
+        .dsl-js-comment {
+            color: #858585;
         }
 
         .dsl-javascript {
@@ -1030,6 +1097,7 @@
 <body>
     <div class="tabs-wrapper">
         <div class="tabs">
+            <a href="../index.html" class="demo-link">Live Demo</a>&nbsp;
             <button class="tab active" data-tab="tests">Tests</button>
             <button class="tab" data-tab="source">Source</button>
             <button class="tab" data-tab="grammar">Grammar</button>
@@ -1126,35 +1194,49 @@
     </div>
     <div id="tab-grammar" class="tab-content">
         <main>
-            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">## DSL Grammar (v4.2.0)
-<span style="color: #81C784;">&lt;command&gt;</span>          ::= <span style="color: #81C784;">&lt;press-command&gt;</span> | <span style="color: #81C784;">&lt;type&gt;</span> | <span style="color: #81C784;">&lt;expect-cursor&gt;</span> | <span style="color: #81C784;">&lt;expect-selection&gt;</span>
-<span style="color: #81C784;">&lt;type&gt;</span>             ::= <span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"text"</span>
-<span style="color: #81C784;">&lt;press-command&gt;</span>    ::= <span style="color: #81C784;">&lt;press&gt;</span> <span style="color: #9575CD;">[quantification]</span> [<span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">&lt;modifiers&gt;</span>]
-                     | <span style="color: #81C784;">&lt;press&gt;</span> [<span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">&lt;modifiers&gt;</span>] <span style="color: #9575CD;">[quantification]</span>
-<span style="color: #81C784;">&lt;press&gt;</span>            ::= <span style="color: #FFB74D;">PRESS</span> (<span style="color: #81C784;">&lt;char&gt;</span> | <span style="color: #81C784;">&lt;special-key&gt;</span>) | <span style="color: #81C784;">&lt;special-key&gt;</span>
-<span style="color: #81C784;">&lt;expect-cursor&gt;</span>    ::= <span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">cursor</span> <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">&lt;row&gt;</span><span style="opacity: 0.6;">,</span><span style="color: #9575CD;">&lt;col&gt;</span>
-<span style="color: #81C784;">&lt;expect-selection&gt;</span> ::= <span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">selection</span> <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">&lt;startRow&gt;</span><span style="opacity: 0.6;">,</span><span style="color: #9575CD;">&lt;startCol&gt;</span><span style="opacity: 0.6;">-</span><span style="color: #9575CD;">&lt;endRow&gt;</span><span style="opacity: 0.6;">,</span><span style="color: #9575CD;">&lt;endCol&gt;</span>
-<span style="color: #81C784;">&lt;char&gt;</span>             ::= <span style="color: #64B5F6;">a</span> | <span style="color: #64B5F6;">" "</span> | <span style="color: #64B5F6;">';'</span> | ...
-<span style="color: #81C784;">&lt;special-key&gt;</span>      ::= <span style="color: #64B5F6;">backspace</span> | <span style="color: #64B5F6;">enter</span> | <span style="color: #64B5F6;">left</span> | <span style="color: #64B5F6;">right</span> | <span style="color: #64B5F6;">up</span> | <span style="color: #64B5F6;">down</span>
-<span style="color: #81C784;">&lt;quantification&gt;</span>   ::= <span style="color: #9575CD;">once</span> | <span style="color: #9575CD;">N time(s)</span> <span style="opacity: 0.6;">(default: once)</span>
-<span style="color: #81C784;">&lt;modifiers&gt;</span>        ::= <span style="color: #64B5F6;">shift</span> | <span style="color: #64B5F6;">meta</span> | <span style="color: #64B5F6;">meta, shift</span>
+            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">## DSL Grammar (v6.2.0)
+<span class="grammar-nonterminal">&lt;command&gt;</span>          ::= <span class="grammar-nonterminal">&lt;repeat&gt;</span> | <span class="grammar-nonterminal">&lt;press-command&gt;</span> | <span class="grammar-nonterminal">&lt;type&gt;</span> | <span class="grammar-nonterminal">&lt;expect-cursor&gt;</span> | <span class="grammar-nonterminal">&lt;expect-selection&gt;</span> | <span class="grammar-nonterminal">&lt;expect-viewport&gt;</span>
+<span class="grammar-nonterminal">&lt;repeat&gt;</span>           ::= <span class="grammar-keyword">REPEAT</span> <span class="grammar-param">&lt;n&gt;</span> <span class="grammar-param">times</span> <span class="grammar-nonterminal">&lt;type|press|special-key&gt;</span><span class="grammar-punct">,</span> <span class="grammar-punct">...</span>
+<span class="grammar-nonterminal">&lt;type&gt;</span>             ::= <span class="grammar-keyword">TYPE</span> <span class="grammar-value">"text"</span>
+<span class="grammar-nonterminal">&lt;press-command&gt;</span>    ::= <span class="grammar-nonterminal">&lt;press&gt;</span> <span class="grammar-param">[quantification]</span> [<span class="grammar-keyword">with</span> <span class="grammar-value">&lt;modifiers&gt;</span>]
+                     | <span class="grammar-nonterminal">&lt;press&gt;</span> [<span class="grammar-keyword">with</span> <span class="grammar-value">&lt;modifiers&gt;</span>] <span class="grammar-param">[quantification]</span>
+<span class="grammar-nonterminal">&lt;press&gt;</span>            ::= <span class="grammar-keyword">PRESS</span> (<span class="grammar-nonterminal">&lt;char&gt;</span> | <span class="grammar-nonterminal">&lt;special-key&gt;</span>) | <span class="grammar-nonterminal">&lt;special-key&gt;</span>
+<span class="grammar-nonterminal">&lt;expect-cursor&gt;</span>    ::= <span class="grammar-keyword">EXPECT</span> <span class="grammar-param">cursor</span>    <span class="grammar-keyword">at</span> <span class="grammar-param">&lt;row&gt;</span><span class="grammar-punct">,</span><span class="grammar-param">&lt;col&gt;</span>  <span class="grammar-punct">(1-indexed)</span>
+<span class="grammar-nonterminal">&lt;expect-selection&gt;</span> ::= <span class="grammar-keyword">EXPECT</span> <span class="grammar-param">selection</span> <span class="grammar-keyword">at</span> <span class="grammar-param">&lt;startRow&gt;</span><span class="grammar-punct">,</span><span class="grammar-param">&lt;startCol&gt;</span><span class="grammar-punct">-</span><span class="grammar-param">&lt;endRow&gt;</span><span class="grammar-punct">,</span><span class="grammar-param">&lt;endCol&gt;</span> <span class="grammar-punct">(1-indexed)</span>
+<span class="grammar-nonterminal">&lt;expect-viewport&gt;</span>  ::= <span class="grammar-keyword">EXPECT</span> <span class="grammar-param">viewport</span>  <span class="grammar-keyword">at</span> <span class="grammar-param">&lt;startLine&gt;</span><span class="grammar-punct">,</span><span class="grammar-param">&lt;EndLine&gt;</span> <span class="grammar-punct">(1-indexed)</span>
+<span class="grammar-nonterminal">&lt;char&gt;</span>             ::= <span class="grammar-value">a</span> | <span class="grammar-value">" "</span> | <span class="grammar-value">';'</span> | ...
+<span class="grammar-nonterminal">&lt;special-key&gt;</span>      ::= <span class="grammar-value">backspace</span> | <span class="grammar-value">enter</span> | <span class="grammar-value">left</span> | <span class="grammar-value">right</span> | <span class="grammar-value">up</span> | <span class="grammar-value">down</span>
+<span class="grammar-nonterminal">&lt;quantification&gt;</span>   ::= <span class="grammar-param">once</span> | <span class="grammar-param">N time(s)</span> <span class="grammar-punct">(default: once)</span>
+<span class="grammar-nonterminal">&lt;modifiers&gt;</span>        ::= <span class="grammar-value">shift</span> | <span class="grammar-value">meta</span> | <span class="grammar-value">meta, shift</span>
 
-### Examples in Normalized Form <span style="color: #4CAF50;">  →</span>  Transpilation
-<span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"Hello"</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">type</span>(<span style="color: #64B5F6;">'Hello'</span>);
-<span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">a</span> <span style="color: #9575CD;">once</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">'a'</span>).<span style="color: #9575CD;">once()</span>;
-<span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">";"</span>                         <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">';'</span>).<span style="color: #9575CD;">once()</span>;
-<span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">' '</span>                         <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">' '</span>).<span style="color: #9575CD;">times(1)</span>;
-<span style="color: #64B5F6;">enter</span> <span style="color: #9575CD;">1 time</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.Enter</span>).<span style="color: #9575CD;">once()</span>;
-<span style="color: #64B5F6;">backspace</span>                         <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.Backspace</span>).<span style="color: #9575CD;">times(3)</span>;
-<span style="color: #64B5F6;">left</span> <span style="color: #9575CD;">3 times</span> <span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">meta</span>            <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.ArrowLeft</span>).<span style="color: #64B5F6;">withMetaKey()</span>.<span style="color: #9575CD;">once()</span>;
-<span style="color: #64B5F6;">right</span> <span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">meta</span>, <span style="color: #64B5F6;">shift</span>            <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">Key.ArrowRight</span>).<span style="color: #64B5F6;">withMetaKey()</span>.<span style="color: #64B5F6;">withShiftKey()</span>.<span style="color: #9575CD;">once()</span>;
-<span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">cursor</span> <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">0,5</span>              <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">expect</span>(fixture).<span style="color: #9575CD;">toHaveCursorAt</span>(<span style="color: #9575CD;">0</span>, <span style="color: #9575CD;">5</span>);
-<span style="color: #FFB74D;">EXPECT</span> <span style="color: #9575CD;">selection</span> <span style="color: #FFB74D;">at</span> <span style="color: #9575CD;">1,2-4,5</span>       <span style="color: #4CAF50;">→</span>  <span style="color: #FFB74D;">expect</span>(fixture).<span style="color: #9575CD;">toHaveSelectionAt</span>(<span style="color: #9575CD;">1</span>, <span style="color: #9575CD;">2</span>, <span style="color: #9575CD;">4</span>, <span style="color: #9575CD;">5</span>);
+### Examples in Normalized Form <span class="grammar-arrow">  →</span>  Transpilation
+<span class="grammar-keyword">TYPE</span> <span class="grammar-value">"Hello"</span>                      <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">type</span>(<span class="grammar-value">'Hello'</span>);
+<span class="grammar-keyword">TYPE</span> <span class="grammar-value">"Foo\"bar"</span>                   <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">type</span>(<span class="grammar-value">'foo"bar'</span>); <span class="grammar-punct">(double quote can be escaped with JavaScript /)</span>
+<span class="grammar-keyword">TYPE</span> <span class="grammar-value">"\\"</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">type</span>(<span class="grammar-value">'\\'</span>); <span class="grammar-punct">(\ escapes in double quotes. Two \\ types a single \ to the editor)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">\</span>                           <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">'\\'</span>).<span class="grammar-param">once()</span>;  <span class="grammar-punct">(Note \ is not an escape sequence here. This creates 2 not 1 \\)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">"\"</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">'\\'</span>).<span class="grammar-param">once()</span>;  <span class="grammar-punct">(Note \ is not an escape sequence here. This creates 2 not 1 \\)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">a</span> <span class="grammar-param">once</span>                      <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">'a'</span>).<span class="grammar-param">once()</span>;
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">"'"</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">","</span>).<span class="grammar-param">once()</span>; <span class="grammar-punct">(safest way of specifying single-quote)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">';'</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">';'</span>).<span class="grammar-param">once()</span>; <span class="grammar-punct">(safest way of specifying semicolon)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">','</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">','</span>).<span class="grammar-param">once()</span>; <span class="grammar-punct">(safest way of specifying comma)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">' '</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">' '</span>).<span class="grammar-param">times(1)</span>; <span class="grammar-punct">(safest way of specifying space)</span>
+<span class="grammar-keyword">PRESS</span> <span class="grammar-value">'"'</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">'"'</span>).<span class="grammar-param">times(1)</span>; <span class="grammar-punct">(safest way of specifying double-quote)</span>
+<span class="grammar-value">enter</span> <span class="grammar-param">1 time</span>                      <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">Key.Enter</span>).<span class="grammar-param">once()</span>; 
+<span class="grammar-value">backspace</span>                         <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">Key.Backspace</span>).<span class="grammar-param">times(3)</span>;
+<span class="grammar-value">left</span> <span class="grammar-param">3 times</span> <span class="grammar-keyword">with</span> <span class="grammar-value">meta</span>            <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">Key.ArrowLeft</span>).<span class="grammar-value">withMetaKey()</span>.<span class="grammar-param">once()</span>;
+<span class="grammar-value">right</span> <span class="grammar-keyword">with</span> <span class="grammar-value">meta</span>, <span class="grammar-value">shift</span>            <span class="grammar-arrow">→</span>  fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">Key.ArrowRight</span>).<span class="grammar-value">withMetaKey()</span>.<span class="grammar-value">withShiftKey()</span>.<span class="grammar-param">once()</span>;
+<span class="grammar-keyword">EXPECT</span> <span class="grammar-param">cursor</span>    <span class="grammar-keyword">at</span> <span class="grammar-param">1,5</span>           <span class="grammar-arrow">→</span>  <span class="grammar-keyword">expect</span>(fixture).<span class="grammar-param">toHaveCursorAt</span>(<span class="grammar-param">1</span>, <span class="grammar-param">5</span>);
+<span class="grammar-keyword">EXPECT</span> <span class="grammar-param">selection</span> <span class="grammar-keyword">at</span> <span class="grammar-param">1,2-4,5</span>       <span class="grammar-arrow">→</span>  <span class="grammar-keyword">expect</span>(fixture).<span class="grammar-param">toHaveSelectionAt</span>(<span class="grammar-param">1</span>, <span class="grammar-param">2</span>, <span class="grammar-param">4</span>, <span class="grammar-param">5</span>);
+<span class="grammar-keyword">EXPECT</span> <span class="grammar-param">viewport</span>  <span class="grammar-keyword">at</span> <span class="grammar-param">1,10</span>          <span class="grammar-arrow">→</span>  <span class="grammar-keyword">expect</span>(fixture).<span class="grammar-param">toHaveViewportAt</span>(<span class="grammar-param">1</span>, <span class="grammar-param">10</span>);
+<span class="grammar-keyword">REPEAT</span> <span class="grammar-param">3</span> <span class="grammar-param">times</span> <span class="grammar-value">enter</span><span class="grammar-punct">,</span> <span class="grammar-keyword">PRESS</span> <span class="grammar-value">a</span>     <span class="grammar-arrow">→</span>  <span class="grammar-keyword">for</span> (let i = 0; i &lt; 3; i++) {
+                                      fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">'a'</span>).<span class="grammar-param">once</span>();
+                                      fixture.<span class="grammar-keyword">press</span>(<span class="grammar-value">Key.Enter</span>).<span class="grammar-param">once</span>();
+                                    }
 
-<span style="opacity: 0.7;">JavaScript pass-through for lines ending with ";", starting with "//" and empty lines:</span>
-expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect(3+5).toBe(8);
-// This is a comment            <span style="color: #4CAF50;">→</span>  // This is a comment
-(empty line)                    <span style="color: #4CAF50;">→</span>  (empty line)</div>
+<span class="grammar-punct">JavaScript pass-through for lines ending with ";", starting with "//" and empty lines:</span>
+expect(3+5).toBe(8);            <span class="grammar-arrow">→</span>  expect(3+5).toBe(8);
+// This is a comment            <span class="grammar-arrow">→</span>  // This is a comment
+(empty line)                    <span class="grammar-arrow">→</span>  (empty line)</div>
         </main>
     </div>
 
@@ -1241,8 +1323,13 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     return `<span class="dsl-comment">${escapeHtml(line)}</span>`;
                 }
 
-                // JavaScript pass-through (ends with ; or starts with //)
-                if (line.trim().endsWith(';') || line.trim().startsWith('//')) {
+                // JavaScript comment (starts with //)
+                if (line.trim().startsWith('//')) {
+                    return `<span class="dsl-js-comment">${escapeHtml(line)}</span>`;
+                }
+
+                // JavaScript pass-through (ends with ;)
+                if (line.trim().endsWith(';')) {
                     return `<span class="dsl-javascript">${escapeHtml(line)}</span>`;
                 }
 
@@ -1271,8 +1358,8 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                 });
 
                 // Now do all other replacements on text without strings or quantifiers
-                // Keywords: TYPE, PRESS, EXPECT, at, with
-                text = text.replace(/\b(TYPE|PRESS|EXPECT|at|with)\b/g, '<span class="dsl-keyword">$1</span>');
+                // Keywords: TYPE, PRESS, EXPECT, REPEAT, at, with
+                text = text.replace(/\b(TYPE|PRESS|EXPECT|REPEAT|at|with)\b/g, '<span class="dsl-keyword">$1</span>');
 
                 // Special keys (movement keys)
                 text = text.replace(/\b(backspace|enter|left|right|up|down)\b/g, '<span class="dsl-special-key">$1</span>');
@@ -1370,7 +1457,8 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         function updateHighlighting() {
             const text = textarea.value;
             const highlighted = highlightDSL(text);
-            highlightDiv.innerHTML = highlighted || '';
+            // Add a newline at the end to match textarea's extra scrollable space
+            highlightDiv.innerHTML = (highlighted || '') + '\n';
         }
 
         function updateUIState() {

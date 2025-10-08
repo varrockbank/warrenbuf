@@ -61,6 +61,16 @@
         expected: "fixture.type('Hello World');"
       },
       {
+        name: 'TYPE with escaped double quote',
+        input: 'TYPE "foo\\"bar"',
+        expected: "fixture.type('foo\\\"bar');"
+      },
+      {
+        name: 'TYPE with backslash',
+        input: 'TYPE "\\\\"',
+        expected: "fixture.type('\\\\');"
+      },
+      {
         name: 'PRESS single character',
         input: 'PRESS a',
         expected: "fixture.press('a').once();"
@@ -271,6 +281,181 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'EXPECT selection at with non-numeric values (should fail)',
         input: 'EXPECT selection at a,b-c,d',
         expectedError: 'Invalid EXPECT selection at command: expect selection at a,b-c,d'
+      },
+       {
+        name: 'type command should be case insensitive',
+        input: 'tYpe "foobar"',
+        expected: "fixture.type('foobar');",
+      },
+      {
+        name: 'type command should preserve case sensitivity of string',
+        input: 'tYpe "fooBar"',
+        expected: "fixture.type('fooBar');",
+      },
+     {
+        name: 'press command should be case insensitive',
+        input: 'press a',
+        expected: "fixture.press('a').once();",
+      },
+      {
+        name: 'type command should preserve case sensitivity of character',
+        input: 'press B',
+        expected: "fixture.press('B').once();",
+      },
+      {
+        name: 'PRESS unquoted comma (should fail)',
+        input: 'PRESS ,',
+        expectedError: "Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,"
+      },
+      {
+        name: 'PRESS double-quoted comma',
+        input: 'PRESS ","',
+        expected: "fixture.press(',').once();"
+      },
+      {
+        name: "PRESS single-quoted comma",
+        input: "PRESS ','",
+        expected: "fixture.press(',').once();"
+      },
+      {
+        name: 'PRESS unquoted comma with quantification (should fail)',
+        input: 'PRESS , 3 times',
+        expectedError: "Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,"
+      },
+      {
+        name: 'PRESS quoted comma with quantification',
+        input: 'PRESS "," 3 times',
+        expected: "fixture.press(',').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted space',
+        input: 'PRESS " "',
+        expected: "fixture.press(' ').once();"
+      },
+      {
+        name: "PRESS single-quoted space",
+        input: "PRESS ' '",
+        expected: "fixture.press(' ').once();"
+      },
+      {
+        name: 'PRESS unquoted space (should fail - ambiguous)',
+        input: 'PRESS  ',
+        expectedError: "Invalid PRESS command: press  "
+      },
+      {
+        name: 'PRESS double-quoted space with quantification',
+        input: 'PRESS " " 5 times',
+        expected: "fixture.press(' ').times(5);"
+      },
+      {
+        name: "PRESS single-quoted space with quantification",
+        input: "PRESS ' ' 5 times",
+        expected: "fixture.press(' ').times(5);"
+      },
+      {
+        name: 'PRESS single-quoted double-quote',
+        input: "PRESS '\"'",
+        expected: "fixture.press('\"').once();"
+      },
+      {
+        name: 'PRESS double-quoted double-quote (escaped)',
+        input: 'PRESS "\\""',
+        expected: "fixture.press('\"').once();"
+      },
+      {
+        name: 'PRESS unquoted double-quote',
+        input: 'PRESS "',
+        expected: "fixture.press('\"').once();"
+      },
+      {
+        name: 'PRESS triple-quoted double-quote',
+        input: 'PRESS """',
+        expected: "fixture.press('\"').once();"
+      },
+      {
+        name: 'PRESS single-quoted double-quote with quantification',
+        input: "PRESS '\"' 3 times",
+        expected: "fixture.press('\"').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted double-quote with quantification (escaped)',
+        input: 'PRESS "\\"" 3 times',
+        expected: "fixture.press('\"').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted single-quote',
+        input: 'PRESS "\'"',
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS single-quoted single-quote (escaped)',
+        input: "PRESS '\\''",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS unquoted single-quote',
+        input: "PRESS '",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS triple-quoted single-quote',
+        input: "PRESS '''",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS double-quoted single-quote with quantification',
+        input: 'PRESS "\'" 3 times',
+        expected: "fixture.press('\\'').times(3);"
+      },
+      {
+        name: 'PRESS single-quoted single-quote with quantification (escaped)',
+        input: "PRESS '\\'' 3 times",
+        expected: "fixture.press('\\'').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted backslash',
+        input: 'PRESS "\\\\"',
+        expected: "fixture.press('\\\\').once();"
+      },
+      {
+        name: 'PRESS unquoted backslash',
+        input: 'PRESS \\',
+        expected: "fixture.press('\\\\').once();"
+      },
+      {
+        name: 'PRESS double-quoted backslash with quantification',
+        input: 'PRESS "\\\\" 3 times',
+        expected: "fixture.press('\\\\').times(3);"
+      },
+      {
+        name: 'REPEAT with unquoted comma in PRESS (should fail)',
+        input: "REPEAT 1 times PRESS, , PRESS 'a'",
+        expectedError: "PRESS commands must be quoted in REPEAT command"
+      },
+      {
+        name: 'REPEAT with quoted comma in PRESS',
+        input: "REPEAT 1 times PRESS ',' , PRESS 'a'",
+        expected: "for (let i = 0; i < 1; i++) {\n  fixture.press(',').once();\n  fixture.press('a').once();\n}"
+      },
+      {
+        name: 'REPEAT with invalid TYPE command (should fail)',
+        input: "REPEAT 3 times TYPE foobar",
+        expectedError: "Invalid TYPE command: TYPE foobar"
+      },
+      {
+        name: 'REPEAT with invalid PRESS command (should fail)',
+        input: "REPEAT 3 times PRESS foobar",
+        expectedError: "Unknown key: foobar"
+      },
+      {
+        name: 'REPEAT with invalid TYPE command but valid PRESS (should fail)',
+        input: "REPEAT 3 times TYPE foobar, PRESS 'a'",
+        expectedError: "Invalid TYPE command: TYPE foobar"
+      },
+      {
+        name: 'REPEAT with valid TYPE command but invalid PRESS (should fail)',
+        input: 'REPEAT 3 times TYPE "hello", PRESS foobar',
+        expectedError: "Unknown key: foobar"
       }
     ];
 

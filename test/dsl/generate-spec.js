@@ -141,10 +141,14 @@ class SpecGenerator {
           try {
             const jsLine = this.transpiler.transpileLine(trimmed);
             if (jsLine) {
-              output.push(`    ${jsLine}`);
+              // Add indentation to all lines (not just the first)
+              const indentedLines = jsLine.split('\n').map(line => `    ${line}`).join('\n');
+              output.push(indentedLines);
               currentTestDslLines.push(trimmed);
               dslToJsLineMap.push(currentTestJsLineCount);
-              currentTestJsLineCount++;
+              // Count how many lines were added
+              const linesAdded = jsLine.split('\n').length;
+              currentTestJsLineCount += linesAdded;
             }
           } catch (error) {
             // Store error for UI display

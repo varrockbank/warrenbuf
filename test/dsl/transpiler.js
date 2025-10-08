@@ -1,12 +1,20 @@
 /**
  * DSL Transpiler - Converts natural language test DSL to JavaScript
  *
- * Follows DSL specification v3.1.0 with:
+ * Follows DSL specification v6.2.0 with:
  * - v1.6.0 normalized forms
  * - v2.0.0 JavaScript interweaving (lines ending with `;`)
  * - v2.1.0 empty lines allowed
  * - v2.2.0 semicolon disambiguation (PRESS ';')
  * - v3.1.0 standalone comment lines (lines starting with `//`)
+ * - v4.0.0 EXPECT cursor at
+ * - v4.1.0 EXPECT selection at
+ * - v4.2.0 full case-insensitivity for EXPECT commands
+ * - v5.0.0 viewport at command: <first_line>, <last_line> (both 1-indexed)
+ * - v5.1.0 case-insensitive PRESS and TYPE commands
+ * - v6.0.0 REPEAT command: REPEAT <n> times: <command1>, <command2>, ...
+ * - v6.1.0 REPEAT command without colon: REPEAT <n> times <command1>, <command2>, ...
+ * - v6.2.0 PRESS comma must be quoted: PRESS ',' (not PRESS ,)
  */
 
 class DSLTranspiler {
@@ -76,14 +84,24 @@ class DSLTranspiler {
    * @returns {string} JavaScript statement
    */
   transpileDSLCommand(cmd) {
+    // REPEAT command
+    if (cmd.toLowerCase().startsWith('repeat ')) {
+      return this.transpileREPEAT(cmd);
+    }
+
     // TYPE command
-    if (cmd.startsWith('TYPE ')) {
+    if (cmd.toLowerCase().startsWith('type ')) {
       return this.transpileTYPE(cmd);
     }
 
     // PRESS command (for single characters)
-    if (cmd.startsWith('PRESS ')) {
+    if (cmd.toLowerCase().startsWith('press ')) {
       return this.transpilePRESS(cmd);
+    }
+
+    // EXPECT viewport at command (case-insensitive)
+    if (cmd.toLowerCase().startsWith('expect viewport at ')) {
+      return this.transpileViewportAt(cmd);
     }
 
     // EXPECT cursor at command (case-insensitive)
@@ -101,18 +119,112 @@ class DSLTranspiler {
   }
 
   /**
+   * Split string by commas that are outside of quotes
+   * @param {string} str - String to split
+   * @returns {string[]} Array of split strings
+   */
+  splitByCommaOutsideQuotes(str) {
+    const result = [];
+    let current = '';
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let escaped = false;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+
+      if (escaped) {
+        current += char;
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        current += char;
+        continue;
+      }
+
+      if (char === "'" && !inDoubleQuote) {
+        inSingleQuote = !inSingleQuote;
+        current += char;
+      } else if (char === '"' && !inSingleQuote) {
+        inDoubleQuote = !inDoubleQuote;
+        current += char;
+      } else if (char === ',' && !inSingleQuote && !inDoubleQuote) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    if (current.trim()) {
+      result.push(current.trim());
+    }
+
+    return result;
+  }
+
+  /**
+   * Transpile REPEAT command
+   * Example: REPEAT 3 times PRESS a, enter, TYPE "hello"
+   * Transpiles to a for loop executing each command in sequence
+   */
+  transpileREPEAT(cmd) {
+    const match = cmd.match(/^REPEAT\s+(\d+)\s+times?\s+(.+)$/i);
+    if (!match) {
+      throw new Error(`Invalid REPEAT command: ${cmd}`);
+    }
+
+    const times = parseInt(match[1]);
+    const commandsStr = match[2];
+
+    // Split by comma (respecting quotes) and trim each command
+    const commands = this.splitByCommaOutsideQuotes(commandsStr);
+
+    // Check for unquoted comma in PRESS command
+    for (const command of commands) {
+      if (command.toLowerCase() === 'press') {
+        throw new Error(`PRESS commands must be quoted in REPEAT command`);
+      }
+    }
+
+    // Transpile each command
+    const transpiledCommands = commands.map(command => {
+      // Each command needs to be transpiled individually
+      // We need to handle TYPE, PRESS, and special keys
+      let transpiled;
+
+      if (command.toLowerCase().startsWith('type ')) {
+        transpiled = this.transpileTYPE(command);
+      } else if (command.toLowerCase().startsWith('press ')) {
+        transpiled = this.transpilePRESS(command);
+      } else {
+        // Assume it's a special key (enter, backspace, etc.)
+        transpiled = this.transpileSpecialKey(command);
+      }
+
+      // Add proper indentation
+      return `  ${transpiled}`;
+    }).join('\n');
+
+    return `for (let i = 0; i < ${times}; i++) {\n${transpiledCommands}\n}`;
+  }
+
+  /**
    * Transpile TYPE command
    * Example: TYPE "Hello World" → fixture.type('Hello World');
    */
   transpileTYPE(cmd) {
-    const match = cmd.match(/^TYPE\s+"(.*)"/);
+    const match = cmd.match(/^TYPE\s+"(.*)"/i);
     if (!match) {
       throw new Error(`Invalid TYPE command: ${cmd}`);
     }
 
     const text = match[1];
-    // Convert double-quoted string to single-quoted (escape any single quotes)
-    const escaped = text.replace(/'/g, "\\'");
+    // Convert double-quoted string to single-quoted (escape backslashes first, then single quotes)
+    const escaped = text.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     return `fixture.type('${escaped}');`;
   }
 
@@ -121,13 +233,15 @@ class DSLTranspiler {
    * Example: PRESS a → fixture.press('a').once();
    * Example: PRESS " " → fixture.press(' ').once();
    * Example: PRESS ';' → fixture.press(';').once();
+   * Example: PRESS ',' → fixture.press(',').once();
    * Example: PRESS ';' 3 times → fixture.press(';').times(3);
+   * Note: Comma must be quoted: PRESS ',' (not PRESS ,)
    */
   transpilePRESS(cmd) {
     // Match: PRESS 'char' [quantification] or PRESS "char" [quantification] or PRESS char [quantification]
-    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'(?:\s+(\d+)\s+times?|\s+once)?$/);
-    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"(?:\s+(\d+)\s+times?|\s+once)?$/);
-    const matchUnquoted = cmd.match(/^PRESS\s+(.)(?:\s+(\d+)\s+times?|\s+once)?$/);
+    const matchSingleQuoted = cmd.match(/^PRESS\s+'(.+?)'(?:\s+(\d+)\s+times?|\s+once)?$/i);
+    const matchDoubleQuoted = cmd.match(/^PRESS\s+"(.+?)"(?:\s+(\d+)\s+times?|\s+once)?$/i);
+    const matchUnquoted = cmd.match(/^PRESS\s+(.)(?:\s+(\d+)\s+times?|\s+once)?$/i);
 
     let char;
     let quantification;
@@ -140,12 +254,17 @@ class DSLTranspiler {
     } else if (matchUnquoted) {
       char = matchUnquoted[1];
       quantification = matchUnquoted[2];
+
+      // Comma must be quoted to avoid ambiguity in REPEAT commands
+      if (char === ',') {
+        throw new Error(`Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,`);
+      }
     } else {
       throw new Error(`Invalid PRESS command: ${cmd}`);
     }
 
-    // Escape single quotes for JavaScript output
-    const escaped = char.replace(/'/g, "\\'");
+    // Escape backslashes first, then single quotes for JavaScript output
+    const escaped = char.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
     // Add quantification
     if (quantification) {
@@ -185,6 +304,23 @@ class DSLTranspiler {
     const endRow = match[3];
     const endCol = match[4];
     return `expect(fixture).toHaveSelectionAt(${startRow}, ${startCol}, ${endRow}, ${endCol});`;
+  }
+
+  /**
+   * Transpile viewport at command
+   * Example: viewport at 1, 10 → expect start=0 and start+size-1=9
+   * Syntax: viewport at <first_line>, <last_line> (both 1-indexed)
+   */
+  transpileViewportAt(cmd) {
+    const match = cmd.match(/^expect viewport at (\d+),\s*(\d+)$/i);
+    if (!match) {
+      throw new Error(`Invalid EXPECT viewport at command: ${cmd}`);
+    }
+
+    const firstLine = parseInt(match[1]);
+    const lastLine = parseInt(match[2]);
+
+    return `expect(fixture).toHaveViewportAt(${firstLine}, ${lastLine});`;
   }
 
   /**

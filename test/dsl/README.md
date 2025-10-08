@@ -4,16 +4,126 @@
 
 **Goal:** Describe all test specs in a high-level natural language-like DSL without all the syntactical artifacts of a programming language.
 
-### User Prompt
-> "Earlier in the test walkthrough, you derived a natural language summary of the corresponding spec code. I was thinking in the same lines of having a DSL and specifying the spec in plaintext"
->
-> "Yes. Let's walk through some examples of the declarative specs first."
->
-> "Let's name each of your examples as 'Proposals'. Dump them out to a file test/dsl.org. I want us to iterate on the DSL together and capture the evolution of the DSL. Also DSL.org, add a short intro that I want to describe all the test specs in a high-level natural language like DSL without all the syntical artifacts of a programming language. Include this prompt in the dsl.org"
-
 ---
 
 ## Version History
+
+### v6.2.0 - PRESS comma must be quoted
+
+**Requirement:** Comma character must be quoted in PRESS commands to avoid ambiguity in REPEAT.
+
+Before: `PRESS ,` (ambiguous in REPEAT context)
+After: `PRESS ','` (clear and unambiguous)
+
+**Example:**
+```
+PRESS ','
+```
+
+**Error:**
+```
+PRESS ,  // Error: Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,
+```
+
+This prevents confusion when parsing REPEAT commands where commas separate individual commands.
+
+---
+
+### v6.1.0 - REPEAT command without colon
+
+**Syntax:** `REPEAT <n> times <command1>, <command2>, ...`
+
+Removed the colon requirement from REPEAT command for cleaner syntax.
+
+**Example:**
+```
+REPEAT 3 times PRESS a, enter, TYPE "hello"
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 3; i++) {
+  fixture.press('a').once();
+  fixture.press(Key.Enter).once();
+  fixture.type('hello');
+}
+```
+
+---
+
+### v6.0.0 - REPEAT command
+
+**Syntax:** `REPEAT <n> times: <command1>, <command2>, ...` (deprecated in v6.1.0, colon removed)
+
+Execute a sequence of commands multiple times. Commands inside REPEAT must be TYPE, PRESS, or special keys (enter, backspace, left, right, up, down). EXPECT commands are not allowed inside REPEAT.
+
+**Example:**
+```
+REPEAT 3 times PRESS a, enter, TYPE "hello"
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 3; i++) {
+  fixture.press('a').once();
+  fixture.press(Key.Enter).once();
+  fixture.type('hello');
+}
+```
+
+**Another example:**
+```
+REPEAT 5 times TYPE "x", backspace
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 5; i++) {
+  fixture.type('x');
+  fixture.press(Key.Backspace).once();
+}
+```
+
+---
+
+### v5.1.0 - make PRESS and TYPE case insensitive
+
+### v5.0.0 - expect viewport at <first_line>, <last_line>
+
+**Syntax:** `EXPECT viewport at <first_line>, <last_line>` (both 1-indexed)
+
+Verifies that the viewport shows the specified range of lines. The viewport uses 1-indexed line numbers (user-facing), which are converted to 0-indexed (implementation) automatically.
+
+**Example:**
+```
+EXPECT viewport at 1, 10
+```
+
+This expects:
+- User sees lines 1-10 (1-indexed)
+- Implementation: start=0 (0-indexed), start+size-1=9
+
+**Transpiles to:**
+```javascript
+expect(fixture).toHaveViewportAt(1, 10);
+```
+
+**Another example:**
+
+```
+EXPECT viewport at 5, 30
+```
+
+This expects:
+- User sees lines 5-30 (1-indexed)
+- Implementation: start=4 (0-indexed), start+size-1=29
+
+**Transpiles to:**
+```javascript
+expect(fixture).toHaveViewportAt(5, 30)
+```
+
+---
 
 ### v4.2.0 - Full case-insensitivity for EXPECT commands
 
@@ -365,7 +475,7 @@ A transpiler that converts natural language test DSL to JavaScript code.
 
 ### Overview
 
-The transpiler implements the DSL specification v4.2.0:
+The transpiler implements the DSL specification v5.0.0:
 - v1.6.0 normalized forms
 - v2.0.0 JavaScript interweaving (lines ending with `;`)
 - v2.1.0 empty lines allowed
@@ -375,6 +485,7 @@ The transpiler implements the DSL specification v4.2.0:
 - v4.0.0 EXPECT cursor at command
 - v4.1.0 EXPECT selection at command
 - v4.2.0 full case-insensitivity for EXPECT commands
+- v5.0.0 viewport at command
 
 ### Usage
 
@@ -449,6 +560,24 @@ Examples:
 EXPECT selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);
 EXPECT selection at 1, 2 - 4, 5   →  expect(fixture).toHaveSelectionAt(1, 2, 4, 5);
 expect selection at 0,0-0,5       →  expect(fixture).toHaveSelectionAt(0, 0, 0, 5);  // also valid
+```
+
+#### viewport at
+```
+viewport at <first_line>, <last_line>  →  expect(fixture.wb.Viewport.start).toBe(first_line-1);
+                                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(last_line-1);
+```
+
+Verifies that the viewport shows the specified range of lines. The viewport uses 1-indexed line numbers (user-facing), which are converted to 0-indexed (implementation). Fully case-insensitive (v5.0.0).
+
+Examples:
+```
+viewport at 1, 10      →  expect(fixture.wb.Viewport.start).toBe(0);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(9);
+viewport at 5, 30      →  expect(fixture.wb.Viewport.start).toBe(4);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(29);
+VIEWPORT AT 10, 40     →  expect(fixture.wb.Viewport.start).toBe(9);
+                          expect(fixture.wb.Viewport.start + fixture.wb.Viewport.size - 1).toBe(39);
 ```
 
 #### Special Keys
@@ -727,3 +856,13 @@ press Enter
 type "Second"
 expect lines ["First", "Second"]
 ```
+
+---
+
+### User Prompt
+> "Earlier in the test walkthrough, you derived a natural language summary of the corresponding spec code. I was thinking in the same lines of having a DSL and specifying the spec in plaintext"
+>
+> "Yes. Let's walk through some examples of the declarative specs first."
+>
+> "Let's name each of your examples as 'Proposals'. Dump them out to a file test/dsl.org. I want us to iterate on the DSL together and capture the evolution of the DSL. Also DSL.org, add a short intro that I want to describe all the test specs in a high-level natural language like DSL without all the syntical artifacts of a programming language. Include this prompt in the dsl.org"
+
