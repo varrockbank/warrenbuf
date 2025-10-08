@@ -114,6 +114,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
+  #matrix.wb {
+    background-color: #000000;
+    color: #00ff41;
+  }
+  #matrix.wb .wb-selection {
+    background-color: #003300;
+  }
+
 </style>
 </head>
 
@@ -232,6 +240,26 @@
       </div>
     </div>
   </blockquote>
+  <h2>Matrix Effect</h2>
+  <p>Digital rain animation inspired by The Matrix</p>
+  <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="matrix">
+    <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
+    <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
+    <div class="💪">
+      <div class="wb-gutter"></div>
+      <div class="wb-lines 🌳 🥷"></div>
+    </div>
+    <div class="💪 wb-status 🦠">
+      <div class="wb-status-left 💪">
+        <span class="wb-linecount"></span>
+      </div>
+      <div class="wb-status-right 💪">
+        <span class="wb-coordinate"></span>
+        <span>|</span>
+        <span class="wb-indentation"></span>
+      </div>
+    </div>
+  </blockquote>
   <script type="module">
     import { Parser, Language, Query } from "https://cdn.jsdelivr.net/npm/web-tree-sitter@0.25.10/tree-sitter.js";
 
@@ -278,6 +306,13 @@
       colorPrimary: "#FFD700",
       colorSecondary: "#000000",
       initialViewportSize: 13
+    });
+
+    const matrixElement = document.getElementById('matrix');
+    const matrix = new WarrenBuf(matrixElement, {
+      colorPrimary: "#00ff41",
+      colorSecondary: "#000000",
+      initialViewportSize: 20
     });
 
     // Diagnostics -- Bind UI controls to move viewport
@@ -474,6 +509,67 @@
     }, { threshold: 0.5 });
 
     observer.observe(starWarsElement);
+
+    // Matrix Effect Animation
+    const MATRIX_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+-=[]{}|;:,.<>?/~`';
+    const MATRIX_COLS = 80;
+    const MATRIX_ROWS = 20;
+    let matrixColumns = [];
+
+    // Initialize columns with random starting positions
+    for (let i = 0; i < MATRIX_COLS; i++) {
+      matrixColumns.push({
+        y: Math.floor(Math.random() * MATRIX_ROWS),
+        speed: Math.random() * 0.5 + 0.3, // Random speed between 0.3 and 0.8
+        chars: Array(MATRIX_ROWS).fill(' ')
+      });
+    }
+
+    function updateMatrix() {
+      const lines = [];
+
+      // Update each column
+      matrixColumns.forEach((col, colIndex) => {
+        // Move column down
+        col.y += col.speed;
+
+        // Reset to top if reached bottom
+        if (col.y > MATRIX_ROWS + 10) {
+          col.y = -Math.random() * 10;
+          col.speed = Math.random() * 0.5 + 0.3;
+        }
+
+        // Add new character at head position
+        const headRow = Math.floor(col.y);
+        if (headRow >= 0 && headRow < MATRIX_ROWS) {
+          col.chars[headRow] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        }
+
+        // Fade out trailing characters
+        for (let row = 0; row < MATRIX_ROWS; row++) {
+          if (row < headRow - 15) {
+            col.chars[row] = ' ';
+          } else if (Math.random() < 0.05) {
+            // Randomly change some characters for glitch effect
+            col.chars[row] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+          }
+        }
+      });
+
+      // Build the display grid
+      for (let row = 0; row < MATRIX_ROWS; row++) {
+        let line = '';
+        for (let col = 0; col < MATRIX_COLS; col++) {
+          line += matrixColumns[col].chars[row];
+        }
+        lines.push(line);
+      }
+
+      matrix.Model.text = lines.join('\n');
+    }
+
+    // Start Matrix animation
+    setInterval(updateMatrix, 50); // Update every 50ms
 
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
       const notesEditingArea = notesElement.querySelector('.wb-lines');
