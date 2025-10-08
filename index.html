@@ -12,6 +12,11 @@
   body {
       background-color: #494460;
       color: white;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      font-size: 20px;
+      font-family: "Helvetica", sans-serif;
   }
   blockquote {
       margin: 15px;
@@ -122,11 +127,31 @@
     background-color: #003300;
   }
 
+  a {
+    color: #00ff41;
+    margin-right: 10px;
+    margin-left: 10px;
+    text-decoration: none;
+  }
+  a:visited {
+    text-decoration: none;
+  }
+  a:hover {
+    color: white;
+    text-decoration: underline;
+  }
 </style>
 </head>
 
 <body>
-  <h2>Usage instructions</h2>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="margin: 0;">WarrenBuf Gallery</h1>
+    <div style="margin-right: 5px">
+      <a href="test">Tests</a> |
+      <a href="https://github.com/varrockbank/warrenbuf">Github</a>
+    </div>
+  </div>
+  A performant text buffer for the web with editor functionality.
   <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
@@ -145,7 +170,7 @@
           </div>
       </div>
   </blockquote>
-    <details>
+  <details style="padding: 15px">
     <summary>Utility for diagnosing large files and text buffers</summary>
     <label for="viewport-start">Viewport Start: </label>
     <input id="viewport-start" value="0"></input>
