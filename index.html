@@ -68,6 +68,15 @@
   .wb .wb-lines pre .highlight-string {
       color: green;
   }
+
+  #hackernews.wb {
+      background-color: #F6F6EF;
+      color: black;
+  }
+  #hackernews.wb .wb-selection {
+      background-color: #DCDCDA;
+  }
+
 </style>
 </head>
 
@@ -174,16 +183,19 @@
   window.addEventListener("DOMContentLoaded", () => {
 
     const mainElement = document.getElementById("playground");
-    const primary = new WarrenBuf(mainElement, null, null);
+    const primary = new WarrenBuf(mainElement);
     // primary.Model.text = "This is my first text document\nWoohoo\nFoobar\njfdhfjhfdg\njfdhj\ndh";
     mainElement.focus();
     window.primary = primary;
 
     const notesElement = document.getElementById('notes');
-    const notes = new WarrenBuf(notesElement, null, null, 20);
+    const notes = new WarrenBuf(notesElement);
 
     const hackerNewsElement = document.getElementById('hackernews');
-    const hackernews = new WarrenBuf(hackerNewsElement, null, null);
+    const hackernews = new WarrenBuf(hackerNewsElement, {
+      colorPrimary: "black",
+      colorSecondary: "#FF6602",
+    });
 
     // Diagnostics -- Bind UI controls to move viewport
     document.getElementById('viewport-update').addEventListener('click', () => {
