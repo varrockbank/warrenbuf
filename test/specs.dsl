@@ -795,3 +795,17 @@ down with shift
 EXPECT viewport at 3, 22
 EXPECT selection at 20,2-22,2
 
+## Should extend selection when scrolling up
+EXPECT viewport at 1, 20
+repeat 22 times TYPE "hello world", enter
+EXPECT viewport at 4, 23
+up 19 times
+left 7 times 
+EXPECT viewport at 4, 23
+EXPECT cursor at 4,5
+up with shift 
+EXPECT viewport at 3, 22
+EXPECT selection at 3,5-4,5
+up 2 times with shift
+EXPECT viewport at 1,20
+EXPECT selection at 1,5-4,5
