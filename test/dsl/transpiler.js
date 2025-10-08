@@ -119,6 +119,54 @@ class DSLTranspiler {
   }
 
   /**
+   * Split string by commas that are outside of quotes
+   * @param {string} str - String to split
+   * @returns {string[]} Array of split strings
+   */
+  splitByCommaOutsideQuotes(str) {
+    const result = [];
+    let current = '';
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let escaped = false;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+
+      if (escaped) {
+        current += char;
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        current += char;
+        continue;
+      }
+
+      if (char === "'" && !inDoubleQuote) {
+        inSingleQuote = !inSingleQuote;
+        current += char;
+      } else if (char === '"' && !inSingleQuote) {
+        inDoubleQuote = !inDoubleQuote;
+        current += char;
+      } else if (char === ',' && !inSingleQuote && !inDoubleQuote) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    if (current.trim()) {
+      result.push(current.trim());
+    }
+
+    return result;
+  }
+
+  /**
    * Transpile REPEAT command
    * Example: REPEAT 3 times PRESS a, enter, TYPE "hello"
    * Transpiles to a for loop executing each command in sequence
@@ -132,8 +180,8 @@ class DSLTranspiler {
     const times = parseInt(match[1]);
     const commandsStr = match[2];
 
-    // Split by comma and trim each command
-    const commands = commandsStr.split(',').map(c => c.trim());
+    // Split by comma (respecting quotes) and trim each command
+    const commands = this.splitByCommaOutsideQuotes(commandsStr);
 
     // Check for unquoted comma in PRESS command
     for (const command of commands) {

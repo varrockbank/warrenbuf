@@ -406,6 +406,11 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'REPEAT with unquoted comma in PRESS (should fail)',
         input: "REPEAT 1 times PRESS, , PRESS 'a'",
         expectedError: "PRESS commands must be quoted in REPEAT command"
+      },
+      {
+        name: 'REPEAT with quoted comma in PRESS',
+        input: "REPEAT 1 times PRESS ',' , PRESS 'a'",
+        expected: "for (let i = 0; i < 1; i++) {\n  fixture.press(',').once();\n  fixture.press('a').once();\n}"
       }
     ];
 
