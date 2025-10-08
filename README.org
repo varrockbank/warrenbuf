@@ -45,7 +45,7 @@ Editor instances are instantiated by specifying a DOM node having the following 
     </div>
   </div>
 </blockquote>
-const editorInstance = new WarrenBuf(document.getElementById("playground"));
+const editorInstance = new WarrenBuf(document.getElementById("playground"), {});
 #+end_src
 
 It was decided against WarrenBuf creating this DOM structure. 
