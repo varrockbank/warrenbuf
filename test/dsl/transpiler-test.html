@@ -316,6 +316,31 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'PRESS quoted comma with quantification',
         input: 'PRESS "," 3 times',
         expected: "fixture.press(',').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted space',
+        input: 'PRESS " "',
+        expected: "fixture.press(' ').once();"
+      },
+      {
+        name: "PRESS single-quoted space",
+        input: "PRESS ' '",
+        expected: "fixture.press(' ').once();"
+      },
+      {
+        name: 'PRESS unquoted space (should fail - ambiguous)',
+        input: 'PRESS  ',
+        expectedError: "Invalid PRESS command: press  "
+      },
+      {
+        name: 'PRESS double-quoted space with quantification',
+        input: 'PRESS " " 5 times',
+        expected: "fixture.press(' ').times(5);"
+      },
+      {
+        name: "PRESS single-quoted space with quantification",
+        input: "PRESS ' ' 5 times",
+        expected: "fixture.press(' ').times(5);"
       }
     ];
 
