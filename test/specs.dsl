@@ -797,7 +797,7 @@ EXPECT selection at 20,2-22,2
 
 ## Should extend selection when scrolling up
 EXPECT viewport at 1, 20
-repeat 22 times TYPE "hello world", enter
+REPEAT 22 times TYPE "hello world", enter
 EXPECT viewport at 4, 23
 up 19 times
 left 7 times 

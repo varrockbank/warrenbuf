@@ -97,6 +97,22 @@
             font-size: 0.9rem;
         }
 
+        .demo-link {
+            margin-left: 1rem;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .demo-link:visited {
+            color: white;
+        }
+        .demo-link:hover {
+            background-color: #007acc;
+        }
+
         .tab {
             padding: 0.75rem 1.5rem;
             cursor: pointer;
@@ -1081,6 +1097,7 @@
 <body>
     <div class="tabs-wrapper">
         <div class="tabs">
+            <a href="../index.html" class="demo-link">Live Demo</a>&nbsp;
             <button class="tab active" data-tab="tests">Tests</button>
             <button class="tab" data-tab="source">Source</button>
             <button class="tab" data-tab="grammar">Grammar</button>

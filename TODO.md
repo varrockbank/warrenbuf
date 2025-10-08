@@ -26,3 +26,6 @@
 
 3) lack way to tab visual coordinates of selection
 
+4) add deeplink to pages
+
+5) shorthand for TYPE and press to just say "foobar" and 'a'
