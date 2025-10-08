@@ -8,6 +8,27 @@
 
 ## Version History
 
+### v6.2.0 - PRESS comma must be quoted
+
+**Requirement:** Comma character must be quoted in PRESS commands to avoid ambiguity in REPEAT.
+
+Before: `PRESS ,` (ambiguous in REPEAT context)
+After: `PRESS ','` (clear and unambiguous)
+
+**Example:**
+```
+PRESS ','
+```
+
+**Error:**
+```
+PRESS ,  // Error: Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,
+```
+
+This prevents confusion when parsing REPEAT commands where commas separate individual commands.
+
+---
+
 ### v6.1.0 - REPEAT command without colon
 
 **Syntax:** `REPEAT <n> times <command1>, <command2>, ...`
