@@ -371,6 +371,36 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'PRESS double-quoted double-quote with quantification (escaped)',
         input: 'PRESS "\\"" 3 times',
         expected: "fixture.press('\"').times(3);"
+      },
+      {
+        name: 'PRESS double-quoted single-quote',
+        input: 'PRESS "\'"',
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS single-quoted single-quote (escaped)',
+        input: "PRESS '\\''",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS unquoted single-quote',
+        input: "PRESS '",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS triple-quoted single-quote',
+        input: "PRESS '''",
+        expected: "fixture.press('\\'').once();"
+      },
+      {
+        name: 'PRESS double-quoted single-quote with quantification',
+        input: 'PRESS "\'" 3 times',
+        expected: "fixture.press('\\'').times(3);"
+      },
+      {
+        name: 'PRESS single-quoted single-quote with quantification (escaped)',
+        input: "PRESS '\\'' 3 times",
+        expected: "fixture.press('\\'').times(3);"
       }
     ];
 
