@@ -375,14 +375,18 @@
         const response = await fetch('sw.txt');
         movieData = await response.text();
         // Parse frames from movie data
-        const lines = movieData.split('\\n'); // Split on literal \n string
+        const rawFrames = movieData.split('\\n'); // Split on literal \n string
         const LINES_PER_FRAME = 14;
         frames = [];
 
-        for (let i = 0; i < lines.length; i += LINES_PER_FRAME) {
-          const frame = lines.slice(i, i + LINES_PER_FRAME).join('\n');
-          if (frame.trim()) {
-            frames.push(frame);
+        for (let i = 0; i < rawFrames.length; i += LINES_PER_FRAME) {
+          const metadata = rawFrames[i]
+          const numFrames = parseInt(metadata);
+          const frame = rawFrames.slice(i+1, i + LINES_PER_FRAME).join('\n');
+          if(frame.trim()) {
+            for(let i = 0; i < numFrames; i++) {
+              frames.push(frame);
+            }
           }
         }
 
