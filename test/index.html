@@ -274,8 +274,18 @@
             user-select: none;
             white-space: pre;
             border-right: 1px solid #3e3e42;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             flex-shrink: 0;
+        }
+
+        .line-numbers::-webkit-scrollbar {
+            display: none;
+        }
+
+        .line-numbers {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         .editor-wrapper textarea {
@@ -318,6 +328,7 @@
             overflow-y: auto;
             z-index: 2;
             caret-color: #d4d4d4;
+            box-sizing: border-box;
         }
 
         .dsl-editor-textarea::selection {
@@ -335,6 +346,7 @@
             width: 100%;
             height: 100%;
             padding: 1rem;
+            padding-bottom: calc(1rem + 1.5em);
             margin: 0;
             border: none;
             background-color: #1e1e1e;
@@ -344,10 +356,20 @@
             line-height: 1.5;
             white-space: pre;
             overflow-wrap: normal;
-            overflow-x: hidden;
-            overflow-y: hidden;
+            overflow-x: auto;
+            overflow-y: auto;
             z-index: 1;
             pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        .dsl-editor-highlight::-webkit-scrollbar {
+            display: none;
+        }
+
+        .dsl-editor-highlight {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         /* DSL Syntax Highlighting */
@@ -1372,7 +1394,8 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         function updateHighlighting() {
             const text = textarea.value;
             const highlighted = highlightDSL(text);
-            highlightDiv.innerHTML = highlighted || '';
+            // Add a newline at the end to match textarea's extra scrollable space
+            highlightDiv.innerHTML = (highlighted || '') + '\n';
         }
 
         function updateUIState() {
