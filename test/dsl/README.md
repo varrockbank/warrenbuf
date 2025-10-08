@@ -8,15 +8,37 @@
 
 ## Version History
 
+### v6.1.0 - REPEAT command without colon
+
+**Syntax:** `REPEAT <n> times <command1>, <command2>, ...`
+
+Removed the colon requirement from REPEAT command for cleaner syntax.
+
+**Example:**
+```
+REPEAT 3 times PRESS a, enter, TYPE "hello"
+```
+
+**Transpiles to:**
+```javascript
+for (let i = 0; i < 3; i++) {
+  fixture.press('a').once();
+  fixture.press(Key.Enter).once();
+  fixture.type('hello');
+}
+```
+
+---
+
 ### v6.0.0 - REPEAT command
 
-**Syntax:** `REPEAT <n> times: <command1>, <command2>, ...`
+**Syntax:** `REPEAT <n> times: <command1>, <command2>, ...` (deprecated in v6.1.0, colon removed)
 
 Execute a sequence of commands multiple times. Commands inside REPEAT must be TYPE, PRESS, or special keys (enter, backspace, left, right, up, down). EXPECT commands are not allowed inside REPEAT.
 
 **Example:**
 ```
-REPEAT 3 times: PRESS a, enter, TYPE "hello"
+REPEAT 3 times PRESS a, enter, TYPE "hello"
 ```
 
 **Transpiles to:**
@@ -30,7 +52,7 @@ for (let i = 0; i < 3; i++) {
 
 **Another example:**
 ```
-REPEAT 5 times: TYPE "x", backspace
+REPEAT 5 times TYPE "x", backspace
 ```
 
 **Transpiles to:**

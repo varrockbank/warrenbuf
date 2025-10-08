@@ -1,7 +1,7 @@
 /**
  * DSL Transpiler - Converts natural language test DSL to JavaScript
  *
- * Follows DSL specification v6.0.0 with:
+ * Follows DSL specification v6.1.0 with:
  * - v1.6.0 normalized forms
  * - v2.0.0 JavaScript interweaving (lines ending with `;`)
  * - v2.1.0 empty lines allowed
@@ -13,6 +13,7 @@
  * - v5.0.0 viewport at command: <first_line>, <last_line> (both 1-indexed)
  * - v5.1.0 case-insensitive PRESS and TYPE commands
  * - v6.0.0 REPEAT command: REPEAT <n> times: <command1>, <command2>, ...
+ * - v6.1.0 REPEAT command without colon: REPEAT <n> times <command1>, <command2>, ...
  */
 
 class DSLTranspiler {
@@ -118,11 +119,11 @@ class DSLTranspiler {
 
   /**
    * Transpile REPEAT command
-   * Example: REPEAT 3 times: PRESS a, enter, TYPE "hello"
+   * Example: REPEAT 3 times PRESS a, enter, TYPE "hello"
    * Transpiles to a for loop executing each command in sequence
    */
   transpileREPEAT(cmd) {
-    const match = cmd.match(/^REPEAT\s+(\d+)\s+times?:\s*(.+)$/i);
+    const match = cmd.match(/^REPEAT\s+(\d+)\s+times?\s+(.+)$/i);
     if (!match) {
       throw new Error(`Invalid REPEAT command: ${cmd}`);
     }
