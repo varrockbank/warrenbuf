@@ -206,8 +206,8 @@
     <button id="play-pause-btn">Play</button>
     <div style="display: flex; align-items: center; gap: 8px;">
       <label for="speed-slider">Speed:</label>
-      <input type="range" id="speed-slider" min="1" max="300" value="200" style="width: 120px;" />
-      <span id="speed-value">200ms</span>
+      <input type="range" id="speed-slider" min="1" max="300" value="120" style="width: 120px;" />
+      <span id="speed-value">120ms</span>
     </div>
   </div>
   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
@@ -277,7 +277,7 @@
     const starwars = new WarrenBuf(starWarsElement, {
       colorPrimary: "#FFD700",
       colorSecondary: "#000000",
-      initialViewportSize: 14
+      initialViewportSize: 13
     });
 
     // Diagnostics -- Bind UI controls to move viewport
@@ -373,6 +373,7 @@
     async function loadStarWarsMovie() {
       try {
         const response = await fetch('sw.txt');
+        // TODO: We aren't escape the ' character correctly. so \' shows literally .
         movieData = await response.text();
         // Parse frames from movie data
         const rawFrames = movieData.split('\\n'); // Split on literal \n string
@@ -392,8 +393,8 @@
 
         console.log(`Loaded ${frames.length} frames from Star Wars movie`);
         document.getElementById('frame-slider').max = frames.length - 1;
-        currentFrame = 233;
-        showFrame(233);
+        currentFrame = 750;
+        showFrame(750);
       } catch (err) {
         console.error("Error loading Star Wars movie:", err);
         starwars.Model.text = "Error loading movie. Check that sw.txt is in the same directory.";
@@ -405,7 +406,7 @@
     let currentFrame = 0;
     let isPlaying = false;
     let frameInterval = null;
-    let frameDelay = 200;
+    let frameDelay = 120;
 
     function showFrame(frameIndex) {
       if (frames.length > 0) {
