@@ -61,6 +61,11 @@
         expected: "fixture.type('Hello World');"
       },
       {
+        name: 'TYPE with escaped double quote',
+        input: 'TYPE "foo\\"bar"',
+        expected: "fixture.type('foo\\\"bar');"
+      },
+      {
         name: 'PRESS single character',
         input: 'PRESS a',
         expected: "fixture.press('a').once();"
