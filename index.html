@@ -77,6 +77,11 @@
       background-color: #DCDCDA;
   }
 
+  #playground.wb {
+    background-color: #201430;
+    color: #E1D6F8;
+  }
+
 </style>
 </head>
 
@@ -183,8 +188,10 @@
   window.addEventListener("DOMContentLoaded", () => {
 
     const mainElement = document.getElementById("playground");
-    const primary = new WarrenBuf(mainElement);
-    // primary.Model.text = "This is my first text document\nWoohoo\nFoobar\njfdhfjhfdg\njfdhj\ndh";
+    const primary = new WarrenBuf(mainElement, {
+      colorPrimary: "#87FF5F",
+      colorSecondary: "#38274D",
+    });
     mainElement.focus();
     window.primary = primary;
 
