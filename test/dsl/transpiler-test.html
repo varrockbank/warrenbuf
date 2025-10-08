@@ -436,6 +436,26 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'REPEAT with quoted comma in PRESS',
         input: "REPEAT 1 times PRESS ',' , PRESS 'a'",
         expected: "for (let i = 0; i < 1; i++) {\n  fixture.press(',').once();\n  fixture.press('a').once();\n}"
+      },
+      {
+        name: 'REPEAT with invalid TYPE command (should fail)',
+        input: "REPEAT 3 times TYPE foobar",
+        expectedError: "Invalid TYPE command: TYPE foobar"
+      },
+      {
+        name: 'REPEAT with invalid PRESS command (should fail)',
+        input: "REPEAT 3 times PRESS foobar",
+        expectedError: "Unknown key: foobar"
+      },
+      {
+        name: 'REPEAT with invalid TYPE command but valid PRESS (should fail)',
+        input: "REPEAT 3 times TYPE foobar, PRESS 'a'",
+        expectedError: "Invalid TYPE command: TYPE foobar"
+      },
+      {
+        name: 'REPEAT with valid TYPE command but invalid PRESS (should fail)',
+        input: 'REPEAT 3 times TYPE "hello", PRESS foobar',
+        expectedError: "Unknown key: foobar"
       }
     ];
 
