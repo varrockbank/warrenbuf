@@ -403,6 +403,10 @@
             font-style: italic;
         }
 
+        .dsl-js-comment {
+            color: #858585;
+        }
+
         .dsl-javascript {
             color: #d4d4d4;
         }
@@ -1265,8 +1269,13 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     return `<span class="dsl-comment">${escapeHtml(line)}</span>`;
                 }
 
-                // JavaScript pass-through (ends with ; or starts with //)
-                if (line.trim().endsWith(';') || line.trim().startsWith('//')) {
+                // JavaScript comment (starts with //)
+                if (line.trim().startsWith('//')) {
+                    return `<span class="dsl-js-comment">${escapeHtml(line)}</span>`;
+                }
+
+                // JavaScript pass-through (ends with ;)
+                if (line.trim().endsWith(';')) {
                     return `<span class="dsl-javascript">${escapeHtml(line)}</span>`;
                 }
 
