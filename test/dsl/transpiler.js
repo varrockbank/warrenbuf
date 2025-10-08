@@ -135,6 +135,13 @@ class DSLTranspiler {
     // Split by comma and trim each command
     const commands = commandsStr.split(',').map(c => c.trim());
 
+    // Check for unquoted comma in PRESS command
+    for (const command of commands) {
+      if (command.toLowerCase() === 'press') {
+        throw new Error(`PRESS commands must be quoted in REPEAT command`);
+      }
+    }
+
     // Transpile each command
     const transpiledCommands = commands.map(command => {
       // Each command needs to be transpiled individually
