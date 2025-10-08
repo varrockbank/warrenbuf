@@ -291,6 +291,31 @@ expect(fixture).toHaveSelectionAt(0, 6, 0, 11);`
         name: 'type command should preserve case sensitivity of character',
         input: 'press B',
         expected: "fixture.press('B').once();",
+      },
+      {
+        name: 'PRESS unquoted comma (should fail)',
+        input: 'PRESS ,',
+        expectedError: "Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,"
+      },
+      {
+        name: 'PRESS double-quoted comma',
+        input: 'PRESS ","',
+        expected: "fixture.press(',').once();"
+      },
+      {
+        name: "PRESS single-quoted comma",
+        input: "PRESS ','",
+        expected: "fixture.press(',').once();"
+      },
+      {
+        name: 'PRESS unquoted comma with quantification (should fail)',
+        input: 'PRESS , 3 times',
+        expectedError: "Comma must be quoted in PRESS command: use PRESS ',' instead of PRESS ,"
+      },
+      {
+        name: 'PRESS quoted comma with quantification',
+        input: 'PRESS "," 3 times',
+        expected: "fixture.press(',').times(3);"
       }
     ];
 
