@@ -9,6 +9,10 @@
   .🌳 { flex: 1 }                                       /* Grow like a tree.    */
   .🦠 { justify-content: space-between }                /* Stay spread apart.   */
 
+  .hidden {
+    display: none;
+  }
+
   body {
       background-color: #494460;
       color: white;
@@ -140,6 +144,103 @@
     color: white;
     text-decoration: underline;
   }
+
+  details {
+    background-color: #3a3550;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 15px;
+    border: 1px solid #555;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 18px;
+    padding: 5px 0;
+    list-style: none;
+  }
+
+  summary:hover {
+    color: white;
+  }
+
+  summary::marker {
+    display: none;
+  }
+
+  summary::before {
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+
+  details > div {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  details button {
+    background-color: #5a5570;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  details button:hover {
+    background-color: #6a6580;
+  }
+
+  details input {
+    background-color: #2a2540;
+    color: white;
+    border: 1px solid #555;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 80px;
+  }
+
+  details label {
+    font-size: 14px;
+    color: #ccc;
+  }
+
+  fieldset {
+    margin: 15px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 10px;
+    overflow: visible;
+  }
+
+  input[type="file"]::file-selector-button {
+    background-color: #5a5570;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    background-color: #6a6580;
+  }
+
+  input[type="file"] {
+    color: #ccc;
+    font-size: 14px;
+    border: none;
+    background: none;
+    max-width: 100%;
+  }
 </style>
 </head>
 
@@ -170,25 +271,33 @@
           </div>
       </div>
   </blockquote>
-  <details style="padding: 15px">
-    <summary>Utility for diagnosing large files and text buffers</summary>
-    <label for="viewport-start">Viewport Start: </label>
-    <input id="viewport-start" value="0"></input>
-    <label for="viewport-size">Viewport Size:</label>
-    <input id="viewport-size" value="10"></input>
-    <button id="viewport-update">Update viewport</button>
-    <button id="viewport-scroll-up-1">Scroll -1</button>
-    <button id="viewport-scroll-down-1">Scroll +1</button>
-    <hr />
-    <input id="file-input" type="file" name="myFiles">
-    total size: <span id="fileSize">0</span>
-    <div>
-      <button id="load-file">Load File</button>
-    </div>
-    <div>
-      <button id="append-file">Append File</button><br />
-      Append at Line number: <input id="append-at-line" value="1"></input>
-    </div>
+  <details>
+    <summary>Diagnostics tools for loading large files</summary>
+    <fieldset>
+      <legend>Viewport:</legend>
+      <label for="viewport-start">Start:</label>
+      <input id="viewport-start" value="0"></input>
+      <label for="viewport-size">Window size:</label>
+      <input id="viewport-size" value="10"></input>
+      <button id="viewport-update">Set</button>
+      <!-- <button id="viewport-scroll-up-1">Scroll Up</button>
+      <button id="viewport-scroll-down-1">Scroll Down</button> -->
+    </fieldset>
+    <fieldset>
+      <legend>File Loader:</legend>
+      <div>
+        <label for="file-input"><span id="fileSize"></span></label>
+        <input id="file-input" type="file" name="myFiles" style="width: 100%; box-sizing: border-box;">
+        
+        <div id="file-loader-buttons" class="hidden" style="margin-top: 10px;">
+          <label for="append-at-line">At line: </label><input id="append-at-line" value="1" ></input>
+          <div style="margin: 10px">
+            <button id="load-file">Load File</button>
+           <button id="append-file">Append File (workaround for lack of chunk-loader)</button><br />
+          </div>
+        </div>
+      </div>
+    </fieldset>
   </details>
 
   <h2>With iOS plugin</h2>
@@ -346,28 +455,29 @@
       const viewportSize = parseInt(document.getElementById('viewport-size').value);
       primary.Viewport.set(viewportStart, viewportSize);
     });
-    document.getElementById('viewport-scroll-up-1').addEventListener('click', () => {
-      primary.Viewport.scroll(-1);
-    });
-    document.getElementById('viewport-scroll-down-1').addEventListener('click', () => {
-      primary.Viewport.scroll(1);
-    });
+    // document.getElementById('viewport-scroll-up-1').addEventListener('click', () => {
+    //   primary.Viewport.scroll(-1);
+    // });
+    // document.getElementById('viewport-scroll-down-1').addEventListener('click', () => {
+    //   primary.Viewport.scroll(1);
+    // });
     document.getElementById("file-input").addEventListener("change", () => {
-      const file = this.files[0];
+      const file = document.getElementById("file-input").files[0];
       const nBytes = file.size;
       const aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
       let sOutput = "";
       for (nMultiple = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
         sOutput = nApprox.toFixed(3) + " " + aMultiples[nMultiple] + " (" + nBytes + " bytes)";
       }
-      document.getElementById("fileSize").innerHTML = sOutput || (nBytes + " bytes");
+      document.getElementById("fileSize").innerHTML = "File size: " + (sOutput || (nBytes + " bytes"));
+      document.getElementById("file-loader-buttons").classList.remove('hidden');
     }, false);
     document.getElementById('load-file').addEventListener('click', () => {
       const f = document.getElementById("file-input").files[0];
       if (!f) {
         alert("No file selected");
       } else {
-        f.text().then(text => primary.Model.text = text)
+        f.text().then(text => primary.Model.text = text);
       }
     });
     document.getElementById('append-file').addEventListener('click', () => {
