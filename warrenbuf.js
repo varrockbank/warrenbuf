@@ -1,5 +1,5 @@
 function WarrenBuf(node, config = {}) {
-  this.version = "2.2.5-alpha.1";
+  this.version = "2.2.6-alpha.1";
 
   // Extract configuration with defaults
   const {
