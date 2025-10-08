@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta charset="UTF-8">
 <script src="warrenbuf.js"></script>
 <style>
   /************* "Atomic CSS" classes for Boxes *************/
@@ -824,7 +825,7 @@
       for (let row = 0; row < CONWAY_ROWS; row++) {
         let line = '';
         for (let col = 0; col < CONWAY_COLS; col++) {
-          line += conwayGrid[row][col] ? 'X' : '.';
+          line += conwayGrid[row][col] ? '■' : '.';
         }
         lines.push(line);
       }
