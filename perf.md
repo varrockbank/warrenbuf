@@ -133,3 +133,59 @@ Note: there is a slight off by 1 bug with the chunk-loader adding an implied new
 
 Consumed 3660MB of heap space, near the 4GB limit of Chrome's browser tab limit. 
 Running Chrome from the command line you can specify the flag "--js-flags="--max-old-space-size=8192" but this does not seem to increase the tab limit or heap size, otherwise we might have reached 140 million LOC with this approach alone.
+
+#### Experimenting with other chunk sizes
+
+256kb 
+[Chunked] Loaded 200,000 lines in 44.80ms // 5.044 MiB (5288894 bytes)
+[Chunked] Loaded 500,000 lines in 50.40ms // 9.431 MiB (9888895 bytes)
+[Chunked] Loaded 1,000,000 lines in 97.20ms // 18.968 MiB (19888896 bytes)
+[Chunked] Loaded 5,000,000 lines in 365.80ms // 99.076 MiB (103888896 bytes)
+[Chunked] Loaded 10,000,000 lines in 872.80ms // 265.969 MiB (278888897 bytes)
+[Chunked] Loaded 20,000,000 lines in 1768.60ms // 542.535 MiB (568888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 6921.20ms // 1515.812 MiB (1589444040 bytes)
+
+512KB 
+[Chunked] Loaded 200,000 lines in 35.60ms // 5.044 MiB (5288894 bytes)
+[Chunked] Loaded 500,000 lines in 47.20ms // 9.431 MiB (9888895 bytes)
+[Chunked] Loaded 1,000,000 lines in 95.90ms // 18.968 MiB (19888896 bytes)
+[Chunked] Loaded 5,000,000 lines in 318.90ms // 99.076 MiB (103888896 bytes)
+[Chunked] Loaded 10,000,000 lines in 685.40ms // 265.969 MiB (278888897 bytes)
+[Chunked] Loaded 20,000,000 lines in 1394.80ms // 542.535 MiB (568888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 4838.50ms // 1515.812 MiB (1589444040 bytes)
+Crashed on 70,00,000 million @ 65,000,000
+
+1MB
+[Chunked] Loaded 200,000 lines in 30.30ms // 5.044 MiB (5288894 bytes)
+[Chunked] Loaded 500,000 lines in 44.80ms // 9.431 MiB (9888895 bytes)
+[Chunked] Loaded 1,000,000 lines in 84.10ms // 18.968 MiB (19888896 bytes)
+[Chunked] Loaded 5,000,000 lines in 293.30ms // 99.076 MiB (103888896 bytes)
+[Chunked] Loaded 10,000,000 lines in 678.70ms // 265.969 MiB (278888897 bytes)
+[Chunked] Loaded 20,000,000 lines in 1348.00ms // 542.535 MiB (568888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 5351.40ms // 1515.812 MiB (1589444040 bytes)
+[Chunked] Loaded 70,000,001 lines in 10449.20ms // 1925.363 MiB (2018888931 bytes)
+
+2MB
+
+[Chunked] Loaded 500,000 lines in 41.30ms // 9.431 MiB (9888895 bytes)
+[Chunked] Loaded 1,000,000 lines in 75.10ms // 18.968 MiB (19888896 bytes)
+[Chunked] Loaded 5,000,000 lines in 294.70ms // 99.076 MiB (103888896 bytes)
+[Chunked] Loaded 10,000,000 lines in 640.30ms // 265.969 MiB (278888897 bytes)
+[Chunked] Loaded 20,000,000 lines in 1316.30ms // 542.535 MiB (568888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 5461.80ms // 1515.812 MiB (1589444040 bytes)
+
+3MB sometimes works 
+
+1,000,000 LOC:
+warrenbuf.js:441 Uncaught (in promise) RangeError: Maximum call stack size exceeded
+    at Object.appendLines (warrenbuf.js:441:18)
+    at HTMLButtonElement.<anonymous> (warrenbuf/:522:25)
+[Chunked] Loaded 10,000,000 lines in 663.20ms // 265.969 MiB (278888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 5362.00ms // 1515.812 MiB (1589444040 bytes)
+
+4MB
+Maximum call stack exceeded when calling appendLine. 
+
+Takeaway is that we don't want our chunksize to be too large as to risk large number
+of lines in that chunk that would call appendLines to fail. At the same time, 
+larger chunk sizes are more performant. 
