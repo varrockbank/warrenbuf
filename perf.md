@@ -202,3 +202,19 @@ There's a slight variation to this approach. Instead of blob.text(), we get a Fi
 [FileReader] Loaded 20,000,000 lines in 1388.80ms // 542.535 MiB (568888897 bytes)
 [FileReader] Loaded 50,000,001 lines in 5302.70ms // 1515.812 MiB (1589444040 bytes)
 [FileReader] Loaded 70,000,001 lines in 9702.10ms // 1925.363 MiB (2018888931 bytes)
+
+### Stream Loader 
+
+Stream API is the most modern. It is faster after 1 million then slows down after that.
+
+[Stream] Loaded 200,000 lines in 16.40ms // 5.044 MiB (5288894 bytes)
+[Stream] Loaded 500,000 lines in 50.40ms // 9.431 MiB (9888895 bytes)
+[Stream] Loaded 1,000,000 lines in 82.60ms // 18.968 MiB (19888896 bytes)
+[Stream] Loaded 5,000,000 lines in 249.60ms // 99.076 MiB (103888896 bytes)
+[Stream] Loaded 10,000,000 lines in 494.00ms // 265.969 MiB (278888897 bytes)
+[Stream] Loaded 20,000,000 lines in 1016.80ms // 542.535 MiB (568888897 bytes)
+[Stream] Loaded 50,000,001 lines in 4380.10ms // 1515.812 MiB (1589444040 bytes)
+[Stream] Loaded 70,000,001 lines in 12008.30ms // 1925.363 MiB (2018888931 bytes)
+
+it crashed on 100m file. However, we don't have visibility where it failed between 
+70m and 100m. The implementation of Stream API loader blocks rendering until the entire file is loaded.

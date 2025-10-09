@@ -293,6 +293,7 @@
             <button id="load-file-naive">Naive file loader (<10 million LOC)</button>
             <button id="load-file-chunked">File.slice byte chunk loader (<70 million LOC)</button>
             <button id="load-file-filereader">FileReader chunk loader (<70 million LOC)</button>
+            <button id="load-file-stream">ReadableStream loader (<70 million LOC)</button>
           </div>
         </div>
       </div>
@@ -610,6 +611,72 @@
       const t1 = performance.now();
       const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
       console.log(`[FileReader] Loaded ${totalLines.toLocaleString()} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
+    });
+
+    document.getElementById('load-file-stream').addEventListener('click', async () => {
+      const f = document.getElementById("file-input").files[0];
+      if (!f) {
+        alert("No file selected");
+        return;
+      }
+
+      const t0 = performance.now();
+
+      // Reset the model to start fresh
+      primary.Model.lines = [];
+
+      let remainder = '';
+      let totalLines = 0;
+      const decoder = new TextDecoder('utf-8');
+
+      // Use ReadableStream to process file chunks
+      const stream = f.stream();
+      const reader = stream.getReader();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          // Decode the Uint8Array chunk to text
+          const text = decoder.decode(value, { stream: true });
+
+          // Prepend any partial line from the previous chunk
+          const fullText = remainder + text;
+
+          // Find the last newline in this chunk
+          const lastNewlineIndex = fullText.lastIndexOf('\n');
+
+          if (lastNewlineIndex !== -1) {
+            // Extract complete lines
+            const completeText = fullText.substring(0, lastNewlineIndex);
+            const lines = completeText.split('\n');
+
+            // Append to model
+            primary.Model.appendLines(lines);
+            totalLines += lines.length;
+
+            // Save the remainder for next iteration
+            remainder = fullText.substring(lastNewlineIndex + 1);
+          } else {
+            // No newline found, accumulate to remainder
+            remainder = fullText;
+          }
+        }
+
+        // Don't forget the last line if there's a remainder
+        if (remainder.length > 0) {
+          primary.Model.appendLines([remainder]);
+          totalLines++;
+        }
+
+        const t1 = performance.now();
+        const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
+        console.log(`[Stream] Loaded ${totalLines.toLocaleString()} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
+      } finally {
+        reader.releaseLock();
+      }
     });
 
     fetch("docs/instructions.txt")
