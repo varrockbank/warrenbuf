@@ -280,8 +280,6 @@
       <label for="viewport-size">Window size:</label>
       <input id="viewport-size" value="10"></input>
       <button id="viewport-update">Set</button>
-      <!-- <button id="viewport-scroll-up-1">Scroll Up</button>
-      <button id="viewport-scroll-down-1">Scroll Down</button> -->
     </fieldset>
     <fieldset>
       <legend>File Loader:</legend>
@@ -292,9 +290,8 @@
         <div id="file-loader-buttons" class="hidden" style="margin-top: 10px;">
           <label for="append-at-line">At line: </label><input id="append-at-line" value="1" ></input>
           <div style="margin: 10px">
-            <button id="load-file-naive">Naive file loader</button>
-            <button id="load-file-chunked">File.slice byte chunk loader</button>
-            <button id="append-file">Append File (workaround for lack of chunk-loader)</button><br />
+            <button id="load-file-naive">Naive file loader (<10 million LOC)</button>
+            <button id="load-file-chunked">File.slice byte chunk loader (<70 million LOC)</button>
           </div>
         </div>
       </div>
@@ -456,12 +453,6 @@
       const viewportSize = parseInt(document.getElementById('viewport-size').value);
       primary.Viewport.set(viewportStart, viewportSize);
     });
-    // document.getElementById('viewport-scroll-up-1').addEventListener('click', () => {
-    //   primary.Viewport.scroll(-1);
-    // });
-    // document.getElementById('viewport-scroll-down-1').addEventListener('click', () => {
-    //   primary.Viewport.scroll(1);
-    // });
     document.getElementById("file-input").addEventListener("change", () => {
       const file = document.getElementById("file-input").files[0];
       const nBytes = file.size;
@@ -506,7 +497,7 @@
       // Reset the model to start fresh
       primary.Model.lines = [];
 
-      const CHUNK_SIZE = 1024 * 1024; // 1MB byte chunks
+      const CHUNK_SIZE = 1 * 1024 * 1024; // 1MB byte chunks
       let offset = 0;
       let remainder = '';
       let totalLines = 0;
@@ -551,22 +542,7 @@
       const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
       console.log(`[Chunked] Loaded ${totalLines.toLocaleString()} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
     });
-    document.getElementById('append-file').addEventListener('click', () => {
-      const lineNumber = parseInt(document.getElementById('append-at-line').value);
-      const f = document.getElementById("file-input").files[0];
-      if (!f) {
-        alert("No file selected");
-      } else {
-        f.text().then(text => {
-          const s = text.split("\n");
-          const t0 = performance.now();
-          primary.Model.splice(lineNumber, s);
-          const t1 = performance.now();
-          console.log(`Took ${parseFloat(t1 - t0).toFixed(2)} millis to splice ${s.length.toLocaleString()} elements at ${index.toLocaleString()} w/ ${primary.Model.lc.toLocaleString()} lines.`);
-        });
-      }
-    });
-
+ 
     fetch("docs/instructions.txt")
       .then(response => response.text())
       .then(source => primary.Model.text = source)
