@@ -1,5 +1,6 @@
 <html>
 <head>
+ <meta charset="UTF-8">
 <script src="warrenbuf.js"></script>
 <style>
   /************* "Atomic CSS" classes for Boxes *************/
@@ -251,6 +252,16 @@
     margin: 10px;
 
   }
+
+  .read-only-indicator {
+    background-color: #ff6b35;
+    color: white;
+    padding: 8px 15px;
+    text-align: center;
+    font-weight: 600;
+    border-radius: 15px 15px 0 0;
+    margin: 15px 15px 0px 15px;
+  }
 </style>
 </head>
 
@@ -262,8 +273,13 @@
       <a href="https://github.com/varrockbank/warrenbuf">Github</a>
     </div>
   </div>
-  A performant text buffer for the web with editor functionality.
-  <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground">
+  <div style="margin-bottom: 15px">
+    A performant text buffer for the web with editor functionality.
+  </div>
+  <div id="read-only-indicator" class="read-only-indicator hidden">
+    📖 Read-Only Mode (Chunked+Compressed) - Navigation only, editing disabled
+  </div>
+  <blockquote cite="" class="💪 🍜 🥷 🌕 🪜 wb no-select" tabindex="0" id="playground" style="margin-top: 0;">
     <!-- Hidden clipboard bridge lives inside the editor so copy bubbles through it -->
     <textarea class="wb-clipboard-bridge" aria-hidden="true"></textarea>
       <div class="💪">
@@ -831,6 +847,7 @@
       const reader = f.stream().getReader();
       try {
         primary.Model.activateChunkMode();
+        document.getElementById('read-only-indicator').classList.remove('hidden');
 
         const decoder = new TextDecoder('utf-8');
         let chunkCount = 0;

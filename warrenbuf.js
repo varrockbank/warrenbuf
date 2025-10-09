@@ -944,6 +944,8 @@ function WarrenBuf(node, config = {}) {
           Selection.moveCol(1);
         }
       }
+    } else if (Model.useChunkedMode) { // navigation-only in chunked mode.
+      return;
     } else if (event.key === "Backspace") {
       Selection.delete();
     } else if (event.key === "Enter") {
