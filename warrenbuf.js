@@ -422,6 +422,8 @@ function WarrenBuf(node, config = {}) {
     totalLines: 0,
     buffer: [],           // Holds either: (a) incomplete last chunk during append, or (b) decompressed chunk
     currentChunkIndex: -1, // -1 = buffer is incomplete last chunk, 0+ = buffer holds chunks[currentChunkIndex] decompressed
+    _textEncoder: new TextEncoder(),
+    _textDecoder: new TextDecoder(),
     activateChunkMode() {
         this.useChunkedMode = true;
         this.chunks = [];
@@ -518,7 +520,7 @@ function WarrenBuf(node, config = {}) {
     // Compress chunk at given index using gzip
     async _compressChunk(chunkIndex, lines) {
       const text = lines.join('\n');
-      const data = new TextEncoder().encode(text);
+      const data = this._textEncoder.encode(text);
 
       // Use CompressionStream API (gzip)
       const stream = new ReadableStream({ start(controller) { controller.enqueue(data); controller.close(); }});
@@ -563,7 +565,7 @@ function WarrenBuf(node, config = {}) {
         chunks.push(value);
       }
 
-      const text = new TextDecoder().decode(
+      const text = this._textDecoder.decode(
         new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []))
       );
 
