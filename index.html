@@ -290,10 +290,11 @@
         <div id="file-loader-buttons" class="hidden" style="margin-top: 10px;">
           <label for="append-at-line">At line: </label><input id="append-at-line" value="1" ></input>
           <div style="margin: 10px">
-            <button id="load-file-naive">Naive file loader (<10 million LOC)</button>
-            <button id="load-file-chunked">File.slice byte chunk loader (<70 million LOC)</button>
-            <button id="load-file-filereader">FileReader chunk loader (<70 million LOC)</button>
-            <button id="load-file-stream">ReadableStream loader (<70 million LOC)</button>
+            <button id="load-file-naive">Naive file loader (&lt;10 million LOC)</button>
+            <button id="load-file-chunked">File.slice byte chunk loader (&lt;70 million LOC)</button>
+            <button id="load-file-filereader">FileReader chunk loader (&lt;70 million LOC)</button>
+            <button id="load-file-stream">ReadableStream loader (&lt;70 million LOC)</button>
+            <button id="load-file-stream-materialized">ReadableStream loader w/ materialized strings (&lt;75 million LOC)</button>
           </div>
         </div>
       </div>
@@ -686,6 +687,66 @@
         reader.releaseLock();
       }
     });
+
+    document.getElementById('load-file-stream-materialized').addEventListener('click', async () => {
+      const f = document.getElementById("file-input").files[0];
+      if (!f) {
+        alert("No file selected");
+        return;
+      }
+      const reader = f.stream().getReader();
+      try {
+        primary.Model.lines = [];
+        const decoder = new TextDecoder('utf-8');
+        let chunkCount = 0;
+
+        const t0 = performance.now();
+
+        let remainder = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          // Decode the Uint8Array chunk to text
+          const text = decoder.decode(value, { stream: true });
+
+          // Find the last newline in this chunk
+          const lastNewlineIndex = text.lastIndexOf('\n');
+          if (lastNewlineIndex !== -1) {
+            // Split everything - last element is the incomplete line
+            const allLines = (remainder + text).split('\n');
+            const slicedLines = allLines.slice(0, -1);  // All complete lines
+            remainder = allLines[allLines.length - 1];  // Incomplete line (remainder)
+
+            // Force materialization using Array.from to break sliced string references
+            const materializedLines = slicedLines.map(line => Array.from(line).join(''));
+            // Append to model WITHOUT rendering (massive speedup)
+            primary.Model.appendLines(materializedLines, true);
+          } else {
+            remainder += text;
+          }
+
+          // Yield to browser every 10 chunks to allow UI updates
+          chunkCount++;
+          if (chunkCount % 10 === 0) {
+            primary.Model.appendLines([], false); // Force one render to update UI
+            await new Promise(resolve => setTimeout(resolve, 0));
+          }
+        }
+
+        // Final render
+        primary.Model.appendLines(remainder.length > 0 ? ['' + remainder] : [], false);
+
+        const t1 = performance.now();
+        const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
+        console.log(`[Stream+Mat] Loaded ${primary.Model.lines.length} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
+      } finally {
+        reader.releaseLock();
+      }
+    });
+
 
     fetch("docs/instructions.txt")
       .then(response => response.text())

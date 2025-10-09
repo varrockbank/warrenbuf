@@ -222,3 +222,32 @@ It crashed on 100m file. However, we don't have visibility where it failed betwe
 #### Yield to the UI rendering 
 
 After adding this logic, we know Stream API crashes at around 75 million. That's an improvement.
+
+### Materializing sliced lines 
+
+After inspecting the heap, I saw there were many [sliced strings] in the heap. It seemed
+peculiar that the [sliced strings] accounted for ~100mb of heap and regular strings another ~108mb of heap, and considering the file was ~100mb, it seemed like there was some redundancy and not GC'ed string.
+
+The following was able to squeeze another 5-10% capacity out of the stream loader. In other words, peak heap usage with materialized string is 10% more efficient, albeit it is more computationally expensive.
+
+Before:
+
+```javascript
+primary.Model.appendLines(slicedLines, true);
+```
+Heap usage: 3650GB
+
+After:
+
+```javascript
+// Force materialization using Array.from to break sliced string references
+const materializedLines = slicedLines.map(line => Array.from(line).join(''));
+primary.Model.appendLines(materializedLines, true);
+```
+Heap peak usage: 3270GB
+Heap usage after: 3150GB
+
+### Ideas
+
+Compression
+Index DB 
