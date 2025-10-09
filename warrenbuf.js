@@ -420,8 +420,10 @@ function WarrenBuf(node, config = {}) {
     chunks: [],
     chunkSize: 50_000,
     totalLines: 0,
-    buffer: [],           // Holds either: (a) incomplete last chunk during append, or (b) decompressed chunk
+    buffer: [],           // Current chunk decompressed
     currentChunkIndex: -1, // -1 = buffer is incomplete last chunk, 0+ = buffer holds chunks[currentChunkIndex] decompressed
+    prevBuffer: [],       // Previous chunk decompressed (currentChunkIndex - 1)
+    nextBuffer: [],       // Next chunk decompressed (currentChunkIndex + 1)
     _textEncoder: new TextEncoder(),
     _textDecoder: new TextDecoder(),
     activateChunkMode(chunkSize = 50_000) {
@@ -431,6 +433,8 @@ function WarrenBuf(node, config = {}) {
         this.totalLines = 0;
         this.lines = [];
         this.currentChunkIndex = -1;
+        this.prevBuffer = [];
+        this.nextBuffer = [];
         this.chunkSize = chunkSize;
     },
 
@@ -520,6 +524,7 @@ function WarrenBuf(node, config = {}) {
 
     // Compress chunk at given index using gzip
     async _compressChunk(chunkIndex, lines) {
+      console.log(`[Compress] Compressing chunk ${chunkIndex} (${lines.length} lines)`);
       const text = lines.join('\n');
       const data = this._textEncoder.encode(text);
 
@@ -549,10 +554,12 @@ function WarrenBuf(node, config = {}) {
       } else {
         this.chunks.push(result);
       }
+      console.log(`[Compress] Chunk ${chunkIndex} compressed: ${(result.length / 1024).toFixed(2)} KB`);
     },
 
     // Decompress chunk at given index
     async _decompressChunk(chunkIndex) {
+      console.log(`[Decompress] Decompressing chunk ${chunkIndex}`);
       const compressed = this.chunks[chunkIndex];
       const stream = new ReadableStream({ start(controller) { controller.enqueue(compressed); controller.close(); }});
 
@@ -576,7 +583,9 @@ function WarrenBuf(node, config = {}) {
       }
 
       const text = this._textDecoder.decode(result);
-      return text.split('\n');
+      const lines = text.split('\n');
+      console.log(`[Decompress] Chunk ${chunkIndex} decompressed: ${lines.length} lines`);
+      return lines;
     },
   }
   const Viewport = {
@@ -611,24 +620,65 @@ function WarrenBuf(node, config = {}) {
 
     get lines() {
       if (Model.useChunkedMode) {
-        const neededChunkIndex = Math.floor(this.start / Model.chunkSize);
+        const startChunkIndex = Math.floor(this.start / Model.chunkSize);
+        const endChunkIndex = Math.floor(this.end / Model.chunkSize);
 
-        // Viewport in current chunk.
-        // TODO: we assume the viewport doesn't span 2 chunks.
-        if(Model.currentChunkIndex == neededChunkIndex) {
-          const startInChunk = this.start % Model.chunkSize;
-          const endInChunk = this.end % Model.chunkSize;
-          return Model.buffer.slice(startInChunk, endInChunk + 1);
+        // Check if we need to load new chunks
+        if(Model.currentChunkIndex !== startChunkIndex) {
+          // Asynchronously load prev, current, and next chunks
+          const loadChunks = async () => {
+            const prevChunkIndex = startChunkIndex - 1;
+            const nextChunkIndex = startChunkIndex + 1;
+
+            console.log(`[Buffer] Loading 3-chunk window:`);
+            console.log(`  - Prev: ${prevChunkIndex >= 0 && prevChunkIndex < Model.chunks.length ? prevChunkIndex : 'none'}`);
+            console.log(`  - Current: ${startChunkIndex}`);
+            console.log(`  - Next: ${nextChunkIndex < Model.chunks.length ? nextChunkIndex : 'none'}`);
+
+            Model.currentChunkIndex = startChunkIndex;
+
+            // Load current chunk
+            Model.buffer = await Model._decompressChunk(startChunkIndex);
+
+            // Load previous chunk if it exists
+            if (prevChunkIndex >= 0 && prevChunkIndex < Model.chunks.length) {
+              Model.prevBuffer = await Model._decompressChunk(prevChunkIndex);
+            } else {
+              Model.prevBuffer = [];
+            }
+
+            // Load next chunk if it exists
+            if (nextChunkIndex < Model.chunks.length) {
+              Model.nextBuffer = await Model._decompressChunk(nextChunkIndex);
+            } else {
+              Model.nextBuffer = [];
+            }
+
+            console.log(`[Buffer] 3-chunk window loaded successfully`);
+            render(); // Re-render once decompressed
+          };
+
+          loadChunks();
+          return Array(this.size).fill("..."); // Show placeholders while decompressing
         }
 
-        // Asynchronously load the current chunk
-        Model._decompressChunk(neededChunkIndex).then(lines => {
-          Model.buffer = lines;
-          Model.currentChunkIndex = neededChunkIndex;
-          render(); // Re-render once decompressed
-        });
+        // Build result from available chunks
+        const result = [];
+        for (let i = this.start; i <= this.end; i++) {
+          const chunkIndex = Math.floor(i / Model.chunkSize);
+          const lineInChunk = i % Model.chunkSize;
 
-        return Array(this.size).fill("..."); // Show placeholders while decompressing
+          if (chunkIndex === startChunkIndex - 1 && Model.prevBuffer.length > 0) {
+            result.push(Model.prevBuffer[lineInChunk] || '');
+          } else if (chunkIndex === startChunkIndex) {
+            result.push(Model.buffer[lineInChunk] || '');
+          } else if (chunkIndex === startChunkIndex + 1 && Model.nextBuffer.length > 0) {
+            result.push(Model.nextBuffer[lineInChunk] || '');
+          } else {
+            result.push('');
+          }
+        }
+        return result;
       }
 
       // Legacy mode
