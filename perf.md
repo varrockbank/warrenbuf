@@ -216,5 +216,9 @@ Stream API is the most modern. It is faster after 1 million then slows down afte
 [Stream] Loaded 50,000,001 lines in 4380.10ms // 1515.812 MiB (1589444040 bytes)
 [Stream] Loaded 70,000,001 lines in 12008.30ms // 1925.363 MiB (2018888931 bytes)
 
-it crashed on 100m file. However, we don't have visibility where it failed between 
+It crashed on 100m file. However, we don't have visibility where it failed between 
 70m and 100m. The implementation of Stream API loader blocks rendering until the entire file is loaded.
+
+#### Yield to the UI rendering 
+
+After adding this logic, we know Stream API crashes at around 75 million. That's an improvement.

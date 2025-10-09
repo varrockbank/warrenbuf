@@ -633,6 +633,8 @@
       const stream = f.stream();
       const reader = stream.getReader();
 
+      let chunkCount = 0;
+
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -662,6 +664,12 @@
           } else {
             // No newline found, accumulate to remainder
             remainder = fullText;
+          }
+
+          // Yield to browser every 10 chunks to allow UI updates
+          chunkCount++;
+          if (chunkCount % 10 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 0));
           }
         }
 
