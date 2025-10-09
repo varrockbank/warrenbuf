@@ -565,10 +565,16 @@ function WarrenBuf(node, config = {}) {
         chunks.push(value);
       }
 
-      const text = this._textDecoder.decode(
-        new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []))
-      );
+      // Efficiently concatenate Uint8Array chunks
+      const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
 
+      const text = this._textDecoder.decode(result);
       return text.split('\n');
     },
   }
