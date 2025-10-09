@@ -20,6 +20,8 @@ solutions, which informs our design decision, but not necessarily dictate it.
 In simpler terms, we may discover that it's possible to handle mega large files with some tweaks but the trade-off to the vast majority of usage is not 
 worth optimizing for this long tail.
 
+All tests done 18GB Macbook Air.
+
 # Basic Load Test with Naive File Loader 
 
 This is load test with a "naive loader" which reads the file into the heap and splits on "\n".
@@ -244,8 +246,26 @@ After:
 const materializedLines = slicedLines.map(line => Array.from(line).join(''));
 primary.Model.appendLines(materializedLines, true);
 ```
-Heap peak usage: 3270GB
+
+Heap peak usage: 3300GB
 Heap usage after: 3150GB
+
+Note this is not deterministic. At other times we peak at 3450GB then hang out at 3300GB. This is still a 5-10% improvement.
+
+### Force GC
+
+The heap usage being lower than peak usgae in the materialized line approach shows us we can defer getting to peak usage earlier.
+
+The following hack gets the GC to kick in earlier. 
+
+```javascript
+const _ = new Array(100000);
+```
+
+Ofcourse non of this is deterministic. It depends on the GC.
+It merely has a non-zero chance of reaching meeting max capacity. 
+
+This solution was unstable after 70 million LOC, however it would hit 88 million LOC often.
 
 ### Ideas
 
