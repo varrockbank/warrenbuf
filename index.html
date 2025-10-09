@@ -830,13 +830,7 @@
 
       const reader = f.stream().getReader();
       try {
-        // Initialize chunked mode
-        primary.Model.useChunkedMode = true;
-        primary.Model.chunks = [];
-        primary.Model.buffer = [];
-        primary.Model.totalLines = 0;
-        primary.Model.lines = [];
-        primary.Model.chunkCache.clear();
+        primary.Model.activateChunkMode();
 
         const decoder = new TextDecoder('utf-8');
         let chunkCount = 0;
@@ -861,7 +855,6 @@
             // Materialize to break string references
             const materializedLines = slicedLines.map(line => Array.from(line).join(''));
             originalSize += materializedLines.join('\n').length;
-
             await primary.Model.appendLines(materializedLines, true);
           } else {
             remainder += text;

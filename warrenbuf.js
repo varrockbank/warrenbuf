@@ -410,16 +410,26 @@ function WarrenBuf(node, config = {}) {
 
   const Model = {
     lines: [''],
-    chunks: [],
-    chunkSize: 50000,
-    buffer: [],
-    totalLines: 0,
-    useChunkedMode: false,
+   
     byteCount: "",
     originalLineCount: 0,
     treeSitterTree: null,
     treeSitterCaptures: [],
+
+    useChunkedMode: false,
+    chunks: [],
+    chunkSize: 50000,
+    totalLines: 0,
+    buffer: [],
     chunkCache: new Map(), // Cache for decompressed chunks
+    activateChunkMode() {
+        this.useChunkedMode = true;
+        this.chunks = [];
+        this.buffer = [];
+        this.totalLines = 0;
+        this.lines = [];
+        this.chunkCache.clear();
+    },
 
     get lastIndex() { return this.useChunkedMode ? this.totalLines - 1 : this.lines.length - 1 },
 
@@ -549,7 +559,7 @@ function WarrenBuf(node, config = {}) {
       this.start = $clamp(start-1, 0, Model.lastIndex);
       if(this.size !== size) {
         this.size = size;
-        render(true );
+        render(true);
       } else {
         render();
       }
