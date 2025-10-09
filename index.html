@@ -833,11 +833,13 @@
         primary.Model.activateChunkMode();
 
         const decoder = new TextDecoder('utf-8');
-        let chunkCount = 0;
+        const CHUNK_SIZE = 50_000; // Match Model.chunkSize
+        let streamChunkCount = 0;
         const t0 = performance.now();
         let remainder = '';
         let originalSize = 0;
         let compressedSize = 0;
+        let lineAccumulator = []; // Accumulate lines until we have exactly 50k
 
         while (true) {
           const { done, value } = await reader.read();
@@ -854,22 +856,32 @@
 
             // Materialize to break string references
             const materializedLines = slicedLines.map(line => Array.from(line).join(''));
-            originalSize += materializedLines.join('\n').length;
-            await primary.Model.appendLines(materializedLines, true);
+            lineAccumulator.push(...materializedLines);
+
+            // Send aligned 50k chunks to appendLines
+            while (lineAccumulator.length >= CHUNK_SIZE) {
+              const chunk = lineAccumulator.splice(0, CHUNK_SIZE);
+              originalSize += chunk.join('\n').length;
+              await primary.Model.appendLines(chunk, true);
+            }
           } else {
             remainder += text;
           }
 
-          chunkCount++;
-          if (chunkCount % 10 === 0) {
+          streamChunkCount++;
+          if (streamChunkCount % 10 === 0) {
             await primary.Model.appendLines([], false); // Trigger render
             await new Promise(resolve => setTimeout(resolve, 0));
           }
         }
 
-        // Handle final remainder
+        // Handle remaining lines (partial chunk + remainder)
         if (remainder.length > 0) {
-          await primary.Model.appendLines([remainder], false);
+          lineAccumulator.push(remainder);
+        }
+        if (lineAccumulator.length > 0) {
+          originalSize += lineAccumulator.join('\n').length;
+          await primary.Model.appendLines(lineAccumulator, false);
         }
 
         // Calculate compressed size

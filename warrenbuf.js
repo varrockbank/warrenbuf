@@ -424,13 +424,14 @@ function WarrenBuf(node, config = {}) {
     currentChunkIndex: -1, // -1 = buffer is incomplete last chunk, 0+ = buffer holds chunks[currentChunkIndex] decompressed
     _textEncoder: new TextEncoder(),
     _textDecoder: new TextDecoder(),
-    activateChunkMode() {
+    activateChunkMode(chunkSize = 50_000) {
         this.useChunkedMode = true;
         this.chunks = [];
         this.buffer = [];
         this.totalLines = 0;
         this.lines = [];
         this.currentChunkIndex = -1;
+        this.chunkSize = chunkSize;
     },
 
     get lastIndex() { return this.useChunkedMode ? this.totalLines - 1 : this.lines.length - 1 },
