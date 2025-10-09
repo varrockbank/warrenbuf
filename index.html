@@ -306,6 +306,7 @@
             <button id="load-file-stream">ReadableStream (&lt;70 million LOC. Faster)</button>
             <button id="load-file-stream-materialized">ReadableStream w/ materialized strings (&lt;75M LOC. Slow)</button>
             <button id="load-file-stream-materialized-gc">ReadableStream w/ materialized strings + force GC (&lt;70-90M LOC. Non-deterministic; depends on mood of GC. Slower)</button>
+            <button id="load-file-chunked-compressed">NEW: Chunked+Compressed Stream Loader (100M+ LOC target. Experimental)</button>
           </div>
         </div>
       </div>
@@ -815,6 +816,84 @@
         const t1 = performance.now();
         const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
         console.log(`[Stream+Mat] Loaded ${primary.Model.lines.length} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
+      } finally {
+        reader.releaseLock();
+      }
+    });
+
+    document.getElementById('load-file-chunked-compressed').addEventListener('click', async () => {
+      const f = document.getElementById("file-input").files[0];
+      if (!f) {
+        alert("No file selected");
+        return;
+      }
+
+      const reader = f.stream().getReader();
+      try {
+        // Initialize chunked mode
+        primary.Model.useChunkedMode = true;
+        primary.Model.chunks = [];
+        primary.Model.buffer = [];
+        primary.Model.totalLines = 0;
+        primary.Model.lines = [];
+        primary.Model.chunkCache.clear();
+
+        const decoder = new TextDecoder('utf-8');
+        let chunkCount = 0;
+        const t0 = performance.now();
+        let remainder = '';
+        let originalSize = 0;
+        let compressedSize = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = decoder.decode(value, { stream: true });
+          const lastNewlineIndex = text.lastIndexOf('\n');
+
+          if (lastNewlineIndex !== -1) {
+            const allLines = text.split('\n');
+            const slicedLines = allLines.slice(0, -1);
+            slicedLines[0] = remainder + slicedLines[0];
+            remainder = allLines[allLines.length - 1];
+
+            // Materialize to break string references
+            const materializedLines = slicedLines.map(line => Array.from(line).join(''));
+            originalSize += materializedLines.join('\n').length;
+
+            await primary.Model.appendLines(materializedLines, true);
+          } else {
+            remainder += text;
+          }
+
+          chunkCount++;
+          if (chunkCount % 10 === 0) {
+            await primary.Model.appendLines([], false); // Trigger render
+            await new Promise(resolve => setTimeout(resolve, 0));
+          }
+        }
+
+        // Handle final remainder
+        if (remainder.length > 0) {
+          await primary.Model.appendLines([remainder], false);
+        }
+
+        // Calculate compressed size
+        for (const chunk of primary.Model.chunks) {
+          compressedSize += chunk.length;
+        }
+
+        const t1 = performance.now();
+        const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
+        const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+
+        console.log(`[Chunked+Compressed] Stored ${primary.Model.totalLines.toLocaleString()} lines in ${primary.Model.chunks.length} gzipped chunks`);
+        console.log(`  Time: ${(t1 - t0).toFixed(2)}ms // File: ${fileSizeMiB} MiB (${f.size} bytes)`);
+        console.log(`  Original size: ${(originalSize / 1024 / 1024).toFixed(2)} MiB`);
+        console.log(`  Compressed size: ${(compressedSize / 1024 / 1024).toFixed(2)} MiB`);
+        console.log(`  Compression ratio: ${compressionRatio}% savings`);
+        console.log(`  Memory savings: ${primary.Model.chunks.length} chunks vs ${primary.Model.totalLines.toLocaleString()} array elements = ${(primary.Model.totalLines / primary.Model.chunks.length).toFixed(0)}x reduction`);
       } finally {
         reader.releaseLock();
       }

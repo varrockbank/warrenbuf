@@ -410,11 +410,19 @@ function WarrenBuf(node, config = {}) {
 
   const Model = {
     lines: [''],
+    chunks: [],
+    chunkSize: 50000,
+    buffer: [],
+    totalLines: 0,
+    useChunkedMode: false,
     byteCount: "",
     originalLineCount: 0,
     treeSitterTree: null,
     treeSitterCaptures: [],
-    get lastIndex() { return this.lines.length - 1 },
+    chunkCache: new Map(), // Cache for decompressed chunks
+
+    get lastIndex() { return this.useChunkedMode ? this.totalLines - 1 : this.lines.length - 1 },
+
     set text(text) {
       this.lines = text.split("\n");
       this.byteCount = new TextEncoder().encode(text).length
@@ -422,32 +430,109 @@ function WarrenBuf(node, config = {}) {
       if(treeSitterParser && treeSitterQuery) {
         this.treeSitterTree = treeSitterParser.parse(text);
         this.treeSitterCaptures = treeSitterQuery.captures(this.treeSitterTree.rootNode);
-        // for (const { name, node } of this.treeSitterCaptures) {
-        //   console.log(name, node.text); // e.g. "function greet"
-        //   console.log(node);
-        // }
       }
-
       render(true);
     },
+
     splice(i, lines, n = 0) {
       this.lines.splice(i , n, ...lines);
       render();
     },
+
     delete(i) {
       this.lines.splice(i, 1);
     },
-    appendLines(newLines) {
-      this.lines.push(...newLines);
-      render();
+
+    async appendLines(newLines, skipRender = false) {
+      // Chunked mode: accumulate into buffer, create chunks when full
+      if (this.useChunkedMode) {
+        this.buffer.push(...newLines);
+        this.totalLines += newLines.length;
+
+        while (this.buffer.length >= this.chunkSize) {
+          const chunkLines = this.buffer.splice(0, this.chunkSize);
+          const compressed = await this._compressChunk(chunkLines);
+          this.chunks.push(compressed);
+        }
+      } else {
+        // Legacy mode for small files
+        this.lines.push(...newLines);
+      }
+      if (!skipRender) render();
+    },
+
+    // Compress chunk using gzip
+    async _compressChunk(lines) {
+      const text = lines.join('\n');
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+
+      // Use CompressionStream API (gzip)
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(data);
+          controller.close();
+        }
+      });
+
+      const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
+      const chunks = [];
+      const reader = compressedStream.getReader();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+
+      // Combine all Uint8Array chunks into one
+      const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
+
+      return result;
+    },
+
+    // Decompress chunk
+    async _decompressChunk(compressed) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(compressed);
+          controller.close();
+        }
+      });
+
+      const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
+      const chunks = [];
+      const reader = decompressedStream.getReader();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+
+      const decoder = new TextDecoder();
+      const text = decoder.decode(
+        new Uint8Array(chunks.reduce((acc, chunk) => [...acc, ...chunk], []))
+      );
+
+      return text.split('\n');
     },
   }
   const Viewport = {
     start: 0, // 0-indexed line number in Model buffer.
     size: initialViewportSize,
+    decompressingChunks: new Set(), // Track which chunks are being decompressed
+
     get end() {
       return Math.min(this.start + this.size - 1, Model.lastIndex);
     },
+
     // @param i, amount to scroll viewport by.
     scroll(i) {
       const t0 = performance.now();
@@ -456,8 +541,10 @@ function WarrenBuf(node, config = {}) {
       render();
       const t1 = performance.now();
       const millis = parseFloat(t1 - t0);
-      console.log(`Took ${millis.toFixed(2)} millis to scroll viewport with ${Model.lines.length} lines. That's ${1000/millis} FPS.`);
+      const lineCount = Model.useChunkedMode ? Model.totalLines : Model.lines.length;
+      console.log(`Took ${millis.toFixed(2)} millis to scroll viewport with ${lineCount} lines. That's ${1000/millis} FPS.`);
     },
+
     set(start, size) {
       this.start = $clamp(start-1, 0, Model.lastIndex);
       if(this.size !== size) {
@@ -467,7 +554,51 @@ function WarrenBuf(node, config = {}) {
         render();
       }
     },
+
     get lines() {
+      // Chunked mode
+      if (Model.useChunkedMode) {
+        const result = [];
+        const linesInChunks = Model.chunks.length * Model.chunkSize;
+
+        for (let i = this.start; i <= this.end; i++) {
+          if (i < linesInChunks) {
+            // Line is in a chunk
+            const chunkIndex = Math.floor(i / Model.chunkSize);
+            const lineInChunk = i % Model.chunkSize;
+
+            // Check cache first
+            if (!Model.chunkCache.has(chunkIndex)) {
+              // Not in cache - decompress async and show placeholder
+              if (!this.decompressingChunks.has(chunkIndex)) {
+                this.decompressingChunks.add(chunkIndex);
+                Model._decompressChunk(Model.chunks[chunkIndex]).then(lines => {
+                  Model.chunkCache.set(chunkIndex, lines);
+                  this.decompressingChunks.delete(chunkIndex);
+
+                  // LRU cache eviction - keep max 5 chunks in memory
+                  if (Model.chunkCache.size > 5) {
+                    const firstKey = Model.chunkCache.keys().next().value;
+                    Model.chunkCache.delete(firstKey);
+                  }
+
+                  render(); // Re-render once decompressed
+                });
+              }
+              result.push('...');  // Placeholder while decompressing
+            } else {
+              const chunkLines = Model.chunkCache.get(chunkIndex);
+              result.push(chunkLines[lineInChunk] || '');
+            }
+          } else {
+            // Line is in the buffer
+            result.push(Model.buffer[i - linesInChunks] || '');
+          }
+        }
+        return result;
+      }
+
+      // Legacy mode
       return Model.lines.slice(this.start, this.end + 1);
     },
   };
