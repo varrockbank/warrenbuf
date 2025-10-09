@@ -427,6 +427,11 @@ function WarrenBuf(node, config = {}) {
     _textEncoder: new TextEncoder(),
     _textDecoder: new TextDecoder(),
     activateChunkMode(chunkSize = 50_000) {
+        // Ensure Viewport does not straddle more than 2 chunks.
+        // TODO: we don't enforce this invariant when setting Viewport.size
+        if (Viewport.size >= chunkSize) {
+          throw new Error(`Viewport ${Viewport.size} can't be larger than chunkSize ${chunkSize}`);
+        }
         this.useChunkedMode = true;
         this.chunks = [];
         this.buffer = [];
