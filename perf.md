@@ -189,3 +189,16 @@ Maximum call stack exceeded when calling appendLine.
 Takeaway is that we don't want our chunksize to be too large as to risk large number
 of lines in that chunk that would call appendLines to fail. At the same time, 
 larger chunk sizes are more performant. 
+
+#### Chunked FileReader 
+
+There's a slight variation to this approach. Instead of blob.text(), we get a FileReader on the blob. It's maybe a few percentages faster but more complex dealing with async code.  
+
+[FileReader] Loaded 200,000 lines in 26.10ms // 5.044 MiB (5288894 bytes)
+[FileReader] Loaded 500,000 lines in 50.60ms // 9.431 MiB (9888895 bytes)
+[FileReader] Loaded 1,000,000 lines in 79.20ms // 18.968 MiB (19888896 bytes)
+[FileReader] Loaded 5,000,000 lines in 295.60ms // 99.076 MiB (103888896 bytes)
+[FileReader] Loaded 10,000,000 lines in 631.10ms // 265.969 MiB (278888897 bytes)
+[FileReader] Loaded 20,000,000 lines in 1388.80ms // 542.535 MiB (568888897 bytes)
+[FileReader] Loaded 50,000,001 lines in 5302.70ms // 1515.812 MiB (1589444040 bytes)
+[FileReader] Loaded 70,000,001 lines in 9702.10ms // 1925.363 MiB (2018888931 bytes)
