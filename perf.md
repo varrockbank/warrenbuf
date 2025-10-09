@@ -70,3 +70,66 @@ However, it makes it convenient to do apples to apples comparison.
 I also don't trust that the data isn't corrupted or corrupting the app otherwise
 where wrong line numbers are attributed. 
 
+## Chunked File Loading 
+
+### No improvement: Sequentially adding lines 
+
+We add an `#appendLine` method to model and send in 100k lines at a time. 
+
+```
+const fileLines = fileSourceTextString.split('\n');
+primary.Model.lines = []; // Reset the model to start fresh
+const BATCH_SIZE = 100_000;
+for (let i = 0; i < fileLines.length; i += BATCH_SIZE) {
+  const batch = fileLines.slice(i, i + BATCH_SIZE);
+  editor.Model.appendLines(batch);
+}
+```
+
+This doesn't work and still fails on 20 million line files. The bottleneck seems to be on the source file 
+being in memory. 
+
+Suspecting `fileSourceTextString.split('\n')` is the issue, the next attempt involved scanning through
+fileSourceTextString manually, splitting the string in half (half being the unprocessed string right of new line break) as we grab a chunk and append it. This stil doesn't work. 
+
+### ~70million : File.slice to read byte chunks 
+
+We avoid converting the file to String right away. 
+The unit of iteration however are in terms of bytes, i.e. 1mb at a time, rather than lines and strings and delimiters. 
+
+It works!
+
+[Chunked] Loaded 20,000,000 lines in 1348.00ms // 542.535 MiB (568888897 bytes)
+[Chunked] Loaded 50,000,001 lines in 5351.40ms // 1515.812 MiB (1589444040 bytes)
+[Chunked] Loaded 70,000,001 lines in 10449.20ms // 1925.363 MiB (2018888931 bytes)
+
+The browser tab crashes out at 72 million on a 100 million line file. 
+
+Naive is a little faster between 25-k5 million where performance starts bottoming out. 
+
+[Naive] Loaded 774 lines in 11.00ms // 0.028 MiB (29585 bytes)
+[Naive] Loaded 25,001 lines in 8.40ms // 0.895 MiB (938894 bytes)
+[Naive] Loaded 200,000 lines in 29.30ms // 5.044 MiB (5288894 bytes)
+[Naive] Loaded 500,001 lines in 41.60ms // 9.431 MiB (9888895 bytes)
+[Naive] Loaded 1,000,001 lines in 68.20ms // 18.968 MiB (19888896 bytes)
+[Naive] Loaded 5,000,001 lines in 295.60ms // 99.076 MiB (103888896 bytes)
+[Naive] Loaded 10,000,001 lines in 821.70ms // 265.969 MiB (278888897 bytes)
+
+[Chunked] Loaded 773 lines in 2.10ms // 0.028 MiB (29585 bytes)
+[Chunked] Loaded 25,000 lines in 11.80ms // 0.895 MiB (938894 bytes)
+[Chunked] Loaded 200,000 lines in 30.30ms // 5.044 MiB (5288894 bytes)
+[Chunked] Loaded 500,000 lines in 44.80ms // 9.431 MiB (9888895 bytes)
+[Chunked] Loaded 1,000,000 lines in 84.10ms // 18.968 MiB (19888896 bytes)
+[Chunked] Loaded 5,000,000 lines in 293.30ms // 99.076 MiB (103888896 bytes)
+[Chunked] Loaded 10,000,000 lines in 678.70ms // 265.969 MiB (278888897 bytes)
+
+The chunked file byte reader implementation isn't too complex so it should be preferred for the robustness.  
+
+Note: there is a slight off by 1 bug with the chunk-loader adding an implied new line at the end, but that's okay for now. 
+
+#### Memory Usage 
+
+[Chunked] Loaded 70,000,001 lines in 10449.20ms // 1925.363 MiB (2018888931 bytes)
+
+Consumed 3660MB of heap space, near the 4GB limit of Chrome's browser tab limit. 
+Running Chrome from the command line you can specify the flag "--js-flags="--max-old-space-size=8192" but this does not seem to increase the tab limit or heap size, otherwise we might have reached 140 million LOC with this approach alone.

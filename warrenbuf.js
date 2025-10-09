@@ -437,6 +437,10 @@ function WarrenBuf(node, config = {}) {
     delete(i) {
       this.lines.splice(i, 1);
     },
+    appendLines(newLines) {
+      this.lines.push(...newLines);
+      render();
+    },
   }
   const Viewport = {
     start: 0, // 0-indexed line number in Model buffer.

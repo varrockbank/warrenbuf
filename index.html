@@ -292,8 +292,9 @@
         <div id="file-loader-buttons" class="hidden" style="margin-top: 10px;">
           <label for="append-at-line">At line: </label><input id="append-at-line" value="1" ></input>
           <div style="margin: 10px">
-            <button id="load-file">Load File</button>
-           <button id="append-file">Append File (workaround for lack of chunk-loader)</button><br />
+            <button id="load-file-naive">Naive file loader</button>
+            <button id="load-file-chunked">File.slice byte chunk loader</button>
+            <button id="append-file">Append File (workaround for lack of chunk-loader)</button><br />
           </div>
         </div>
       </div>
@@ -472,13 +473,83 @@
       document.getElementById("fileSize").innerHTML = "File size: " + (sOutput || (nBytes + " bytes"));
       document.getElementById("file-loader-buttons").classList.remove('hidden');
     }, false);
-    document.getElementById('load-file').addEventListener('click', () => {
+    document.getElementById('load-file-naive').addEventListener('click', async () => {
       const f = document.getElementById("file-input").files[0];
       if (!f) {
         alert("No file selected");
-      } else {
-        f.text().then(text => primary.Model.text = text);
+        return;
       }
+
+      const t0 = performance.now();
+      const text = await f.text();
+      const t1 = performance.now();
+      console.log(`[Naive] Read file to text: ${(t1 - t0).toFixed(2)}ms`);
+
+      const t2 = performance.now();
+      primary.Model.text = text;
+      const t3 = performance.now();
+      const lineCount = primary.Model.lines.length;
+      const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
+      console.log(`[Naive] Set Model.text (split + render): ${(t3 - t2).toFixed(2)}ms`);
+      console.log(`[Naive] Loaded ${lineCount.toLocaleString()} lines in ${(t3 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
+    });
+
+    document.getElementById('load-file-chunked').addEventListener('click', async () => {
+      const f = document.getElementById("file-input").files[0];
+      if (!f) {
+        alert("No file selected");
+        return;
+      }
+
+      const t0 = performance.now();
+
+      // Reset the model to start fresh
+      primary.Model.lines = [];
+
+      const CHUNK_SIZE = 1024 * 1024; // 1MB byte chunks
+      let offset = 0;
+      let remainder = '';
+      let totalLines = 0;
+
+      while (offset < f.size) {
+        // Slice file into chunks
+        const blob = f.slice(offset, offset + CHUNK_SIZE);
+        const text = await blob.text();
+
+        // Prepend any partial line from the previous chunk
+        const fullText = remainder + text;
+
+        // Find the last newline in this chunk
+        const lastNewlineIndex = fullText.lastIndexOf('\n');
+
+        if (lastNewlineIndex !== -1) {
+          // Extract complete lines
+          const completeText = fullText.substring(0, lastNewlineIndex);
+          const lines = completeText.split('\n');
+
+          // Append to model
+          primary.Model.appendLines(lines);
+          totalLines += lines.length;
+
+          // Save the remainder for next iteration
+          remainder = fullText.substring(lastNewlineIndex + 1);
+        } else {
+          // No newline found, accumulate to remainder
+          remainder = fullText;
+        }
+
+        offset += CHUNK_SIZE;
+      }
+
+      // Don't forget the last line if there's a remainder
+      if (remainder.length > 0) {
+        primary.Model.appendLines([remainder]);
+        totalLines++;
+      }
+
+      const t1 = performance.now();
+      const fileSizeMiB = (f.size / (1024 * 1024)).toFixed(3);
+      console.log(`[Chunked] Loaded ${totalLines.toLocaleString()} lines in ${(t1 - t0).toFixed(2)}ms // ${fileSizeMiB} MiB (${f.size} bytes)`);
     });
     document.getElementById('append-file').addEventListener('click', () => {
       const lineNumber = parseInt(document.getElementById('append-at-line').value);
