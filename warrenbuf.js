@@ -459,7 +459,7 @@ function WarrenBuf(node, config = {}) {
       console.log(`Took ${millis.toFixed(2)} millis to scroll viewport with ${Model.lines.length} lines. That's ${1000/millis} FPS.`);
     },
     set(start, size) {
-      this.start = $clamp(start, 0, Model.lastIndex);
+      this.start = $clamp(start-1, 0, Model.lastIndex);
       if(this.size !== size) {
         this.size = size;
         render(true );
