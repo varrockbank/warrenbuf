@@ -241,6 +241,16 @@
     background: none;
     max-width: 100%;
   }
+  
+  #file-loader-options {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #file-loader-options button {
+    margin: 10px;
+
+  }
 </style>
 </head>
 
@@ -272,7 +282,7 @@
       </div>
   </blockquote>
   <details>
-    <summary>Diagnostics tools for loading large files</summary>
+    <summary>File loader</summary>
     <fieldset>
       <legend>Viewport:</legend>
       <label for="viewport-start">Start:</label>
@@ -289,13 +299,13 @@
         
         <div id="file-loader-buttons" class="hidden" style="margin-top: 10px;">
           <label for="append-at-line">At line: </label><input id="append-at-line" value="1" ></input>
-          <div style="margin: 10px">
-            <button id="load-file-naive">Naive file loader (&lt;10 million LOC)</button>
-            <button id="load-file-chunked">File.slice byte chunk loader (&lt;70 million LOC)</button>
-            <button id="load-file-filereader">FileReader chunk loader (&lt;70 million LOC)</button>
-            <button id="load-file-stream">ReadableStream loader (&lt;70 million LOC)</button>
-            <button id="load-file-stream-materialized">ReadableStream loader w/ materialized strings (&lt;75 million LOC)</button>
-            <button id="load-file-stream-materialized-gc">ReadableStream loader w/ materialized strings and force GC (&lt;70-90 million LOC. Very non-deterministic and depends on mood of the GC)</button>
+          <div style="margin: 10px" id="file-loader-options">
+            <button id="load-file-naive">Naive file loader (&lt;10 million line of code files. Fast)</button>
+            <button id="load-file-chunked">File.slice byte chunk loader (&lt;70 million LOC. Faster)</button>
+            <button id="load-file-filereader">FileReader chunk loader (&lt;70 million LOC. Faster)</button>
+            <button id="load-file-stream">ReadableStream (&lt;70 million LOC. Faster)</button>
+            <button id="load-file-stream-materialized">ReadableStream w/ materialized strings (&lt;75M LOC. Slow)</button>
+            <button id="load-file-stream-materialized-gc">ReadableStream w/ materialized strings + force GC (&lt;70-90M LOC. Non-deterministic; depends on mood of GC. Slower)</button>
           </div>
         </div>
       </div>
