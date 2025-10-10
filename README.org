@@ -1,4 +1,4 @@
-WarrenBuf is an overpowered plaintext buffer for the web, managing billions^{[1]} of lines without bottleneck. It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with editor features.
+WarrenBuf is an overpowered text buffer for the web, managing billions^{[1]} of lines without bottleneck. It's ~3KB /(gzip+min)/ and zero-dependency but punches above its weight with editor features 
 
 [[resources/preview.png]]
 
@@ -6,21 +6,23 @@ WarrenBuf is an overpowered plaintext buffer for the web, managing billions^{[1]
 
 [[https://varrockbank.github.io/warrenbuf/test/][Interactive Test Playground]] 
 
-[1]: /~128GB RAM and chunking in large files up to the max string length for delimiting on '\n'. The main point is that capacity scales ~O(n) of RAM, with minimal overhead, and user interaction doesn't become sluggish. Compare with libraries that dumps the entire sourcetext to <textarea> or DOM and becomes unresponsive by ~O(100,000) lines./
+[1]: /Tested on cheapest Macbook Air M4 with incremental file loader. Key is that capacity scales O(n) of RAM with low overhead and no bottleneck. Compare vs libraries that mount whole file to DOM being unresponsive by O(100K) lines. VDOM has other scaling issues./
 
 ** Ethos
 
-*Avoid JS fatigue:* no compilation, no NPM, no building. Simply vendor the VanillaJS function.
+*Avoid JS fatigue:* no compilation, no NPM, no building. Just vendor the VanillaJS function.
 
 *Inspired by vim:* minimal, capable, fast
 
-*Embedded:*  the features and tiny footprint uniquely positions this project to be a building block for larger apps (e.g. IDEs and other enriched plaintext environments). In fact, this is heuristic in scoping features. The endstate of this warrenbuf is to be barebones and let complex editor logic be built on top of it. 
+*Embedded:*  the features and tiny footprint uniquely positions this project to be a building block for larger apps (e.g. IDEs and other enriched plaintext environments). In fact, this is heuristic in scoping features. The endstate of this warrenbuf is to be barebones and handoff complex editor logic. Aiming for "headless" mode is a good way to think about the surface. 
 
 ** How? 
 
 At its core, WarrenBuf is a rendering engine. In fact, it started out as read-only log viewer and no editing capabilities. Its innovation is a technique loaned from game dev: clipping. i.e. render a Viewport containing only the source lines in view. There's always a small fixed set of elements to update. This sidesteps the DOM bottleneck. 
 
-Arrays are the dark horse of text editor data structures — inefficient for common editing operations since they involve shifting line numbers. This project embraces the fact that it’s web-bound, leaning on V8 for the computer-science heavy lifting. JavaScript’s array-like performance rival far more complex rope or piece-table structures while staying true to the problem domain. Consider that Monaco's robust piece table implementation is more than 10x WarrenBuf's entire footprint. 
+Arrays are the dark horse of text editor data structures — inefficient for common editing operations since they involve shifting line numbers. This project embraces the fact that it’s web-bound, leaning on V8 for the computer-science heavy lifting. JavaScript’s array-like performance rival far more complex rope or piece-table structures while staying true to the problem domain. Consider that Monaco's robust piece table implementation is more than 10x WarrenBuf's entire footprint.
+
+Ultra-high-capacity-mode does something a bit more sophisticated than a fully materialized buffer, with a sliding materialized window and the rest out of heap. 
 
 ** Usage 
 
@@ -70,7 +72,7 @@ Tree-sitter support is still experimental. Integration is tightly coupled until 
 
 ** Distributable
 
-There is no build process needed to vendor WarrenBuf global function. However, the minified distributable is created with Terser. This is done by a pre-commit hook ensuring dist/warrenbuf.min.js is updated in sync. Symlink to git: 
+There is no build process needed to vendor =WarrenBuf= global function. However, the minified distributable is created with =Terser=. This is done by a pre-commit hook ensuring =dist/warrenbuf.min.js= is updated in sync. Symlink to =git=: 
 
 #+begin_src sh
 ln -s ../../hooks/pre-commit .git/hooks/pre-commit
@@ -86,11 +88,11 @@ To test the hook manually without creating a commit:
 
 This section discusses why Warrenbuf exists and its competitive advantage.
 
-Monaco is bloated. Ace is great but 10x larger and still not barebones enough. Libraries in the same weigh class as WarrenBuf are not suitable for performant plaintext editor experiences on top of.
+Monaco is bloated. Ace is great but 10x larger and still not barebones enough. Libraries in the same weigh class as WarrenBuf are not suitable building blocks for performant plaintext editor experiences. 
 
 *** =<textarea>=
 
-"<textarea>" is semantically meaning HTML but its purpose is for editing small snippets of monospace/"preformatted" text. The fundamental feature of a text editor is editing non-trivial sized documents. Heck, it's so important that we don't even think of this as a "feature". Editors that can't do so are effectively useless. =<textarea>= is DOM bound and several thousand lines is enough for it to be sluggish. 
+=<textarea>= is semantically meaningful HTML but its purpose is for editing small snippets of monospace/"preformatted" text. The fundamental feature of a text editor is editing non-trivial sized documents. Heck, it's so important that we don't even think of this as a "feature". Editors that can't do so are effectively useless. =<textarea>= is DOM bound and several thousand lines is enough for it to be sluggish. 
 
 Beyond small file sizes, there are other hard-coded behaviors of =<textarea>= that is not conducive to creating customizable editor experience. For example, defining the behavior of cursor/selections or line numbers beyond what W3C and browser implementers have decided. =<textarea>= has been here since the beginning of time and browser idiosyncracies are one of many idiosyncracies. 
 
@@ -98,7 +100,7 @@ It's possibe to override one or two of =<textarea>='s default behavior but now y
 
 In brief, =<textarea>= is idiosyncratic, inflexible and low-capacity. 
 
-*** <textarea>-based libraries
+*** Other microlibraries
 
 Libraries in the same weight class as WarrenBuf achieve a small footprint by being clever codegolf hacks of =<textarea>=. This means they are restrictive in their functionalities they add. These solutions put lipstick on a pig and is a non-starter for anything beyond a toy.
 
@@ -112,11 +114,11 @@ It is overkill in the vast majority of cases that involve a custom editor experi
 
 *** C++ buffer management via WebAssembly
 
-Early experiments involved a delegating buffer management to a WASM module written in C++. It's the anthropic principle that WarrenBuf uses VanillaJS V8+ Arrays today.
+Early experiments involved a delegating buffer management to a WASM module written in C++. JS-Native implementation in V8 won out. 
 
-There is overhead to the JS<->WASM boundary crossing. It was significant but just below the level of human perception. The threshold was quickly surpassed with time spent in WASM-land. Rolling handwritten datastructures in C++ or other native code that outperforms V8 optimizations is difficult. A lot of engineering/witchcraft went into V8 and it shows. I gladly await someone else implement an efficient text buffer management and editor engine exposed as a WASM module.
+There is overhead to the JS<->WASM boundary crossing. It was significant but just below the level of human perception. The threshold was quickly breached by time spent in WASM-land. Handrolling datastructures in C++ or other native code that outperforms V8 optimizations is difficult. A lot of engineering/witchcraft went into V8 and it shows. I gladly await someone else implement an efficient text buffer management and editor engine exposed as a WASM module. For now we stand on the shoulder of giants. 
 
-The WASM toolchain still felt like "death by a thousand cuts". All things considered, it is more pleasant to work with VanillaJS.
+Also, the WASM toolchain still felt like "death by a thousand cuts". All things considered, it is more pleasant to work with VanillaJS.
 
 *** Leveraging the web platform
 
@@ -133,6 +135,8 @@ It's virtuous that WarrenBuf remain a microlibrary. The webdev Zeitgest is a dec
 Correctness is prioritized over performance micro-optimizations. Currently, there may be cases where the entire viewport is unnecessarily refreshed. For all intensive purposes this will not be detectable by the user. O(c) where c=30 surgical line updates is trivial compared to maintaining even the smallest of virtual DOM trees.
 
 One optimization pattern currently deployed is (re)using document fragments for batch inserts. This minimizes DOM mutations/operations.
+
+Update October 2025: To support OrgModel like outliner mode or just collapsing lines, we need to generalize Viewport as a set of N line numbers that need not be contiguous. This means rendering tracks which viewport line has changed, then re-render. This is likely where the interface with rendering will be.  
 
 *** VSCode's Buffer Management
 
