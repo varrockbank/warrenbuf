@@ -1126,7 +1126,7 @@
     </div>
     <div id="tab-grammar" class="tab-content">
         <main>
-            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">## DSL Grammar (v4.2.0)
+            <div style="width: 100%; flex: 1; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e1e; color: #d4d4d4; overflow-y: auto; white-space: pre;">A domain specific language for testing the text editor state
 <span style="color: #81C784;">&lt;command&gt;</span>          ::= <span style="color: #81C784;">&lt;press-command&gt;</span> | <span style="color: #81C784;">&lt;type&gt;</span> | <span style="color: #81C784;">&lt;expect-cursor&gt;</span> | <span style="color: #81C784;">&lt;expect-selection&gt;</span>
 <span style="color: #81C784;">&lt;type&gt;</span>             ::= <span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"text"</span>
 <span style="color: #81C784;">&lt;press-command&gt;</span>    ::= <span style="color: #81C784;">&lt;press&gt;</span> <span style="color: #9575CD;">[quantification]</span> [<span style="color: #FFB74D;">with</span> <span style="color: #64B5F6;">&lt;modifiers&gt;</span>]
@@ -1139,7 +1139,7 @@
 <span style="color: #81C784;">&lt;quantification&gt;</span>   ::= <span style="color: #9575CD;">once</span> | <span style="color: #9575CD;">N time(s)</span> <span style="opacity: 0.6;">(default: once)</span>
 <span style="color: #81C784;">&lt;modifiers&gt;</span>        ::= <span style="color: #64B5F6;">shift</span> | <span style="color: #64B5F6;">meta</span> | <span style="color: #64B5F6;">meta, shift</span>
 
-### Examples in Normalized Form <span style="color: #4CAF50;">  →</span>  Transpilation
+Examples in Normalized Form <span style="color: #4CAF50;">      →</span>  Transpilation
 <span style="color: #FFB74D;">TYPE</span> <span style="color: #64B5F6;">"Hello"</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">type</span>(<span style="color: #64B5F6;">'Hello'</span>);
 <span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">a</span> <span style="color: #9575CD;">once</span>                      <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">'a'</span>).<span style="color: #9575CD;">once()</span>;
 <span style="color: #FFB74D;">PRESS</span> <span style="color: #64B5F6;">";"</span>                         <span style="color: #4CAF50;">→</span>  fixture.<span style="color: #FFB74D;">press</span>(<span style="color: #64B5F6;">';'</span>).<span style="color: #9575CD;">once()</span>;
