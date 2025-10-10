@@ -1818,13 +1818,9 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                     document.getElementById('skipped-tests').textContent = '0';
                     document.getElementById('test-timing').innerHTML = '';
 
-                    // Show duplicate error in test banner
+                    // Hide the test error banner (details are shown in main results area)
                     const testErrorWarning = document.getElementById('test-error-warning');
-                    const testErrorText = document.getElementById('test-error-text');
-                    testErrorText.textContent = 'FATAL: Duplicate test names detected. No tests ran.';
-                    testErrorWarning.style.display = 'flex';
-                    testErrorWarning.style.borderColor = '#f44336';
-                    testErrorWarning.style.backgroundColor = '#3a1e1e';
+                    testErrorWarning.style.display = 'none';
                 } else {
                     resultsContainer.innerHTML = `<div style="padding: 20px; color: #f48771;">Error loading tests: ${error.message}</div>`;
                 }
