@@ -1,5 +1,5 @@
 function WarrenBuf(node, config = {}) {
-  this.version = "2.2.6-alpha.1";
+  this.version = "3.1.0-alpha.1";
 
   // Extract configuration with defaults
   const {
@@ -12,7 +12,10 @@ function WarrenBuf(node, config = {}) {
     colorPrimary = "#B2B2B2",
     colorSecondary = "#212026",
     gutterSize: initialGutterSize = 2,
-    gutterPadding = 1
+    gutterPadding = 1,
+    logger = (s) => {
+      console.log(s);
+    },
   } = config;
 
   let gutterSize = initialGutterSize;
@@ -529,7 +532,7 @@ function WarrenBuf(node, config = {}) {
 
     // Compress chunk at given index using gzip
     async _compressChunk(chunkIndex, lines) {
-      console.log(`[Compress] Compressing chunk ${chunkIndex} (${lines.length} lines)`);
+      logger(`[Compress] Compressing chunk ${chunkIndex} (${lines.length} lines)`);
       const text = lines.join('\n');
       const data = this._textEncoder.encode(text);
 
@@ -559,12 +562,12 @@ function WarrenBuf(node, config = {}) {
       } else {
         this.chunks.push(result);
       }
-      console.log(`[Compress] Chunk ${chunkIndex} compressed: ${(result.length / 1024).toFixed(2)} KB`);
+      logger(`[Compress] Chunk ${chunkIndex} compressed: ${(result.length / 1024).toFixed(2)} KB`);
     },
 
     // Decompress chunk at given index
     async _decompressChunk(chunkIndex) {
-      console.log(`[Decompress] Decompressing chunk ${chunkIndex}`);
+      logger(`[Decompress] Decompressing chunk ${chunkIndex}`);
       const compressed = this.chunks[chunkIndex];
       const stream = new ReadableStream({ start(controller) { controller.enqueue(compressed); controller.close(); }});
 
@@ -589,7 +592,7 @@ function WarrenBuf(node, config = {}) {
 
       const text = this._textDecoder.decode(result);
       const lines = text.split('\n');
-      console.log(`[Decompress] Chunk ${chunkIndex} decompressed: ${lines.length} lines`);
+      logger(`[Decompress] Chunk ${chunkIndex} decompressed: ${lines.length} lines`);
       return lines;
     },
   }
@@ -635,10 +638,10 @@ function WarrenBuf(node, config = {}) {
             const prevChunkIndex = startChunkIndex - 1;
             const nextChunkIndex = startChunkIndex + 1;
 
-            console.log(`[Buffer] Loading 3-chunk window:`);
-            console.log(`  - Prev: ${prevChunkIndex >= 0 && prevChunkIndex < Model.chunks.length ? prevChunkIndex : 'none'}`);
-            console.log(`  - Current: ${startChunkIndex}`);
-            console.log(`  - Next: ${nextChunkIndex < Model.chunks.length ? nextChunkIndex : 'none'}`);
+            logger(`[Buffer] Loading 3-chunk window:`);
+            logger(`  - Prev: ${prevChunkIndex >= 0 && prevChunkIndex < Model.chunks.length ? prevChunkIndex : 'none'}`);
+            logger(`  - Current: ${startChunkIndex}`);
+            logger(`  - Next: ${nextChunkIndex < Model.chunks.length ? nextChunkIndex : 'none'}`);
 
             Model.currentChunkIndex = startChunkIndex;
 
@@ -659,7 +662,7 @@ function WarrenBuf(node, config = {}) {
               Model.nextBuffer = [];
             }
 
-            console.log(`[Buffer] 3-chunk window loaded successfully`);
+            logger(`[Buffer] 3-chunk window loaded successfully`);
             render(); // Re-render once decompressed
           };
 
@@ -713,7 +716,8 @@ function WarrenBuf(node, config = {}) {
   }
   function render(renderLineContainers = false) {
     if (lastRender.lineCount !== Model.lastIndex + 1 ) {
-      $lineCounter.textContent = `${lastRender.lineCount = Model.lastIndex + 1}L, originally: ${Model.originalLineCount}L ${Model.byteCount} bytes`;
+      const lineCount = lastRender.lineCount = Model.lastIndex + 1;
+      $lineCounter.textContent = `${lineCount.toLocaleString()}L, originally: ${Model.originalLineCount}L ${Model.byteCount} bytes`;
     }
 
     // TODO: nit: we don't reclaim and shrink the gutter if the text get smaller.
@@ -859,6 +863,17 @@ function WarrenBuf(node, config = {}) {
   this.Viewport = Viewport;
   this.Model = Model;
   this.Selection = Selection;
+  // TODO: Needs rework. This temporary for the file-loader log viewer. 
+  this.appendLineAtEnd = (s) => {
+    if(Model.lines[0] == '') {
+      Model.lines[0] = s;
+    } else {
+      Model.lines[Model.lines.length] = s;
+    }
+   
+    Viewport.start = Math.max(0, Model.lines.length - Viewport.size - 1);
+    render(true);
+  };
 
   render(true);
 
