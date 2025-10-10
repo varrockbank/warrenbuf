@@ -1311,6 +1311,11 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
             return div.innerHTML;
         }
 
+        // Declare variables before they're used in functions
+        let testsCompiledSinceLastView = false;
+        let lastCompileHadErrors = false;
+        let lastCompileErrors = [];
+
         // Tab switching with deeplink support
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -1356,22 +1361,40 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
         // Handle browser navigation (back/forward)
         window.addEventListener('hashchange', () => {
-            const hash = window.location.hash.slice(1); // Remove the '#'
-            if (hash) {
-                switchToTab(hash);
+            const hash = window.location.hash;
+
+            // Check if it's a walkthrough deeplink
+            if (hash.startsWith('#walkthrough/')) {
+                // Switch to tests tab first
+                switchToTab('tests');
+                // Open walkthrough from hash
+                setTimeout(() => walkthrough.openFromHash(hash), 100);
+            } else if (hash) {
+                // Regular tab deeplink
+                const tabName = hash.slice(1); // Remove the '#'
+                switchToTab(tabName);
             }
         });
 
-        // Initialize tab based on URL hash on page load
-        function initializeTabFromHash() {
-            const hash = window.location.hash.slice(1); // Remove the '#'
-            if (hash) {
-                switchToTab(hash);
+        // Initialize tab or walkthrough based on URL hash on page load
+        function initializeFromHash() {
+            const hash = window.location.hash;
+
+            if (hash.startsWith('#walkthrough/')) {
+                // Switch to tests tab first
+                switchToTab('tests');
+                // Defer walkthrough opening until tests are loaded
+                // This will be called after runAllTests() completes
+                window.deferredWalkthroughHash = hash;
+            } else if (hash) {
+                // Regular tab deeplink
+                const tabName = hash.slice(1);
+                switchToTab(tabName);
             }
         }
 
         // Call after DOM is ready
-        initializeTabFromHash();
+        initializeFromHash();
 
         // Source tab logic
         const transpiler = new DSLTranspiler();
@@ -1383,9 +1406,6 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
         const statusUpToDate = document.getElementById('status-uptodate');
 
         let lastGeneratedSource = '';
-        let testsCompiledSinceLastView = false;
-        let lastCompileHadErrors = false;
-        let lastCompileErrors = [];
 
         // Helper functions for overlay editor
         function getEditorContent() {
@@ -1533,6 +1553,14 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
 
                 // Run tests after loading and transpiling
                 await runAllTests();
+
+                // Open deferred walkthrough if URL had a walkthrough hash
+                if (window.deferredWalkthroughHash) {
+                    setTimeout(() => {
+                        walkthrough.openFromHash(window.deferredWalkthroughHash);
+                        window.deferredWalkthroughHash = null;
+                    }, 100);
+                }
             } catch (error) {
                 setEditorContent(`Error loading DSL file: ${error.message}`);
                 updateLineNumbers();
