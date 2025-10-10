@@ -1,5 +1,5 @@
 function WarrenBuf(node, config = {}) {
-  this.version = "4.0.0-alpha.1";
+  this.version = "4.1.0-alpha.1";
 
   // Extract configuration with defaults
   const {
@@ -17,6 +17,7 @@ function WarrenBuf(node, config = {}) {
       console.log(s);
     },
     showGutter = true,
+    showStatusLine = true,
   } = config;
 
   let gutterSize = initialGutterSize;
@@ -33,7 +34,8 @@ function WarrenBuf(node, config = {}) {
   Object.assign($status.style, {
     padding: '6px',
     background: colorSecondary,
-    color: colorPrimary
+    color: colorPrimary,
+    display: showStatusLine ? '' : 'none'
   });
   const $statusLineCoord = node.querySelector('.wb-coordinate');
   const $lineCounter = node.querySelector('.wb-linecount');

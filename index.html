@@ -530,27 +530,32 @@
     const hackernews = new WarrenBuf(hackerNewsElement, {
       colorPrimary: "black",
       colorSecondary: "#FF6602",
+      showStatusLine: false,
     });
 
     const starWarsElement = document.getElementById('starwars');
     const starwars = new WarrenBuf(starWarsElement, {
       colorPrimary: "#FFD700",
       colorSecondary: "#000000",
-      initialViewportSize: 13
+      initialViewportSize: 13,
+      showGutter: false,
     });
 
     const matrixElement = document.getElementById('matrix');
     const matrix = new WarrenBuf(matrixElement, {
       colorPrimary: "#00ff41",
       colorSecondary: "#000000",
-      initialViewportSize: 20
+      initialViewportSize: 20,
+      showStatusLine: false,
     });
 
     const conwayElement = document.getElementById('conway');
     const conway = new WarrenBuf(conwayElement, {
       colorPrimary: "black",
       colorSecondary: "white",
-      initialViewportSize: 30
+      initialViewportSize: 30,
+      showStatusLine: false,
+      showGutter: false,
     });
 
     // Diagnostics -- Bind UI controls to move viewport
