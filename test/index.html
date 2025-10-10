@@ -1311,21 +1311,22 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
             return div.innerHTML;
         }
 
-        // Tab switching
+        // Tab switching with deeplink support
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.getAttribute('data-tab');
+        function switchToTab(tabName) {
+            // Remove active class from all tabs and content
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
 
-                // Remove active class from all tabs and content
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+            // Add active class to specified tab and corresponding content
+            const targetTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
+            const targetContent = document.getElementById(`tab-${tabName}`);
 
-                // Add active class to clicked tab and corresponding content
-                tab.classList.add('active');
-                document.getElementById(`tab-${tabName}`).classList.add('active');
+            if (targetTab && targetContent) {
+                targetTab.classList.add('active');
+                targetContent.classList.add('active');
 
                 // Shake timer if switching to tests tab and tests were compiled since last view
                 if (tabName === 'tests') {
@@ -1340,8 +1341,37 @@ expect(3+5).toBe(8);            <span style="color: #4CAF50;">→</span>  expect
                         timingDiv.classList.remove('shake');
                     }
                 }
+            }
+        }
+
+        // Handle tab clicks
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                // Update URL hash without triggering scroll
+                history.replaceState(null, null, `#${tabName}`);
+                switchToTab(tabName);
             });
         });
+
+        // Handle browser navigation (back/forward)
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1); // Remove the '#'
+            if (hash) {
+                switchToTab(hash);
+            }
+        });
+
+        // Initialize tab based on URL hash on page load
+        function initializeTabFromHash() {
+            const hash = window.location.hash.slice(1); // Remove the '#'
+            if (hash) {
+                switchToTab(hash);
+            }
+        }
+
+        // Call after DOM is ready
+        initializeTabFromHash();
 
         // Source tab logic
         const transpiler = new DSLTranspiler();
